@@ -1,0 +1,14 @@
+package com.gustavaopere.enshrouded.registry;
+
+import net.neoforged.bus.api.IEventBus;
+
+import java.util.Objects;
+
+public final class ModRegistries {
+    private ModRegistries() {
+    }
+
+    public static void register(IEventBus modBus) {
+        Objects.requireNonNull(modBus, "modBus");
+    }
+}
