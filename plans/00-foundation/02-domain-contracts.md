@@ -40,7 +40,7 @@
 - [x] Add RED test source for `ProgressionOwnerResolver` and `FlamePassageQuery`, including standalone UUID ownership and Level 1 fallback behavior, before production implementation — commit `c714af1db5256537ea5e8a9f89c680f2c3e32d6a`.
 - [x] Observe that RED before production implementation: the exact committed test source was compiled/executed under Java 21 with a temporary JUnit-compatible harness outside the repository and both tests failed only with the expected `ClassNotFoundException` for the two absent interfaces.
 - [x] Implement the minimal owner/passage interfaces/defaults and verify the same test GREEN in the isolated Java 21 harness.
-- [ ] Add and observe RED for Foundation `FlameWardQuery` before production implementation, then implement the minimal no-ward fallback and permanent API-shape/behavior tests.
+- [x] Add and observe RED for Foundation `FlameWardQuery` before production implementation, then implement the minimal no-ward fallback and permanent API-shape/behavior tests — RED commit `93127ff748029cd39fa33502eb704b10817308f0`, production commit `787d9c36c25459e8815066b8bd03fc20ff4285aa`.
 
 ## Current implementation checkpoint — 2026-08-27
 
@@ -48,14 +48,16 @@ Enshrouded-owned contracts are present under `src/main/java/com/gustavaopere/ens
 
 - Shroud severity uses stable string IDs and `ShroudSample` validates finite normalized intensity, including rejection of NaN/infinite/out-of-range values;
 - `ShroudQuery` and `MutationAuthority` expose read/safety boundaries without implementing world mutation;
+- `FlameWardQuery` is a spatial `@FunctionalInterface`; Foundation `none()` is a total no-ward fallback returning `false` without consulting world/position, allowing Stage 01/02/03 to run before Stage 05;
 - `ProgressionOwner` serializes stable player/team/world keys without importing FTB Teams, including namespaced ids containing `:` and invalid-key rejection;
 - `ProgressionOwnerResolver` is a UUID-based `@FunctionalInterface`; `standalone()` maps directly to `ProgressionOwner.player(UUID)` without runtime/player/FTB types;
 - `FlamePassageQuery` is a read-only `@FunctionalInterface`; `levelOneFallback()` validates its owner argument and returns stable Passage Level `1` for player/team/world owners;
 - magic classification is represented by Enshrouded-owned kind/confidence values, with `UNKNOWN` explicitly failing safe as non-magical;
 - `LichManifestationProvider` owns entity selection/spawn/matching only, while its contract explicitly leaves rewards/progression to the story runtime;
 - JUnit contract tests cover stable IDs, player/team/world owner round trips, invalid owner keys and value invariants;
-- `PublicApiShapeTest` freezes the exact public shapes of existing Shroud/mutation/progression/magic/Lich provider boundaries;
+- `PublicApiShapeTest` freezes the exact public shapes of Shroud/mutation/ward/progression/magic/Lich provider boundaries;
 - `ProgressionBoundaryTest` permanently verifies standalone UUID owner resolution, owner-agnostic Level 1 passage fallback and fail-fast null behavior;
+- `FlameWardBoundaryTest` permanently verifies the Foundation no-ward fallback cannot invent Sanctuary suppression;
 - `ArchitectureBoundaryTest` rejects optional/foreign implementation imports from `api/` while allowing only Java/Mojang/Minecraft/NeoForge/annotations/Enshrouded platform namespaces;
 - the same architecture guard rejects `net.minecraft.client.*` references from common/server production code outside the future dedicated `client/` package.
 
@@ -79,17 +81,25 @@ Minimal production commits:
 
 The same test then passed both methods in the isolated Java 21 harness. The temporary RED-named test was promoted to permanent `ProgressionBoundaryTest` and the RED checkpoint file was removed.
 
-### Flame ward boundary clarification
+### Flame ward boundary TDD evidence
 
-`DECISIONS.md` decision 33 makes `FlameWardQuery` Foundation-owned because Stage 01 query and Stage 02 mutation occur before Stage 05 Sanctuary. Foundation will provide a no-ward fallback; Stage 05 `FlameWardService` later implements the same interface. This also freezes the semantic rule that `ShroudSample` keeps canonical logical severity/intensity under a ward and represents effective suppression only through `sanctuarySuppressed`.
+`DECISIONS.md` decision 33 makes `FlameWardQuery` Foundation-owned because Stage 01 query and Stage 02 mutation occur before Stage 05 Sanctuary. It also freezes the semantic rule that `ShroudSample` keeps canonical logical severity/intensity under a ward and represents effective suppression only through `sanctuarySuppressed`.
 
-Production `FlameWardQuery` is intentionally not added until its RED is observed.
+RED source commit: `93127ff748029cd39fa33502eb704b10817308f0`.
+
+The exact RED test was compiled/executed under Java 21 with only same-name `ServerLevel`/`BlockPos` signature stubs and failed only with `ClassNotFoundException: ...FlameWardQuery` before production implementation.
+
+Minimal production commit: `787d9c36c25459e8815066b8bd03fc20ff4285aa`.
+
+The same test then passed; it was promoted to permanent `FlameWardBoundaryTest`, the RED-named file was removed, and `PublicApiShapeTest` now freezes `suppresses(ServerLevel, BlockPos)` plus static `none()`.
+
+`plans/PENDING.md` keeps `ENSH-L1-FLAME-WARD-001` open only for cross-stage closure: Stage 01 must preserve logical samples while setting the suppression flag, Stage 02 must route ward veto through `MutationAuthority`, Stage 03 must interpret suppression as effective safety, and Stage 05 must supply the indexed altar-backed implementation.
 
 ### Broader pure-Java verification while Actions is blocked
 
 A Java 21 micro-runner executed the current logical bodies of the Foundation tests that do not require Minecraft runtime behavior. Minecraft classes referenced only for API signature reflection were represented by empty same-name stubs; no Minecraft behavior was simulated.
 
-Current equivalent result is clean across `DomainContractsTest`, `ProgressionBoundaryTest`, `PublicApiShapeTest` and `TestFixturesExecutionTest`; the new progression API-shape and fail-fast assertions were also executed locally after their commits.
+Current equivalent result is clean across `DomainContractsTest`, `ProgressionBoundaryTest`, `FlameWardBoundaryTest`, `PublicApiShapeTest` and `TestFixturesExecutionTest`; repository architecture/provenance guards and bootstrap structural checks have also passed in the local verification path.
 
 This isolated evidence proves pure-Java value/API behavior only. It does **not** replace `./gradlew test`, NeoForge build, GameTests or dedicated-server acceptance on the final branch HEAD.
 
@@ -99,7 +109,7 @@ This isolated evidence proves pure-Java value/API behavior only. It does **not**
 - [ ] `./gradlew test` is GREEN.
 - [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
 - [x] `ProgressionOwnerResolver` and `FlamePassageQuery` Foundation contracts/defaults are implemented and isolated RED -> GREEN is proven.
-- [ ] `FlameWardQuery` Foundation contract/default is implemented test-first and GREEN.
+- [x] `FlameWardQuery` Foundation contract/default is implemented test-first and isolated RED -> GREEN is proven.
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
