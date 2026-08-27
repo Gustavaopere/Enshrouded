@@ -77,6 +77,11 @@ tasks.named('test', Test).configure {
     useJUnitPlatform()
 }
 
+tasks.named('jar', Jar).configure {
+    from('LICENSE')
+    from('THIRD_PARTY_NOTICES.md')
+}
+
 tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
