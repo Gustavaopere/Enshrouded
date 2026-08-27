@@ -19,7 +19,8 @@
 ## Implementation contract
 
 - Default ordinary-Shroud maximum exposure reserve is configurable and initially 300 seconds, clamped to safe bounds.
-- `CLEAR` regenerates reserve; `SHROUD` drains it; `DEADLY` delegates to Deadly policy.
+- Effective exposure interprets `ShroudSample.sanctuarySuppressed=true` as safe/recovery without discarding the sample's underlying logical severity/intensity.
+- Without Sanctuary suppression: `CLEAR` regenerates reserve; `SHROUD` drains it; `DEADLY` delegates to Deadly policy.
 - Drain/recovery is based on server ticks/authoritative delta and remains deterministic through lag spikes within configured caps.
 - Death/respawn policy is explicit: respawn restores a safe baseline; disconnect/reconnect cannot reset an active unsafe exploitably without server rules.
 - Sync sends changed snapshots rather than every tick.
@@ -27,6 +28,7 @@
 ## TDD / verification
 
 - [ ] Unit-test drain/recovery boundary math and configured max clamping.
+- [ ] Unit-test suppressed `SHROUD`/`DEADLY` samples recover as safe while their logical sample data remains unchanged.
 - [ ] GameTest crossing zone boundaries changes exposure exactly once per sampled interval.
 - [ ] GameTest disconnect/save/reload preserves expected state policy.
 - [ ] Network test confirms client cannot submit exposure values.
@@ -39,4 +41,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Ordinary Shroud starts a reliable server timer, safe air recovers it, and state survives normal multiplayer lifecycle correctly.
+**Acceptance:** Ordinary Shroud starts a reliable server timer, Sanctuary suppression makes the effective exposure safe without erasing latent Shroud state, safe air recovers reserve, and state survives normal multiplayer lifecycle correctly.
