@@ -34,6 +34,19 @@
 - [ ] Write contract tests proving query/mutation/combat interfaces are side-effect free at the value layer.
 - [ ] Verify RED before implementations exist, then GREEN with the minimal records/interfaces.
 
+## Current implementation checkpoint — 2026-08-27
+
+The planned Enshrouded-owned contracts are present under `src/main/java/com/gustavaopere/enshrouded/api/` with no optional-mod imports:
+
+- Shroud severity uses stable string IDs and `ShroudSample` validates finite normalized intensity;
+- `ShroudQuery` and `MutationAuthority` expose read/safety boundaries without implementing world mutation;
+- `ProgressionOwner` serializes stable player/team/world keys without importing FTB Teams;
+- magic classification is represented by Enshrouded-owned kind/confidence values;
+- `LichManifestationProvider` owns entity selection/spawn/matching only, while its contract explicitly leaves rewards/progression to the story runtime;
+- JUnit contract tests cover stable IDs, owner round trips and value/interface invariants.
+
+No optional provider class is part of these core contracts. Current final-HEAD GREEN verification remains blocked by GitHub Actions terminating before checkout; therefore this task stays open and unrenamed despite the implementation being present.
+
 ## Merge gate
 
 - [ ] All task-specific tests are GREEN on the final branch HEAD.
