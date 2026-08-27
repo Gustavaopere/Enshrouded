@@ -29,6 +29,18 @@
 - [ ] Add a documentation verification script/test that checks every source-derived code path listed later has a provenance entry.
 - [ ] Verify `THIRD_PARTY_NOTICES.md` contains the upstream license reference before any adapted source enters the project.
 
+## Current implementation checkpoint — 2026-08-27
+
+Implemented on `round-1-foundation`:
+
+- `THIRD_PARTY_NOTICES.md`, `plans/00-foundation/UPSTREAM.md`, current-pack compatibility inventory and `UpstreamInventory` exist;
+- Sculk Horde source snapshot/licensing and Ars Zero version/licensing/integration strategy are pinned;
+- Spore and Infnexus are recorded only as explicit exclusions and are not core dependencies, providers or design authorities;
+- the compatibility inventory records current optional integration candidates without promoting them to mandatory dependencies;
+- `ProvenanceDocumentationTest` verifies required documents, audited source/version markers, exclusion entries and all future `// UPSTREAM-DERIVED:` source markers against `THIRD_PARTY_NOTICES.md`.
+
+No source-derived production code has entered the branch at this stage. Current final-HEAD GREEN verification remains blocked by GitHub Actions terminating before checkout, so this task stays open and unrenamed.
+
 ## Merge gate
 
 - [ ] All task-specific tests are GREEN on the final branch HEAD.
