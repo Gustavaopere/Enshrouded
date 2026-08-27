@@ -5,7 +5,7 @@ Last structural update: 2026-08-27.
 ## Current checkpoint
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined from repository base `753021c46ddc5b8ee25a6ab586cfc9b8c4a8de88`.
-- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. The previously missing Foundation-owned `ProgressionOwnerResolver` / `FlamePassageQuery` boundaries are now implemented after an isolated Java 21 RED -> GREEN cycle. Acceptance remains blocked because GitHub Actions jobs still terminate before checkout with `steps=null`, so the committed Gradle/JUnit, NeoForge build, GameTest and dedicated-server gates have not executed on the final HEAD. Do not merge or rename tasks with `✅-` until all final gates are GREEN.
+- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. The Foundation-owned `ProgressionOwnerResolver` / `FlamePassageQuery` boundaries are implemented after an isolated Java 21 RED -> GREEN cycle. Current pure-Java/repository guards and GameTest compile-shape checks are clean, but acceptance remains blocked because GitHub Actions jobs terminate before checkout with `steps=null`; the committed Gradle/JUnit, NeoForge build, real GameTest and real dedicated-server gates therefore have not executed on the final HEAD. Do not merge or rename tasks with `✅-` until all final gates are GREEN.
 - [ ] 01 Shroud Field — not implemented.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
@@ -68,29 +68,31 @@ Implemented scope includes:
 
 ## Foundation progression-boundary TDD evidence
 
-Architecture review exposed the former Stage 03 -> Stage 05 passage-query stub dependency. `DECISIONS.md` decision 31 now makes the two read boundaries Foundation-owned:
+Architecture review exposed the former Stage 03 -> Stage 05 passage-query stub dependency. `DECISIONS.md` decision 31 makes the two read boundaries Foundation-owned:
 
 - `ProgressionOwnerResolver.resolve(UUID)`;
 - `FlamePassageQuery.passageLevel(ProgressionOwner)`.
 
-The exact committed RED test source from `c714af1db5256537ea5e8a9f89c680f2c3e32d6a` was executed under Java 21 outside the repository using only a temporary JUnit-compatible harness. Before production implementation, both test methods failed exclusively with the expected `ClassNotFoundException` for the missing interfaces. After the two minimal production interfaces/defaults were committed, the same test passed both methods. The promoted permanent `ProgressionBoundaryTest` also passed both methods in the same isolated Java 21 environment.
-
-This is valid TDD evidence for the pure-Java boundary only. It does not replace the committed Gradle/JUnit stack or any NeoForge runtime gate.
+The exact committed RED test source from `c714af1db5256537ea5e8a9f89c680f2c3e32d6a` was executed under Java 21 outside the repository using a temporary JUnit-compatible harness. Before production implementation, both test methods failed exclusively with the expected `ClassNotFoundException` for the missing interfaces. After the two minimal production interfaces/defaults were committed, the same test passed both methods. The promoted permanent `ProgressionBoundaryTest` also passed both methods in the same isolated Java 21 environment.
 
 `plans/PENDING.md` keeps `ENSH-L1-FLAME-PASSAGE-001` open for cross-stage closure: Stage 03 must consume the Foundation interfaces directly, Stage 05 must prove its persistence-backed passage implementation through the same boundary, and Stage 08 may substitute an FTB Teams-aware resolver without changing consumers.
 
-A separate planning cycle was removed: Stage 05 now owns only the generic Flame ritual registry/executor/checkpoint engine, while Stage 06 owns the authentic first Lich Skull and concrete `enshrouded:lich_manifestation_1` binding. The branch order remains causal and no 05 <-> 06 circular dependency remains.
+A separate planning cycle was removed: Stage 05 owns only the generic Flame ritual registry/executor/checkpoint engine, while Stage 06 owns the authentic first Lich Skull and concrete `enshrouded:lich_manifestation_1` binding. The branch order remains causal and no 05 <-> 06 circular dependency remains.
 
-## Structural evidence while Actions is unavailable
+## Current local/structural verification while Actions is unavailable
 
-- `scripts/ci/dedicated-server-reload-smoke.sh` has been structurally reviewed with bounded startup/save/reload/shutdown paths;
-- a fake-server simulation exercised both FIFO boots, save marker, persistent scoreboard sentinel and graceful shutdown and reached its PASS marker before the later process-supervision hardening;
-- inspection of NeoGradle `NG_7.1` `RunsUtil.createTasks(...)` confirmed run tasks are `JavaExec` and no `standardInput` forwarding is configured there, motivating the explicit project-side `System.in` fix;
-- NeoForge 1.21.1 documentation confirms `@GameTestHolder(enshrouded)` + `@PrefixGameTestTemplate(false)` resolves `foundation_empty` to the committed `data/enshrouded/structure/foundation_empty.nbt` template;
-- NeoForge 1.21.1 API references confirm the GameTest helper methods used by Foundation and `MinecraftServer.saveEverything(boolean, boolean, boolean)` signatures;
-- official Gradle checksum reference confirms the committed Gradle 8.14 binary distribution SHA-256;
-- pure-Java progression boundary RED -> GREEN was executed locally under Java 21 with the exact committed test logic;
-- these structural/control-flow/API/pure-Java checks do not replace a real Minecraft/NeoForge runner.
+These checks use the current GitHub sources and Java 21 but deliberately do not claim Minecraft runtime acceptance:
+
+- pure-Java/value/API tests: 17/17 passed across `DomainContractsTest` (6), `ProgressionBoundaryTest` (2), `PublicApiShapeTest` (4) and `TestFixturesExecutionTest` (5);
+- repository guards: 7/7 passed across `ArchitectureBoundaryTest` (2) and `ProvenanceDocumentationTest` (5);
+- `BootstrapContractTest`: 1/1 passed using only minimal NeoForge/SLF4J type stubs for classloading and the real metadata path;
+- aggregate non-runtime test/guard methods: **25/25 passed**;
+- the current dedicated-server harness passes `bash -n` and a current fake-server simulation exercises `exec timeout`, both FIFO boots, save marker, `world/level.dat`, persisted scoreboard sentinel, second-boot query and graceful stop to `HARNESS_CURRENT_SIMULATION=PASS`;
+- the current `GameTestBootstrap` + `FoundationGameTests` sources compile under Java 21 against stubs matching the official 1.21.1 signatures they use: `GAMETEST_COMPILE_SHAPE=PASS`;
+- NeoGradle NG_7.1 source confirms `modSource(SourceSet)` adds a source set rather than replacing previous mod sources, so `configureEach { modSource main }` plus `gameTestServer { modSource gameTest }` retains main + gameTest inputs;
+- current `neoforge.mods.toml` / `pack.mcmeta` expansion with actual `gradle.properties` parses successfully as TOML/JSON with no residual placeholders and produces the intended NeoForge/Minecraft ranges and pack format.
+
+This evidence substantially reduces static/configuration uncertainty but does **not** replace the committed Gradle/JUnit stack, NeoForge runtime, GameTest server or dedicated-server save/reload acceptance.
 
 ## Current external verification blocker
 
@@ -102,7 +104,7 @@ A separate planning cycle was removed: Stage 05 now owns only the generic Flame 
 - the local fallback environment cannot resolve `services.gradle.org` and has no usable Gradle/NeoForge cache;
 - because no available real executor can start the build, these failures are not evidence of a failing Gradle build, unit test, GameTest or server reload test.
 
-Static review while Actions was unavailable has already caught and corrected multiple real defects: NeoGradle GameTest force-exit behavior, legacy NeoForge dependency metadata, noncanonical abbreviated Gradle launchers, missing reload proof, missing `runServer` stdin forwarding, lack of headless server argument, weak process-tree timeout handling, missing Gradle distribution checksum, missing repository license/artifact notices, weak JAR metadata validation, unenforced architecture boundaries and cross-stage progression/ritual ownership cycles. All corrections still require executable final-HEAD verification.
+Static review while Actions was unavailable caught and corrected multiple real defects: NeoGradle GameTest force-exit behavior, legacy NeoForge dependency metadata, noncanonical abbreviated Gradle launchers, missing reload proof, missing `runServer` stdin forwarding, lack of headless server argument, weak process-tree timeout handling, missing Gradle distribution checksum, missing repository license/artifact notices, weak JAR metadata validation, unenforced architecture boundaries and cross-stage progression/ritual ownership cycles. All corrections still require executable final-HEAD verification.
 
 ## Immediate next step
 
