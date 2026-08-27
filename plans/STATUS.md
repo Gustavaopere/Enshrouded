@@ -5,7 +5,7 @@ Last structural update: 2026-08-27.
 ## Current checkpoint
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined from repository base `753021c46ddc5b8ee25a6ab586cfc9b8c4a8de88`.
-- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. Acceptance is blocked by two explicit conditions: GitHub Actions jobs still terminate before checkout with `steps=null`, and the newly reviewed Foundation-owned `ProgressionOwnerResolver` / `FlamePassageQuery` contracts still require test-first implementation once a RED can be observed. Do not merge or rename tasks with `✅-` until those contracts exist and all final gates are GREEN.
+- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. The previously missing Foundation-owned `ProgressionOwnerResolver` / `FlamePassageQuery` boundaries are now implemented after an isolated Java 21 RED -> GREEN cycle. Acceptance remains blocked because GitHub Actions jobs still terminate before checkout with `steps=null`, so the committed Gradle/JUnit, NeoForge build, GameTest and dedicated-server gates have not executed on the final HEAD. Do not merge or rename tasks with `✅-` until all final gates are GREEN.
 - [ ] 01 Shroud Field — not implemented.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
@@ -34,14 +34,18 @@ Key audited implementation commits include:
 - `8294d6847bc77898177bf96c65269ae0e3aa2454` / `ac5f957fa3b890038d60c4146443722d8a599292` — architecture guard keeps optional providers out of the core API and client-only Minecraft classes out of common/server code;
 - `85803b249f900f5e21338f89d63265e34d0bdfeb` — expanded stable-id/value contract coverage for player/team/world progression owners, invalid UUIDs and Shroud intensity edge cases;
 - `5377ecf6effb23a90517dfc44c897d0c5918bfa9` — public API shape regression tests freeze the existing Shroud/mutation/magic/Lich provider boundaries;
-- `fc9eea10c6f20584ddab8d51adf9272b9b43daa2` — lightweight CI harness prerequisite gate without pipefail/SIGPIPE ambiguity.
+- `fc9eea10c6f20584ddab8d51adf9272b9b43daa2` — lightweight CI harness prerequisite gate without pipefail/SIGPIPE ambiguity;
+- `c714af1db5256537ea5e8a9f89c680f2c3e32d6a` — progression owner/passage RED checkpoint committed before production interfaces existed;
+- `66d4e5c23771792df15b1548a1e45e835bd1b9d1` — Foundation `ProgressionOwnerResolver` contract and standalone UUID owner resolver;
+- `d9e5edc8a413a5034475914b671a4d7f13d97be5` — Foundation `FlamePassageQuery` and standalone Passage Level 1 fallback;
+- `5fc6f0dff7a0a6f88a0466bdf2228cc499a8b821` / `9347a8299a353849e84eb2d673f05889fc7cbc20` — permanent `ProgressionBoundaryTest` promoted after isolated GREEN and temporary RED-named test removed.
 
 Draft PR: #2 — `Foundation: scaffold, contracts, provenance and test infrastructure`.
 
 Implemented scope includes:
 
 - NeoForge 1.21.1 / Java 21 project scaffold;
-- existing stable Enshrouded-owned domain contracts;
+- stable Enshrouded-owned domain contracts, including owner/passage read boundaries required by Deadly Shroud;
 - upstream provenance and current-pack inventory;
 - deterministic unit-test fixtures and contract tests;
 - executable exclusion guard keeping Spore/Infnexus out of core/build configuration;
@@ -62,19 +66,20 @@ Implemented scope includes:
 - production JAR contract embeds `LICENSE` and `THIRD_PARTY_NOTICES.md` and rejects unexpanded metadata placeholders or leaked GameTest classes;
 - CI verifies shell harness prerequisites, wrapper provenance/distribution checksum, unit tests, diff sanity, NeoForge build, production JAR contents, GameTests and the two-boot reload scenario.
 
-## Foundation contract refinement still open
+## Foundation progression-boundary TDD evidence
 
-Reviewed cross-stage dependencies exposed a contract ownership bug before Stage 03/05 implementation:
+Architecture review exposed the former Stage 03 -> Stage 05 passage-query stub dependency. `DECISIONS.md` decision 31 now makes the two read boundaries Foundation-owned:
 
-- `ProgressionOwnerResolver` and `FlamePassageQuery` are now Foundation-owned per `DECISIONS.md` decision 31;
-- Foundation standalone behavior is player UUID ownership + Passage Level 1;
-- Stage 03 consumes these interfaces directly and must not create a Stage 05 stub;
-- Stage 05 supplies the persistence-backed `FlamePassageService` through the same interface;
-- Stage 08 may substitute `FtbTeamsOwnerResolver` without changing exposure/progression consumers;
-- `plans/PENDING.md` tracks implementation as `ENSH-L1-FLAME-PASSAGE-001`;
-- production implementation is deliberately deferred until a test RED can be observed, preserving the repository's TDD rule.
+- `ProgressionOwnerResolver.resolve(UUID)`;
+- `FlamePassageQuery.passageLevel(ProgressionOwner)`.
 
-A separate planning cycle was also removed: Stage 05 now owns only the generic Flame ritual registry/executor/checkpoint engine, while Stage 06 owns the authentic first Lich Skull and concrete `enshrouded:lich_manifestation_1` binding. The branch order remains causal and no 05 <-> 06 circular dependency remains.
+The exact committed RED test source from `c714af1db5256537ea5e8a9f89c680f2c3e32d6a` was executed under Java 21 outside the repository using only a temporary JUnit-compatible harness. Before production implementation, both test methods failed exclusively with the expected `ClassNotFoundException` for the missing interfaces. After the two minimal production interfaces/defaults were committed, the same test passed both methods. The promoted permanent `ProgressionBoundaryTest` also passed both methods in the same isolated Java 21 environment.
+
+This is valid TDD evidence for the pure-Java boundary only. It does not replace the committed Gradle/JUnit stack or any NeoForge runtime gate.
+
+`plans/PENDING.md` keeps `ENSH-L1-FLAME-PASSAGE-001` open for cross-stage closure: Stage 03 must consume the Foundation interfaces directly, Stage 05 must prove its persistence-backed passage implementation through the same boundary, and Stage 08 may substitute an FTB Teams-aware resolver without changing consumers.
+
+A separate planning cycle was removed: Stage 05 now owns only the generic Flame ritual registry/executor/checkpoint engine, while Stage 06 owns the authentic first Lich Skull and concrete `enshrouded:lich_manifestation_1` binding. The branch order remains causal and no 05 <-> 06 circular dependency remains.
 
 ## Structural evidence while Actions is unavailable
 
@@ -84,7 +89,8 @@ A separate planning cycle was also removed: Stage 05 now owns only the generic F
 - NeoForge 1.21.1 documentation confirms `@GameTestHolder(enshrouded)` + `@PrefixGameTestTemplate(false)` resolves `foundation_empty` to the committed `data/enshrouded/structure/foundation_empty.nbt` template;
 - NeoForge 1.21.1 API references confirm the GameTest helper methods used by Foundation and `MinecraftServer.saveEverything(boolean, boolean, boolean)` signatures;
 - official Gradle checksum reference confirms the committed Gradle 8.14 binary distribution SHA-256;
-- these are structural/control-flow/API checks only and do not replace a real Minecraft/NeoForge runner.
+- pure-Java progression boundary RED -> GREEN was executed locally under Java 21 with the exact committed test logic;
+- these structural/control-flow/API/pure-Java checks do not replace a real Minecraft/NeoForge runner.
 
 ## Current external verification blocker
 
@@ -100,7 +106,7 @@ Static review while Actions was unavailable has already caught and corrected mul
 
 ## Immediate next step
 
-When a real runner becomes available, first implement `ProgressionOwnerResolver` and `FlamePassageQuery` test-first and observe the RED/GREEN cycle. Then execute the final branch HEAD through wrapper integrity, unit tests, diff sanity, build/JAR sanity, GameTests and the two-boot scoreboard save/reload harness. If any code-level failure appears, fix that failure first. Only after all Foundation contracts and gates pass may the four Foundation tasks be renamed with `✅-`, this status become complete, PR #2 be marked ready and merged, and `feat/01-shroud-state` be created from the resulting latest `main`.
+Run the final Foundation HEAD through the actual committed pipeline as soon as GitHub can initialize a runner: shell harness prerequisites, wrapper integrity, `./gradlew test`, diff sanity, NeoForge build/JAR sanity, GameTests and the two-boot scoreboard save/reload harness. If any code-level failure appears, fix that failure first. Only after all Foundation gates pass may the four Foundation tasks be renamed with `✅-`, this status become complete, PR #2 be marked ready and merged, and `feat/01-shroud-state` be created from the resulting latest `main`.
 
 ## Level 1 release gate
 
