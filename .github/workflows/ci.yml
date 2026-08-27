@@ -32,15 +32,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Set up Gradle
+      - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.14'
           cache-read-only: false
 
-      - name: Generate Gradle wrapper bootstrap artifact
-        if: github.ref == 'refs/heads/round-1-foundation'
-        run: gradle --no-daemon wrapper --gradle-version 8.14 --distribution-type bin
+      - name: Verify Gradle wrapper
+        run: ./gradlew --no-daemon --version
 
       - name: Unit tests
         run: ./gradlew --no-daemon test
