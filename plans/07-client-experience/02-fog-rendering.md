@@ -9,11 +9,12 @@
 ## Files
 
 - Create `src/main/java/com/gustavaopere/enshrouded/client/render/*`.
-- Create client config/data profiles for ordinary and Deadly visuals.
+- Create data/color profiles for ordinary and Deadly visuals.
+- Add fog-specific values to the shared `EnshroudedClientConfig` established by Task 01; do not register a second client config.
 
 ## Dependencies
 
-- 01 HUD/client Shroud state.
+- 01 HUD/client Shroud state and shared client-config seam.
 
 ## Implementation contract
 
@@ -21,11 +22,13 @@
 - Fog density/color interpolates across zone edges to avoid single-tick flashing.
 - Implementation uses supported NeoForge 1.21.1 fog/render events and remains compatible with Sodium-style renderer replacements as far as those hooks allow.
 - No mandatory dependency on transitive Veil.
+- Fog intensity/enabled settings are read from the already-registered shared client config; fog code does not own config persistence or gameplay state.
 - Disabling enhanced fog leaves HUD/particles sufficient to play.
 
 ## TDD / verification
 
 - [ ] Client smoke crosses zone boundaries repeatedly without render-state leakage.
+- [ ] Unit/client test shared-config fog clamping and runtime reload propagation.
 - [ ] Performance test records frame/render-hook overhead with fog enabled/disabled.
 - [ ] Dedicated server verifies no client render class is loaded server-side.
 
@@ -37,4 +40,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Ordinary and Deadly Shroud are visually unmistakable, smooth at boundaries and server-safe.
+**Acceptance:** Ordinary and Deadly Shroud are visually unmistakable, smooth at boundaries and server-safe while remaining controlled by the single Stage 07 client-config seam.
