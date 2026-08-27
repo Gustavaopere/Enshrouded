@@ -18,7 +18,8 @@
 ## Implementation contract
 
 - Use official/stable damage tags/APIs where available; otherwise classify narrowly by registry IDs/types with version-gated probes.
-- Adapters return classification evidence only; `MagicResistanceService` remains the single reducer.
+- Adapters and `CompositeMagicDamageClassifier` return classification evidence only; they never apply damage reduction themselves.
+- `MagicResistanceService` remains the single reducer and consumes the final Enshrouded-owned `MagicDamageClassification` exactly once per damage event.
 - Unknown spell sources fail to core default rather than being automatically labeled magical by namespace alone unless evidence justifies it.
 - Compatibility targets current pack Ars Nouveau 5.13.0 and Iron's Spells 3.16.3, with absence-safe startup.
 
@@ -26,7 +27,8 @@
 
 - [ ] Integration tests for representative Ars and Iron spell damage classify as magic.
 - [ ] Physical melee/projectile from those mods remains correctly classified when not magical.
-- [ ] Prove composite classifier invokes resistance exactly once.
+- [ ] Unit/integration test composite classification merges adapter evidence without invoking resistance/damage mutation.
+- [ ] Combat integration test proves `MagicResistanceService` consumes the final classification and applies resistance exactly once even when multiple adapters contribute evidence.
 
 ## Merge gate
 
@@ -36,4 +38,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Corrupted-mob magic resistance behaves correctly with the pack’s major magic mods and remains valid when either is removed.
+**Acceptance:** Corrupted-mob magic resistance behaves correctly with the pack’s major magic mods, classification never becomes a second reducer, and standalone behavior remains valid when either integration is removed.
