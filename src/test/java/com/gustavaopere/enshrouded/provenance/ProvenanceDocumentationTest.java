@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,6 +35,32 @@ final class ProvenanceDocumentationTest {
         assertTrue(packText.contains("Ars Zero 2.0.2"));
         assertTrue(packText.contains("Spore 2.2.0j — excluded"));
         assertTrue(packText.contains("Infnexus 2.0.4 — excluded"));
+    }
+
+    @Test
+    void excludedFungusModsNeverEnterBuildOrProductionSources() throws IOException {
+        String buildText = Files.readString(ROOT.resolve("build.gradle")).toLowerCase(Locale.ROOT);
+        String propertiesText = Files.readString(ROOT.resolve("gradle.properties")).toLowerCase(Locale.ROOT);
+        assertFalse(buildText.contains("spore"), "Spore must not be a build dependency");
+        assertFalse(buildText.contains("infnexus"), "Infnexus must not be a build dependency");
+        assertFalse(propertiesText.contains("spore"), "Spore must not be a build property/dependency");
+        assertFalse(propertiesText.contains("infnexus"), "Infnexus must not be a build property/dependency");
+
+        Path sourceRoot = ROOT.resolve("src/main/java");
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            List<Path> forbidden = paths
+                    .filter(path -> path.toString().endsWith(".java"))
+                    .filter(path -> {
+                        try {
+                            String text = Files.readString(path).toLowerCase(Locale.ROOT);
+                            return text.contains("spore") || text.contains("infnexus");
+                        } catch (IOException exception) {
+                            throw new RuntimeException(exception);
+                        }
+                    })
+                    .toList();
+            assertTrue(forbidden.isEmpty(), () -> "Excluded fungus integration leaked into production sources: " + forbidden);
+        }
     }
 
     @Test
