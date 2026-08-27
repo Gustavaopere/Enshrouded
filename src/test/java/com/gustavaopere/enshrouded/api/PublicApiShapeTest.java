@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.api.combat.MagicDamageClassifier;
 import com.gustavaopere.enshrouded.api.progression.FlamePassageQuery;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwnerResolver;
+import com.gustavaopere.enshrouded.api.shroud.FlameWardQuery;
 import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
 import com.gustavaopere.enshrouded.api.shroud.MutationKind;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
@@ -58,6 +59,19 @@ final class PublicApiShapeTest {
         assertFunctionalInterfaceHasSingleAbstractMethod(MutationAuthority.class, "canMutate");
         assertEquals(0, MutationAuthority.class.getDeclaredFields().length,
                 "MutationAuthority must not own mutable global state");
+    }
+
+    @Test
+    void flameWardQueryShapeStaysSpatialAndReadOnly() throws Exception {
+        Method suppresses = FlameWardQuery.class.getDeclaredMethod("suppresses", ServerLevel.class, BlockPos.class);
+        Method none = FlameWardQuery.class.getDeclaredMethod("none");
+
+        assertEquals(boolean.class, suppresses.getReturnType());
+        assertEquals(FlameWardQuery.class, none.getReturnType());
+        assertTrue(Modifier.isStatic(none.getModifiers()));
+        assertFunctionalInterfaceHasSingleAbstractMethod(FlameWardQuery.class, "suppresses");
+        assertEquals(0, FlameWardQuery.class.getDeclaredFields().length,
+                "FlameWardQuery must remain a stateless read boundary");
     }
 
     @Test
