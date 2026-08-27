@@ -36,8 +36,9 @@
 - [ ] Write codec/ID round-trip unit tests for severity and owner keys.
 - [ ] Write contract tests proving query/mutation/combat interfaces are side-effect free at the value layer.
 - [ ] Freeze public API shapes for the cross-stage interfaces.
-- [ ] Add RED tests for `ProgressionOwnerResolver` and `FlamePassageQuery`, including standalone UUID ownership and Level 1 fallback behavior, before production implementation.
-- [ ] Verify RED before implementations exist, then GREEN with the minimal records/interfaces.
+- [x] Add RED test source for `ProgressionOwnerResolver` and `FlamePassageQuery`, including standalone UUID ownership and Level 1 fallback behavior, before production implementation — commit `c714af1db5256537ea5e8a9f89c680f2c3e32d6a`.
+- [ ] Observe that RED inside JUnit before production implementation.
+- [ ] Implement the minimal records/interfaces/defaults and verify GREEN.
 
 ## Current implementation checkpoint — 2026-08-27
 
@@ -53,13 +54,15 @@ Existing Enshrouded-owned contracts are present under `src/main/java/com/gustava
 - `ArchitectureBoundaryTest` rejects optional/foreign implementation imports from `api/` while allowing only Java/Mojang/Minecraft/NeoForge/annotations/Enshrouded platform namespaces;
 - the same architecture guard rejects `net.minecraft.client.*` references from common/server production code outside the future dedicated `client/` package.
 
-### Newly clarified Foundation contract still pending implementation
+### Progression boundary RED checkpoint
 
-`DECISIONS.md` decision 31 moved `ProgressionOwnerResolver` and `FlamePassageQuery` ownership into Foundation to remove the former Stage 03 -> Stage 05 stub dependency. Their production types are **not implemented yet** because the project requires test-first development and the current GitHub Actions outage prevents observing the required RED. `plans/PENDING.md` tracks this as `ENSH-L1-FLAME-PASSAGE-001`.
+`DECISIONS.md` decision 31 moved `ProgressionOwnerResolver` and `FlamePassageQuery` ownership into Foundation to remove the former Stage 03 -> Stage 05 stub dependency. `plans/PENDING.md` tracks this as `ENSH-L1-FLAME-PASSAGE-001`.
 
 The resolver boundary is intentionally UUID-based rather than `ServerPlayer`-based so it remains unit-testable and runtime-agnostic while still allowing a Stage 08 adapter to map the UUID into FTB Teams state.
 
-Do not accept this task until those two contracts and their standalone Level 1 defaults are implemented test-first and the final-HEAD suite executes GREEN.
+`ProgressionBoundaryRedTest` was committed at `c714af1db5256537ea5e8a9f89c680f2c3e32d6a`. It uses reflection so test sources compile while the two production classes are absent. The expected RED is `ClassNotFoundException` for the missing interfaces. Workflow `33108358453` did **not** reach JUnit; its job `98644230193` again terminated before checkout with `steps=null`. Therefore the RED is prepared but **not observed**, and production implementation remains prohibited by the project TDD rule.
+
+Do not accept this task until the RED is observed, the two contracts/defaults are implemented, and the final-HEAD suite executes GREEN.
 
 ## Merge gate
 
