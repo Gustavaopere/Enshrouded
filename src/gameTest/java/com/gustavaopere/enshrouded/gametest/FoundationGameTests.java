@@ -17,7 +17,7 @@ public final class FoundationGameTests {
     @GameTest(template = "foundation_empty")
     public static void foundationTemplateAndServerLevelAreAvailable(GameTestHelper helper) {
         helper.assertTrue(helper.getLevel() != null, "GameTest must expose a server level");
-        helper.assertBlockPresent(Blocks.STONE, new BlockPos(0, 0, 0));
+        helper.assertBlockPresent(Blocks.STONE, new BlockPos(1, 0, 1));
         helper.succeed();
     }
 }
