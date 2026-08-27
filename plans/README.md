@@ -49,10 +49,10 @@ Canonical implementation sequence:
 4. `feat/01-frontier-expansion`
 5. `feat/01-zone-query-sync`
 6. `feat/01-core-seeding`
-7. `feat/02-materialization-rules`
-8. `feat/02-corruption-growths`
-9. `feat/02-purification-regression`
-10. `feat/02-terrain-safety`
+7. `feat/02-terrain-safety`
+8. `feat/02-materialization-rules`
+9. `feat/02-corruption-growths`
+10. `feat/02-purification-regression`
 11. `feat/03-exposure-state`
 12. `feat/03-madness`
 13. `feat/03-deadly-shroud`
@@ -99,7 +99,7 @@ A branch may be split only when the split preserves this causal order and each r
 
 ## Architecture order
 
-`00-foundation` establishes build, tests, contracts and upstream provenance. `01-shroud-field` creates the authoritative logical infestation. `02-terrain-corruption` materializes that state safely. `03-exposure` turns Shroud severity into player survival gameplay. `04-corrupted-ecology` applies persistent corruption to creatures. `05-flame-progression` creates protection and progression. `06-lich-story` supplies the recurring antagonist and Level 1 reward. `07-client-experience` communicates all server state. `08-integrations` binds verified mods without making them core dependencies. `09-hardening` proves the whole Level 1 vertical slice.
+`00-foundation` establishes build, tests, contracts and upstream provenance. `01-shroud-field` creates the authoritative logical infestation. `02-terrain-corruption` establishes mutation safety first, then materializes that state through the pre-existing authority. `03-exposure` turns Shroud severity into player survival gameplay. `04-corrupted-ecology` applies persistent corruption to creatures. `05-flame-progression` creates protection and progression. `06-lich-story` supplies the recurring antagonist and Level 1 reward. `07-client-experience` communicates all server state. `08-integrations` binds verified mods without making them core dependencies. `09-hardening` proves the whole Level 1 vertical slice.
 
 ## Source strategy
 
