@@ -70,11 +70,13 @@ final class ArchitectureBoundaryTest {
     }
 
     private static boolean isAllowedCoreApiImport(String imported) {
+        if (imported.startsWith("com.gustavaopere.enshrouded.")) {
+            return imported.startsWith("com.gustavaopere.enshrouded.api.");
+        }
         return imported.startsWith("java.")
                 || imported.startsWith("org.jetbrains.annotations.")
                 || imported.startsWith("com.mojang.")
                 || imported.startsWith("net.minecraft.")
-                || imported.startsWith("net.neoforged.")
-                || imported.startsWith("com.gustavaopere.enshrouded.");
+                || imported.startsWith("net.neoforged.");
     }
 }
