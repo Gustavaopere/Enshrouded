@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ProgressionBoundaryTest {
@@ -19,6 +20,7 @@ final class ProgressionBoundaryTest {
         UUID playerId = UUID.fromString("c6a9f9cf-21cb-4d35-b1ae-ad37445b0e96");
 
         assertEquals(ProgressionOwner.player(playerId), resolver.resolve(playerId));
+        assertThrows(NullPointerException.class, () -> resolver.resolve(null));
     }
 
     @Test
@@ -30,5 +32,6 @@ final class ProgressionBoundaryTest {
                 UUID.fromString("2926404d-b455-488d-b0c8-5b390cb6e818"))));
         assertEquals(1, query.passageLevel(ProgressionOwner.team("ftb:builders")));
         assertEquals(1, query.passageLevel(ProgressionOwner.world("minecraft:overworld")));
+        assertThrows(NullPointerException.class, () -> query.passageLevel(null));
     }
 }
