@@ -2,6 +2,9 @@ package com.gustavaopere.enshrouded.api;
 
 import com.gustavaopere.enshrouded.api.combat.MagicDamageClassification;
 import com.gustavaopere.enshrouded.api.combat.MagicDamageClassifier;
+import com.gustavaopere.enshrouded.api.progression.FlamePassageQuery;
+import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
+import com.gustavaopere.enshrouded.api.progression.ProgressionOwnerResolver;
 import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
 import com.gustavaopere.enshrouded.api.shroud.MutationKind;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
@@ -55,6 +58,32 @@ final class PublicApiShapeTest {
         assertFunctionalInterfaceHasSingleAbstractMethod(MutationAuthority.class, "canMutate");
         assertEquals(0, MutationAuthority.class.getDeclaredFields().length,
                 "MutationAuthority must not own mutable global state");
+    }
+
+    @Test
+    void progressionOwnerResolverShapeStaysUuidBasedAndProviderNeutral() throws Exception {
+        Method resolve = ProgressionOwnerResolver.class.getDeclaredMethod("resolve", UUID.class);
+        Method standalone = ProgressionOwnerResolver.class.getDeclaredMethod("standalone");
+
+        assertEquals(ProgressionOwner.class, resolve.getReturnType());
+        assertEquals(ProgressionOwnerResolver.class, standalone.getReturnType());
+        assertTrue(Modifier.isStatic(standalone.getModifiers()));
+        assertFunctionalInterfaceHasSingleAbstractMethod(ProgressionOwnerResolver.class, "resolve");
+        assertEquals(0, ProgressionOwnerResolver.class.getDeclaredFields().length,
+                "ProgressionOwnerResolver must remain a stateless provider-neutral boundary");
+    }
+
+    @Test
+    void flamePassageQueryShapeRemainsReadOnlyAndOwnerBased() throws Exception {
+        Method passageLevel = FlamePassageQuery.class.getDeclaredMethod("passageLevel", ProgressionOwner.class);
+        Method fallback = FlamePassageQuery.class.getDeclaredMethod("levelOneFallback");
+
+        assertEquals(int.class, passageLevel.getReturnType());
+        assertEquals(FlamePassageQuery.class, fallback.getReturnType());
+        assertTrue(Modifier.isStatic(fallback.getModifiers()));
+        assertFunctionalInterfaceHasSingleAbstractMethod(FlamePassageQuery.class, "passageLevel");
+        assertEquals(0, FlamePassageQuery.class.getDeclaredFields().length,
+                "FlamePassageQuery must remain a stateless read boundary");
     }
 
     @Test
