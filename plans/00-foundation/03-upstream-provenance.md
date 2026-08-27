@@ -37,7 +37,8 @@ Implemented on `round-1-foundation`:
 - Sculk Horde source snapshot/licensing and Ars Zero version/licensing/integration strategy are pinned;
 - Spore and Infnexus are recorded only as explicit exclusions and are not core dependencies, providers or design authorities;
 - the compatibility inventory records current optional integration candidates without promoting them to mandatory dependencies;
-- `ProvenanceDocumentationTest` verifies required documents, audited source/version markers, exclusion entries and all future `// UPSTREAM-DERIVED:` source markers against `THIRD_PARTY_NOTICES.md`.
+- `ProvenanceDocumentationTest` verifies required documents, audited source/version markers, exclusion entries and all future `// UPSTREAM-DERIVED:` source markers against `THIRD_PARTY_NOTICES.md`;
+- the same test now fails if `Spore` or `Infnexus` re-enter `build.gradle`, `gradle.properties` or production Java sources, turning the fungus exclusion into an executable regression guard rather than documentation only.
 
 No source-derived production code has entered the branch at this stage. Current final-HEAD GREEN verification remains blocked by GitHub Actions terminating before checkout, so this task stays open and unrenamed.
 
@@ -49,4 +50,4 @@ No source-derived production code has entered the branch at this stage. Current 
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** The repository contains an auditable source/integration inventory and no copied code can enter without provenance.
+**Acceptance:** The repository contains an auditable source/integration inventory, excluded fungus mods cannot silently enter core, and no copied code can enter without provenance.
