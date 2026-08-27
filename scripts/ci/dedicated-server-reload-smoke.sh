@@ -89,7 +89,7 @@ start_server() {
   exec 3<> "$FIFO"
   (
     cd "$ROOT"
-    timeout --kill-after="${KILL_AFTER_SECONDS}s" "${BOOT_TIMEOUT_SECONDS}s" \
+    exec timeout --kill-after="${KILL_AFTER_SECONDS}s" "${BOOT_TIMEOUT_SECONDS}s" \
       ./gradlew --no-daemon runServer < "$FIFO" > "$SERVER_LOG" 2>&1
   ) &
   SERVER_PID=$!
