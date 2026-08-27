@@ -10,6 +10,8 @@ This document records the modpack state used to design Enshrouded Level 1. Entri
 
 ## Verified integration candidates
 
+The audited current-pack Lich provider candidate is **Ars Zero 2.0.2**. It remains optional and must never become a core classloading dependency.
+
 | Mod | Pack version | Intended Enshrouded role | Core dependency? |
 | --- | --- | --- | --- |
 | Ars Nouveau | 5.13.0 | Optional magic-damage classification and later content bridge | No |
