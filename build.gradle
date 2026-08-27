@@ -52,6 +52,15 @@ runs {
     }
 }
 
+// NeoGradle creates runServer as a JavaExec task but does not forward stdin.
+// The dedicated-server reload harness needs console commands (save-all / stop),
+// so opt this one run task into the Gradle process stdin explicitly.
+tasks.withType(JavaExec).configureEach {
+    if (name == 'runServer') {
+        standardInput = System.in
+    }
+}
+
 configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
