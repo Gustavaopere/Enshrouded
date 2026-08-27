@@ -8,7 +8,8 @@
 
 ## Files
 
-- Create/expand `src/gametest/.../LevelOneScenarioGameTests.java`.
+- Create/expand `src/gameTest/java/com/gustavaopere/enshrouded/gametest/LevelOneScenarioGameTests.java` inside the existing Foundation `gameTest` source set; do not create a second `gametest` source root with different casing.
+- Add any required structures/resources under the matching existing `src/gameTest/resources/` source root.
 - Create `docs/testing/level1-matrix.md`.
 - Extend CI profiles/jobs.
 
@@ -23,11 +24,13 @@
 - Deadly Shroud remains gated at Flame 1 and Red Sludge is lethal.
 - Multiplayer scenario verifies independent/default owners and optional team owner behavior.
 - Server restart is exercised mid-expansion, mid-exposure, mid-purification and around encounter/reward boundaries.
+- Stage 09 extends the already-registered Foundation `gameTest` source set and namespace; it must not add a parallel source-set spelling/casing that Gradle/NeoGradle would ignore.
 
 ## TDD / verification
 
 - [ ] Run all unit tests.
 - [ ] Run all GameTests including full Level 1 scenario.
+- [ ] Verify `compileGameTestJava` and GameTest discovery include `LevelOneScenarioGameTests` from the canonical `src/gameTest` source set.
 - [ ] Run dedicated-server smoke standalone.
 - [ ] Run selected integration profile smoke tests and document any automation gaps with manual reproducible commands.
 
