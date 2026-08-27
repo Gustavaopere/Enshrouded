@@ -22,12 +22,8 @@ final class ArchitectureBoundaryTest {
         try (var paths = Files.walk(apiRoot)) {
             for (Path path : paths.filter(candidate -> candidate.toString().endsWith(".java")).toList()) {
                 for (String line : Files.readAllLines(path)) {
-                    String trimmed = line.trim();
-                    if (!trimmed.startsWith("import ")) {
-                        continue;
-                    }
-                    String imported = trimmed.substring("import ".length()).replace(";", "").trim();
-                    if (!isAllowedCoreApiImport(imported)) {
+                    String imported = importedType(line);
+                    if (imported != null && !isAllowedCoreApiImport(imported)) {
                         invalidImports.add(MAIN_JAVA.relativize(path) + " -> " + imported);
                     }
                 }
@@ -39,7 +35,7 @@ final class ArchitectureBoundaryTest {
     }
 
     @Test
-    void commonProductionCodeDoesNotImportMinecraftClientClasses() throws IOException {
+    void commonProductionCodeDoesNotReferenceMinecraftClientClasses() throws IOException {
         List<String> clientLeaks = new ArrayList<>();
 
         try (var paths = Files.walk(MAIN_JAVA)) {
@@ -48,17 +44,29 @@ final class ArchitectureBoundaryTest {
                 if (relative.getNameCount() > 0 && relative.getName(0).toString().equals("client")) {
                     continue;
                 }
+                int lineNumber = 0;
                 for (String line : Files.readAllLines(path)) {
-                    String trimmed = line.trim();
-                    if (trimmed.startsWith("import net.minecraft.client.")) {
-                        clientLeaks.add(relative + " -> " + trimmed);
+                    lineNumber++;
+                    if (line.contains("net.minecraft.client.")) {
+                        clientLeaks.add(relative + ":" + lineNumber + " -> " + line.trim());
                     }
                 }
             }
         }
 
         assertTrue(clientLeaks.isEmpty(),
-                () -> "Common/server production code imported client-only Minecraft classes: " + clientLeaks);
+                () -> "Common/server production code referenced client-only Minecraft classes: " + clientLeaks);
+    }
+
+    private static String importedType(String line) {
+        String trimmed = line.trim();
+        if (trimmed.startsWith("import static ")) {
+            return trimmed.substring("import static ".length()).replace(";", "").trim();
+        }
+        if (trimmed.startsWith("import ")) {
+            return trimmed.substring("import ".length()).replace(";", "").trim();
+        }
+        return null;
     }
 
     private static boolean isAllowedCoreApiImport(String imported) {
