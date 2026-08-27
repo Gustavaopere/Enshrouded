@@ -2,6 +2,10 @@
 
 This file records blockers that must not be silently papered over by later branches.
 
+## External verification blockers
+
+- `ENSH-CI-ACTIONS-001`: Foundation acceptance is blocked by GitHub Actions jobs terminating before runner initialization. Both push and pull-request runs create a `verify` job but expose `steps=null`; rerunning the job produces the same result. The latest controlled rerun on workflow run `33096521442` produced job `98609964540`, again `failure` with `steps=null`. GitHub Status also reports a current Billing disruption on 2026-08-27, but the repository APIs available here do not expose account billing/quota state, so no specific billing cause is asserted. This blocker is external to Gradle/test execution: no final-HEAD command has run. Do not mark Foundation complete, rename tasks with `✅-`, or create Stage 01 branches until a real runner executes the full merge gate GREEN.
+
 ## Initially open contracts
 
 - `ENSH-L1-CORE-TO-TERRAIN-001`: terrain materialization must consume the canonical Shroud field and never invent independent spread state.
