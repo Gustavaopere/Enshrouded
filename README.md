@@ -1,5 +1,5 @@
 # Enshrouded
 
-NeoForge 1.21.1 / Java 21 Minecraft mod implementing an expanding magical Shroud, timed exposure, corrupted ecology, Flame progression and a recurring Lich antagonist.
+Standalone NeoForge 1.21.1 implementation of an expanding magical Shroud, corruption systems, Flame progression and recurring Lich encounters.
 
-The canonical implementation roadmap is [`plans/README.md`](plans/README.md).
+Current development checkpoint: `00 — Foundation` is implemented on `round-1-foundation` / PR #2 but remains unaccepted until the final wrapper, unit, build/JAR, GameTest and two-boot dedicated-server reload gates execute GREEN.
