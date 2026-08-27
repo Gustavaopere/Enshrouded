@@ -35,41 +35,56 @@
 
 - [ ] Write codec/ID round-trip unit tests for severity and owner keys.
 - [ ] Write contract tests proving query/mutation/combat interfaces are side-effect free at the value layer.
-- [ ] Freeze public API shapes for the cross-stage interfaces.
+- [x] Freeze public API shapes for the cross-stage interfaces.
 - [x] Add RED test source for `ProgressionOwnerResolver` and `FlamePassageQuery`, including standalone UUID ownership and Level 1 fallback behavior, before production implementation — commit `c714af1db5256537ea5e8a9f89c680f2c3e32d6a`.
-- [ ] Observe that RED inside JUnit before production implementation.
-- [ ] Implement the minimal records/interfaces/defaults and verify GREEN.
+- [x] Observe that RED before production implementation: the exact committed test source was compiled/executed under Java 21 with a temporary JUnit-compatible harness outside the repository and both tests failed only with the expected `ClassNotFoundException` for the two absent interfaces.
+- [x] Implement the minimal interfaces/defaults and verify the same test GREEN in the isolated Java 21 harness.
 
 ## Current implementation checkpoint — 2026-08-27
 
-Existing Enshrouded-owned contracts are present under `src/main/java/com/gustavaopere/enshrouded/api/` with no optional-mod imports:
+Enshrouded-owned contracts are present under `src/main/java/com/gustavaopere/enshrouded/api/` with no optional-mod imports:
 
 - Shroud severity uses stable string IDs and `ShroudSample` validates finite normalized intensity, including rejection of NaN/infinite/out-of-range values;
 - `ShroudQuery` and `MutationAuthority` expose read/safety boundaries without implementing world mutation;
 - `ProgressionOwner` serializes stable player/team/world keys without importing FTB Teams, including namespaced ids containing `:` and invalid-key rejection;
+- `ProgressionOwnerResolver` is a UUID-based `@FunctionalInterface`; `standalone()` maps directly to `ProgressionOwner.player(UUID)` without runtime/player/FTB types;
+- `FlamePassageQuery` is a read-only `@FunctionalInterface`; `levelOneFallback()` validates its owner argument and returns stable Passage Level `1` for player/team/world owners;
 - magic classification is represented by Enshrouded-owned kind/confidence values, with `UNKNOWN` explicitly failing safe as non-magical;
 - `LichManifestationProvider` owns entity selection/spawn/matching only, while its contract explicitly leaves rewards/progression to the story runtime;
 - JUnit contract tests cover stable IDs, player/team/world owner round trips, invalid owner keys and value invariants;
 - `PublicApiShapeTest` freezes the exact public shapes of `ShroudQuery`, `MutationAuthority`, `MagicDamageClassifier` and `LichManifestationProvider`;
+- `ProgressionBoundaryTest` permanently verifies standalone UUID owner resolution and owner-agnostic Level 1 passage fallback;
 - `ArchitectureBoundaryTest` rejects optional/foreign implementation imports from `api/` while allowing only Java/Mojang/Minecraft/NeoForge/annotations/Enshrouded platform namespaces;
 - the same architecture guard rejects `net.minecraft.client.*` references from common/server production code outside the future dedicated `client/` package.
 
-### Progression boundary RED checkpoint
+### Progression boundary TDD evidence
 
-`DECISIONS.md` decision 31 moved `ProgressionOwnerResolver` and `FlamePassageQuery` ownership into Foundation to remove the former Stage 03 -> Stage 05 stub dependency. `plans/PENDING.md` tracks this as `ENSH-L1-FLAME-PASSAGE-001`.
+`DECISIONS.md` decision 31 moved `ProgressionOwnerResolver` and `FlamePassageQuery` ownership into Foundation to remove the former Stage 03 -> Stage 05 stub dependency. `plans/PENDING.md` tracks the remaining cross-stage consumption/persistence closure as `ENSH-L1-FLAME-PASSAGE-001`.
 
 The resolver boundary is intentionally UUID-based rather than `ServerPlayer`-based so it remains unit-testable and runtime-agnostic while still allowing a Stage 08 adapter to map the UUID into FTB Teams state.
 
-`ProgressionBoundaryRedTest` was committed at `c714af1db5256537ea5e8a9f89c680f2c3e32d6a`. It uses reflection so test sources compile while the two production classes are absent. The expected RED is `ClassNotFoundException` for the missing interfaces. Workflow `33108358453` did **not** reach JUnit; its job `98644230193` again terminated before checkout with `steps=null`. Therefore the RED is prepared but **not observed**, and production implementation remains prohibited by the project TDD rule.
+RED source commit: `c714af1db5256537ea5e8a9f89c680f2c3e32d6a`.
 
-Do not accept this task until the RED is observed, the two contracts/defaults are implemented, and the final-HEAD suite executes GREEN.
+Observed isolated RED under Java 21:
+
+- `standaloneOwnerResolverMapsUuidToPlayerOwner` -> `ClassNotFoundException: ...ProgressionOwnerResolver`;
+- `levelOnePassageFallbackIsOwnerAgnosticAndStable` -> `ClassNotFoundException: ...FlamePassageQuery`.
+
+Minimal production commits:
+
+- `66d4e5c23771792df15b1548a1e45e835bd1b9d1` — `ProgressionOwnerResolver`;
+- `d9e5edc8a413a5034475914b671a4d7f13d97be5` — `FlamePassageQuery`.
+
+The same test then passed both methods in the isolated Java 21 harness. The temporary RED-named test was promoted to permanent `ProgressionBoundaryTest` and the RED checkpoint file was removed.
+
+This isolated RED/GREEN proves only the pure-Java Foundation progression boundary. It does **not** replace `./gradlew test`, NeoForge build, GameTests or dedicated-server acceptance on the final branch HEAD.
 
 ## Merge gate
 
-- [ ] All task-specific tests are GREEN on the final branch HEAD.
+- [ ] All task-specific tests are GREEN on the final branch HEAD under the committed Gradle/JUnit stack.
 - [ ] `./gradlew test` is GREEN.
 - [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
-- [ ] `ProgressionOwnerResolver` and `FlamePassageQuery` Foundation contracts/defaults are implemented and GREEN.
+- [x] `ProgressionOwnerResolver` and `FlamePassageQuery` Foundation contracts/defaults are implemented and isolated RED -> GREEN is proven.
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
