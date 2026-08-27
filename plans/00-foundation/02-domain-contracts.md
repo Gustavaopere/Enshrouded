@@ -33,8 +33,8 @@
 
 ## TDD / verification
 
-- [ ] Write codec/ID round-trip unit tests for severity and owner keys.
-- [ ] Write contract tests proving query/mutation/combat interfaces are side-effect free at the value layer.
+- [x] Write codec/ID round-trip unit tests for severity and owner keys.
+- [x] Write contract tests proving query/mutation/combat interfaces are side-effect free at the value/API layer.
 - [x] Freeze public API shapes for the cross-stage interfaces.
 - [x] Add RED test source for `ProgressionOwnerResolver` and `FlamePassageQuery`, including standalone UUID ownership and Level 1 fallback behavior, before production implementation — commit `c714af1db5256537ea5e8a9f89c680f2c3e32d6a`.
 - [x] Observe that RED before production implementation: the exact committed test source was compiled/executed under Java 21 with a temporary JUnit-compatible harness outside the repository and both tests failed only with the expected `ClassNotFoundException` for the two absent interfaces.
@@ -77,7 +77,18 @@ Minimal production commits:
 
 The same test then passed both methods in the isolated Java 21 harness. The temporary RED-named test was promoted to permanent `ProgressionBoundaryTest` and the RED checkpoint file was removed.
 
-This isolated RED/GREEN proves only the pure-Java Foundation progression boundary. It does **not** replace `./gradlew test`, NeoForge build, GameTests or dedicated-server acceptance on the final branch HEAD.
+### Broader pure-Java verification while Actions is blocked
+
+A Java 21 micro-runner executed the current logical bodies of the Foundation tests that do not require Minecraft runtime behavior. Minecraft classes referenced only for API signature reflection were represented by empty same-name stubs; no Minecraft behavior was simulated.
+
+Result: **17 passed, 0 failed** across:
+
+- `DomainContractsTest` — 6/6;
+- `ProgressionBoundaryTest` — 2/2;
+- `PublicApiShapeTest` — 4/4;
+- `TestFixturesExecutionTest` — 5/5.
+
+This isolated evidence proves pure-Java value/API behavior only. It does **not** replace `./gradlew test`, NeoForge build, GameTests or dedicated-server acceptance on the final branch HEAD.
 
 ## Merge gate
 
