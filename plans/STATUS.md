@@ -1,11 +1,11 @@
 # Project Status
 
-Last structural update: 2026-08-26.
+Last structural update: 2026-08-27.
 
 ## Current checkpoint
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined from repository base `753021c46ddc5b8ee25a6ab586cfc9b8c4a8de88`.
-- [ ] 00 Foundation — not implemented.
+- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. Acceptance remains blocked because current GitHub Actions jobs terminate before checkout with no recorded steps, so the final unit/build/JAR/GameTest/dedicated-server gates have not executed on the current HEAD. Do not merge or rename tasks with `✅-` until those gates are GREEN.
 - [ ] 01 Shroud Field — not implemented.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
@@ -16,9 +16,36 @@ Last structural update: 2026-08-26.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
 
+## Foundation implementation checkpoint
+
+Branch: `round-1-foundation`
+
+Last code/CI HEAD before this status update: `db183f21d80ecaa88fcba33c25998350c6361759`.
+
+Draft PR: #2 — `Foundation: scaffold, contracts, provenance and test infrastructure`.
+
+Implemented scope includes:
+
+- NeoForge 1.21.1 / Java 21 project scaffold;
+- stable Enshrouded-owned domain contracts;
+- upstream provenance and current-pack inventory;
+- deterministic unit-test fixtures and contract tests;
+- GameTest source set, template and reusable world-level fixtures;
+- dedicated-server smoke verification path;
+- official Gradle 8.14 wrapper launchers and properties;
+- official `gradle-wrapper.jar`, whose Git blob SHA `1b33c55baabb587c669f562ae36f953de2481846` matches the Gradle `v8.14.0` upstream blob byte-for-byte;
+- CI verification commands routed through the committed `./gradlew` wrapper.
+
+Current external verification blocker:
+
+- push run `33093634341` on `db183f21d80ecaa88fcba33c25998350c6361759` terminated `failure` before checkout; its job has `steps=null`;
+- pull-request run `33093751380` for PR #2 terminated with the same `steps=null` pattern;
+- removing the workflow concurrency group was separately tested and did not change the failure mode, so that experiment was reverted;
+- because the runner never starts, these failures are not evidence of a failing Gradle build, unit test, GameTest or server smoke test.
+
 ## Immediate next step
 
-Create `round-1-foundation` from the latest `main` that contains this planning baseline. Implement `plans/00-foundation/01-build-scaffold.md` through the foundation merge gate before creating `feat/01-shroud-state`.
+Re-run PR #2 after GitHub Actions can allocate/initialize the job normally. If the final branch HEAD executes all verification steps GREEN, update the four Foundation task files with their actual evidence, rename them with `✅-`, update this status, mark PR #2 ready and merge it. If any code-level failure appears once the runner starts, fix that failure first. Only after the Foundation merge may `feat/01-shroud-state` be created from the resulting latest `main`.
 
 ## Level 1 release gate
 
