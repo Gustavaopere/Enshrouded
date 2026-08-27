@@ -1,0 +1,69 @@
+package com.gustavaopere.enshrouded.api;
+
+import com.gustavaopere.enshrouded.api.combat.MagicDamageClassification;
+import com.gustavaopere.enshrouded.api.combat.MagicDamageConfidence;
+import com.gustavaopere.enshrouded.api.combat.MagicDamageKind;
+import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
+import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
+import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.api.story.EncounterContext;
+import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+final class DomainContractsTest {
+    @Test
+    void shroudSeverityUsesStableIds() {
+        assertEquals("clear", ShroudSeverity.CLEAR.id());
+        assertEquals("shroud", ShroudSeverity.SHROUD.id());
+        assertEquals("deadly", ShroudSeverity.DEADLY.id());
+        assertEquals(Optional.of(ShroudSeverity.DEADLY), ShroudSeverity.fromId("deadly"));
+        assertEquals(Optional.empty(), ShroudSeverity.fromId("future-tier"));
+    }
+
+    @Test
+    void progressionOwnerRoundTripsWithoutExternalTeamTypes() {
+        UUID player = UUID.fromString("b23f4057-68c3-4a2f-839c-04998bd4ddda");
+        ProgressionOwner owner = ProgressionOwner.player(player);
+        assertEquals("player:b23f4057-68c3-4a2f-839c-04998bd4ddda", owner.stableKey());
+        assertEquals(owner, ProgressionOwner.parse(owner.stableKey()).orElseThrow());
+
+        ProgressionOwner team = ProgressionOwner.team("ftb:builders");
+        assertEquals(team, ProgressionOwner.parse(team.stableKey()).orElseThrow());
+        assertEquals(Optional.empty(), ProgressionOwner.parse("unknown:value"));
+    }
+
+    @Test
+    void shroudSampleRejectsImpossibleIntensity() {
+        UUID core = UUID.fromString("6745ac8a-04b4-45dd-8d56-7d1ec73c3f18");
+        ShroudSample sample = new ShroudSample(0.75f, ShroudSeverity.SHROUD, Optional.of(core), false);
+        assertEquals(0.75f, sample.intensity());
+        assertThrows(IllegalArgumentException.class,
+                () -> new ShroudSample(-0.01f, ShroudSeverity.SHROUD, Optional.empty(), false));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ShroudSample(1.01f, ShroudSeverity.DEADLY, Optional.empty(), false));
+    }
+
+    @Test
+    void magicClassificationKeepsConfidenceExplicit() {
+        MagicDamageClassification classification = new MagicDamageClassification(
+                MagicDamageKind.NECROTIC,
+                MagicDamageConfidence.CERTAIN);
+        assertTrue(classification.magical());
+        assertEquals(MagicDamageKind.NECROTIC, classification.kind());
+    }
+
+    @Test
+    void encounterContextRejectsNonPositiveManifestationLevels() {
+        EncounterContext context = new EncounterContext(
+                UUID.fromString("b4094537-860e-4e6d-ab11-d88942dbaae1"),
+                1,
+                42L);
+        assertEquals(1, context.manifestationLevel());
+        assertThrows(IllegalArgumentException.class,
+                () -> new EncounterContext(UUID.randomUUID(), 0, 42L));
+    }
+}
