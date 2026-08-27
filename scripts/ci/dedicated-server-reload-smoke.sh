@@ -92,6 +92,23 @@ start_server() {
 
 graceful_stop() {
   printf 'stop\n' >&3
+
+  local elapsed=0
+  while kill -0 "$SERVER_PID" 2>/dev/null; do
+    if (( elapsed >= 60 )); then
+      cat "$SERVER_LOG" 2>/dev/null || true
+      echo 'Timed out waiting for dedicated server to stop gracefully' >&2
+      kill "$SERVER_PID" 2>/dev/null || true
+      wait "$SERVER_PID" 2>/dev/null || true
+      exec 3>&-
+      rm -f "$FIFO"
+      SERVER_PID=""
+      return 1
+    fi
+    sleep 1
+    ((elapsed += 1))
+  done
+
   local status=0
   wait "$SERVER_PID" || status=$?
   exec 3>&-
