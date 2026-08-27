@@ -25,7 +25,7 @@
 - `ShroudQuery.sample(ServerLevel, BlockPos, Entity?)` is read-only and cannot load chunks.
 - `MutationAuthority.canMutate(ServerLevel, BlockPos, MutationKind)` is the only terrain safety gate.
 - `ProgressionOwner` has a stable string/UUID key independent of FTB Teams classes.
-- `ProgressionOwnerResolver.resolve(ServerPlayer)` maps a player to an Enshrouded-owned `ProgressionOwner`; the standalone implementation resolves to the player's UUID owner and Stage 08 may substitute a team-aware resolver.
+- `ProgressionOwnerResolver.resolve(UUID playerId)` maps a player UUID to an Enshrouded-owned `ProgressionOwner`; the standalone implementation returns `ProgressionOwner.player(playerId)` and Stage 08 may substitute a team-aware resolver.
 - `FlamePassageQuery.passageLevel(ProgressionOwner)` is a read-only Enshrouded-owned boundary. Foundation supplies a standalone Level 1 fallback returning passage level `1`; Stage 05 supplies the canonical persistence-backed implementation.
 - Stage 03 consumes only `ProgressionOwnerResolver` + `FlamePassageQuery`; it must not depend on Stage 05 implementation classes or scan altar blocks.
 - `MagicDamageClassifier.classify(DamageSource)` returns a core-owned classification/confidence contract.
@@ -36,7 +36,7 @@
 - [ ] Write codec/ID round-trip unit tests for severity and owner keys.
 - [ ] Write contract tests proving query/mutation/combat interfaces are side-effect free at the value layer.
 - [ ] Freeze public API shapes for the cross-stage interfaces.
-- [ ] Add RED tests for `ProgressionOwnerResolver` and `FlamePassageQuery`, including standalone player ownership and Level 1 fallback behavior, before production implementation.
+- [ ] Add RED tests for `ProgressionOwnerResolver` and `FlamePassageQuery`, including standalone UUID ownership and Level 1 fallback behavior, before production implementation.
 - [ ] Verify RED before implementations exist, then GREEN with the minimal records/interfaces.
 
 ## Current implementation checkpoint — 2026-08-27
@@ -56,6 +56,8 @@ Existing Enshrouded-owned contracts are present under `src/main/java/com/gustava
 ### Newly clarified Foundation contract still pending implementation
 
 `DECISIONS.md` decision 31 moved `ProgressionOwnerResolver` and `FlamePassageQuery` ownership into Foundation to remove the former Stage 03 -> Stage 05 stub dependency. Their production types are **not implemented yet** because the project requires test-first development and the current GitHub Actions outage prevents observing the required RED. `plans/PENDING.md` tracks this as `ENSH-L1-FLAME-PASSAGE-001`.
+
+The resolver boundary is intentionally UUID-based rather than `ServerPlayer`-based so it remains unit-testable and runtime-agnostic while still allowing a Stage 08 adapter to map the UUID into FTB Teams state.
 
 Do not accept this task until those two contracts and their standalone Level 1 defaults are implemented test-first and the final-HEAD suite executes GREEN.
 
