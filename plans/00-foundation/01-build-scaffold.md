@@ -30,6 +30,18 @@
 - [ ] Implement minimal scaffold and verify `./gradlew test` plus `./gradlew build` GREEN.
 - [ ] Run a dedicated-server smoke command/profile and verify registry/bootstrap reaches a clean stop rather than classloading client code.
 
+## Current implementation checkpoint — 2026-08-27
+
+Implemented on `round-1-foundation`:
+
+- Minecraft `1.21.1`, NeoForge `21.1.248`, Java 21 and mod id `enshrouded` are pinned in the build/metadata;
+- `Enshrouded`, `ModRegistries` and the initial config namespace exist without client-side imports in the common bootstrap path;
+- NeoForge dependency metadata uses the current 1.21.1 schema (`type="required"`) rather than the legacy `mandatory=true` form;
+- official Gradle 8.14 wrapper is committed, with executable Unix launcher and byte-identical upstream wrapper JAR (`1b33c55baabb587c669f562ae36f953de2481846`);
+- CI invokes verification through `./gradlew`, checks the built JAR and includes a dedicated-server startup smoke path.
+
+Historical runner evidence reached unit tests/build GREEN before the final wrapper/GameTest changes, but this does not satisfy final-HEAD acceptance. Current Actions jobs terminate before checkout with `steps=null`; therefore the RED/GREEN history and final dedicated-server gate cannot currently be re-proved on the branch HEAD. This task stays open and unrenamed.
+
 ## Merge gate
 
 - [ ] All task-specific tests are GREEN on the final branch HEAD.
