@@ -77,6 +77,19 @@ jobs:
           test -n "$JAR"
           jar tf "$JAR" | grep -Fx 'META-INF/neoforge.mods.toml'
           jar tf "$JAR" | grep -Fx 'com/gustavaopere/enshrouded/Enshrouded.class'
+          jar tf "$JAR" | grep -Fx 'LICENSE'
+          jar tf "$JAR" | grep -Fx 'THIRD_PARTY_NOTICES.md'
+
+          MODS_TOML="$(unzip -p "$JAR" META-INF/neoforge.mods.toml)"
+          grep -Fq 'modId="enshrouded"' <<<"$MODS_TOML"
+          grep -Fq 'license="BSD-2-Clause"' <<<"$MODS_TOML"
+          grep -Fq 'type="required"' <<<"$MODS_TOML"
+          if grep -Fq '${' <<<"$MODS_TOML"; then
+            echo 'Unexpanded placeholder leaked into neoforge.mods.toml'
+            printf '%s\n' "$MODS_TOML"
+            exit 1
+          fi
+
           if jar tf "$JAR" | grep -Fq 'com/gustavaopere/enshrouded/gametest/'; then
             echo 'GameTest-only classes leaked into the production JAR'
             exit 1
