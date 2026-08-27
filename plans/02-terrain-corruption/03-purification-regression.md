@@ -13,7 +13,8 @@
 
 ## Dependencies
 
-- 01 materialization rules.
+- `04 terrain safety` merged.
+- `01 materialization rules` merged.
 - 01 core lifecycle.
 
 ## Implementation contract
@@ -22,13 +23,15 @@
 - Regression ordering is deterministic and preferably retreats from frontier toward former core center.
 - Native growths are removed gradually when their logical cell clears.
 - Replaced natural blocks are restored only where a rule has an explicit safe reverse mapping and the current block still matches the expected corrupted state.
+- Every cleanup/restoration world mutation passes through the already-merged `MutationAuthority`; purification may be more conservative than corruption but may never bypass the same safety/claim/Sanctuary gate.
 - If a player changed a corrupted block after corruption, restoration fails closed rather than overwriting the player change.
 
 ## TDD / verification
 
 - [ ] Unit-test intensity decay and deterministic frontier-to-center regression.
+- [ ] Static/test scan proves restoration/removal mutation sinks route through `MutationAuthority`.
 - [ ] GameTest player-modified corrupted block is not overwritten during cleanup.
-- [ ] GameTest native growth disappears as the cell clears.
+- [ ] GameTest native growth disappears as the cell clears only when mutation is authorized.
 - [ ] Save/reload mid-purification resumes from persistent logical state without re-expansion.
 
 ## Merge gate
@@ -39,4 +42,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Destroyed cores cause visible gradual healing with no whole-region block snapshot and no unsafe overwrite of subsequent player edits.
+**Acceptance:** Destroyed cores cause visible gradual healing with no whole-region block snapshot, no unsafe overwrite of subsequent player edits and no cleanup path that bypasses canonical terrain safety.
