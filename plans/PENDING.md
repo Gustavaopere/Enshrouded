@@ -6,6 +6,10 @@ This file records blockers that must not be silently papered over by later branc
 
 - `ENSH-CI-ACTIONS-001`: Foundation acceptance is blocked by GitHub Actions jobs terminating before runner initialization. Enshrouded push and pull-request runs create a `verify` job but expose `steps=null`; reruns reproduce the same result. A private cross-repository control on `Gustavaopere/Volcanoes` (`33099719939` / job `98615923587`) showed the same `failure` + `steps=null` pattern during the same period, so the current blocker is not specific to Enshrouded's workflow or repository. The repository APIs available here do not expose account billing/quota state, so no specific billing cause is asserted. The conversation-local fallback also cannot perform a real NeoForge build because `services.gradle.org` is not resolvable and no suitable Gradle/NeoForge cache is present. This blocker is external to Gradle/test execution: no final-HEAD command has run on a real executor. Do not mark Foundation complete, rename tasks with `✅-`, or create Stage 01 branches until a real runner executes wrapper integrity, unit tests, diff sanity, NeoForge build/JAR sanity, GameTests and the two-boot dedicated-server save/reload harness GREEN.
 
+## Foundation-owned contract still to implement before acceptance
+
+- `ENSH-L1-FLAME-PASSAGE-001`: implement Foundation `ProgressionOwnerResolver` and `FlamePassageQuery` contracts per `DECISIONS.md` decision 31, with standalone player-UUID owner resolution and Level 1 passage fallback. This must be developed test-first once a RED can be observed. Stage 03 Deadly Shroud must consume these contracts directly; Stage 05 supplies the persistence-backed implementation; Stage 08 may substitute an FTB Teams-aware owner resolver. Do not create a Stage 05-owned stub or let Stage 03 depend on Stage 05 implementation classes.
+
 ## Initially open contracts
 
 - `ENSH-L1-CORE-TO-TERRAIN-001`: terrain materialization must consume the canonical Shroud field and never invent independent spread state.
