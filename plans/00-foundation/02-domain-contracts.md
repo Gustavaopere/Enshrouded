@@ -38,12 +38,14 @@
 
 The planned Enshrouded-owned contracts are present under `src/main/java/com/gustavaopere/enshrouded/api/` with no optional-mod imports:
 
-- Shroud severity uses stable string IDs and `ShroudSample` validates finite normalized intensity;
+- Shroud severity uses stable string IDs and `ShroudSample` validates finite normalized intensity, including rejection of NaN/infinite/out-of-range values;
 - `ShroudQuery` and `MutationAuthority` expose read/safety boundaries without implementing world mutation;
-- `ProgressionOwner` serializes stable player/team/world keys without importing FTB Teams;
-- magic classification is represented by Enshrouded-owned kind/confidence values;
+- `ProgressionOwner` serializes stable player/team/world keys without importing FTB Teams, including namespaced ids containing `:` and invalid-key rejection;
+- magic classification is represented by Enshrouded-owned kind/confidence values, with `UNKNOWN` explicitly failing safe as non-magical;
 - `LichManifestationProvider` owns entity selection/spawn/matching only, while its contract explicitly leaves rewards/progression to the story runtime;
-- JUnit contract tests cover stable IDs, owner round trips and value/interface invariants.
+- JUnit contract tests cover stable IDs, player/team/world owner round trips, invalid owner keys and value invariants;
+- `ArchitectureBoundaryTest` rejects optional/foreign implementation imports from `api/` while allowing only Java/Mojang/Minecraft/NeoForge/annotations/Enshrouded platform namespaces;
+- the same architecture guard rejects `net.minecraft.client.*` references from common/server production code outside the future dedicated `client/` package.
 
 No optional provider class is part of these core contracts. Current final-HEAD GREEN verification remains blocked by GitHub Actions terminating before checkout; therefore this task stays open and unrenamed despite the implementation being present.
 
