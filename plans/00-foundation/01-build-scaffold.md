@@ -38,9 +38,13 @@ Implemented on `round-1-foundation`:
 - `Enshrouded`, `ModRegistries` and the initial config namespace exist without client-side imports in the common bootstrap path;
 - NeoForge dependency metadata uses the current 1.21.1 schema (`type="required"`) rather than the legacy `mandatory=true` form;
 - official Gradle 8.14 wrapper is committed, with executable Unix launcher and byte-identical upstream wrapper JAR (`1b33c55baabb587c669f562ae36f953de2481846`);
-- CI invokes verification through `./gradlew`, checks the built JAR and includes a dedicated-server startup smoke path.
+- wrapper distribution is pinned to `gradle-8.14-bin.zip` with SHA-256 `61ad310d3c7d3e5da131b76bbf22b5a4c0786e9d892dae8c1658d4b484de3caa`;
+- project license is declared as `BSD-2-Clause` and a matching repository `LICENSE` is present;
+- production JAR packaging includes `LICENSE` and `THIRD_PARTY_NOTICES.md`;
+- CI invokes verification through `./gradlew` and validates wrapper provenance, distribution checksum, metadata expansion, required dependencies, license/notices packaging, absence of GameTest classes, and the common entrypoint;
+- dedicated-server verification is now the two-boot save/reload harness rather than startup-only smoke.
 
-Historical runner evidence reached unit tests/build GREEN before the final wrapper/GameTest changes, but this does not satisfy final-HEAD acceptance. Current Actions jobs terminate before checkout with `steps=null`; therefore the RED/GREEN history and final dedicated-server gate cannot currently be re-proved on the branch HEAD. This task stays open and unrenamed.
+Historical runner evidence reached unit tests/build GREEN before the final wrapper/GameTest/reload changes, but this does not satisfy final-HEAD acceptance. Current Actions jobs terminate before checkout with `steps=null`; therefore the RED/GREEN history and final dedicated-server gate cannot currently be re-proved on the branch HEAD. This task stays open and unrenamed.
 
 ## Merge gate
 
