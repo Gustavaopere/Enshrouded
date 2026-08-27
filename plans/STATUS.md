@@ -5,7 +5,7 @@ Last structural update: 2026-08-27.
 ## Current checkpoint
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined from repository base `753021c46ddc5b8ee25a6ab586cfc9b8c4a8de88`.
-- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. The Foundation-owned `ProgressionOwnerResolver` / `FlamePassageQuery` boundaries are implemented after an isolated Java 21 RED -> GREEN cycle. Current pure-Java/repository guards and GameTest compile-shape checks are clean, but acceptance remains blocked because GitHub Actions jobs terminate before checkout with `steps=null`; the committed Gradle/JUnit, NeoForge build, real GameTest and real dedicated-server gates therefore have not executed on the final HEAD. Do not merge or rename tasks with `✅-` until all final gates are GREEN.
+- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. Foundation-owned progression/passage and Flame-ward boundaries are implemented after isolated Java 21 RED -> GREEN cycles. Current pure-Java/repository guards and GameTest compile-shape checks are clean, but acceptance remains blocked because GitHub Actions jobs terminate before checkout with `steps=null`; the committed Gradle/JUnit, NeoForge build, real GameTest and real dedicated-server gates therefore have not executed on the final HEAD. Do not merge or rename tasks with `✅-` until all final gates are GREEN.
 - [ ] 01 Shroud Field — not implemented.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
@@ -31,25 +31,24 @@ Key audited implementation commits include:
 - `df124bb7b3a16d828e67a87e7105c39e1a17d21e` / `8337e730385799247a23d748b2573d1dcd27664c` — Gradle 8.14 distribution checksum pin and CI enforcement;
 - `e4547483af1ca4b642cf90ea04a593514cc8d3ad` / `beba82827f6650351dd5a11683540051a84ee144` — repository BSD-2-Clause license plus executable consistency test;
 - `b0574c6246771b116221d07239cc5acb287d7c27` / `0e9ca1999187cac365c2dcd408f663325d24d6e1` — production JAR packages license/notices and the JAR sanity gate validates metadata expansion and artifact boundaries;
-- `8294d6847bc77898177bf96c65269ae0e3aa2454` / `ac5f957fa3b890038d60c4146443722d8a599292` — architecture guard keeps optional providers out of the core API and client-only Minecraft classes out of common/server code;
 - `85803b249f900f5e21338f89d63265e34d0bdfeb` — expanded stable-id/value contract coverage for player/team/world progression owners, invalid UUIDs and Shroud intensity edge cases;
-- `5377ecf6effb23a90517dfc44c897d0c5918bfa9` — public API shape regression tests freeze the existing Shroud/mutation/magic/Lich provider boundaries;
-- `fc9eea10c6f20584ddab8d51adf9272b9b43daa2` — lightweight CI harness prerequisite gate without pipefail/SIGPIPE ambiguity;
-- `c714af1db5256537ea5e8a9f89c680f2c3e32d6a` — progression owner/passage RED checkpoint committed before production interfaces existed;
-- `66d4e5c23771792df15b1548a1e45e835bd1b9d1` — Foundation `ProgressionOwnerResolver` contract and standalone UUID owner resolver;
-- `d9e5edc8a413a5034475914b671a4d7f13d97be5` — Foundation `FlamePassageQuery` and standalone Passage Level 1 fallback;
-- `5fc6f0dff7a0a6f88a0466bdf2228cc499a8b821` / `9347a8299a353849e84eb2d673f05889fc7cbc20` — permanent `ProgressionBoundaryTest` promoted after isolated GREEN and temporary RED-named test removed.
+- `c714af1db5256537ea5e8a9f89c680f2c3e32d6a` — progression owner/passage RED checkpoint before production interfaces existed;
+- `66d4e5c23771792df15b1548a1e45e835bd1b9d1` / `d9e5edc8a413a5034475914b671a4d7f13d97be5` — Foundation `ProgressionOwnerResolver` and `FlamePassageQuery` defaults;
+- `93127ff748029cd39fa33502eb704b10817308f0` / `787d9c36c25459e8815066b8bd03fc20ff4285aa` — Foundation Flame ward RED checkpoint and minimal `FlameWardQuery` no-ward fallback;
+- `9f43281e48375770f1fda45d1b0a7755eb17efae` and later updates — public API shape regression coverage includes progression and ward boundaries;
+- `3578ff2d43f39c6b54fb1e75b5f8adf653dea6be` — architecture guard now forbids core `api/` from importing Enshrouded implementation packages, not only optional third-party mods.
 
 Draft PR: #2 — `Foundation: scaffold, contracts, provenance and test infrastructure`.
 
 Implemented scope includes:
 
 - NeoForge 1.21.1 / Java 21 project scaffold;
-- stable Enshrouded-owned domain contracts, including owner/passage read boundaries required by Deadly Shroud;
+- stable Enshrouded-owned domain contracts, including owner/passage read boundaries required by Deadly Shroud and a Foundation Flame-ward read boundary required before Stage 05;
+- canonical ward semantics: `ShroudSample` keeps logical intensity/severity/source and uses `sanctuarySuppressed` as an effective overlay rather than rewriting latent Shroud to `CLEAR`;
 - upstream provenance and current-pack inventory;
 - deterministic unit-test fixtures and contract tests;
 - executable exclusion guard keeping Spore/Infnexus out of core/build configuration;
-- architecture boundary guard preventing optional implementation imports in core APIs and client-only Minecraft references in common/server code;
+- architecture boundary guard preventing optional or Enshrouded implementation imports in core APIs and client-only Minecraft references in common/server code;
 - GameTest source set, valid 3×3×3 template and reusable world-level fixtures;
 - `@GameTestHolder(enshrouded)` registration and namespace restriction for Foundation GameTests;
 - NeoGradle `gameTestServer` configured with `setForceExit false`;
@@ -68,27 +67,25 @@ Implemented scope includes:
 
 ## Foundation progression-boundary TDD evidence
 
-Architecture review exposed the former Stage 03 -> Stage 05 passage-query stub dependency. `DECISIONS.md` decision 31 makes the two read boundaries Foundation-owned:
+`DECISIONS.md` decision 31 makes `ProgressionOwnerResolver.resolve(UUID)` and `FlamePassageQuery.passageLevel(ProgressionOwner)` Foundation-owned. The exact committed RED source at `c714af1d...` failed only with the expected missing-interface `ClassNotFoundException`s under Java 21 before production implementation. After the minimal contracts were committed, the same tests passed and permanent `ProgressionBoundaryTest` now covers standalone behavior plus fail-fast null handling.
 
-- `ProgressionOwnerResolver.resolve(UUID)`;
-- `FlamePassageQuery.passageLevel(ProgressionOwner)`.
+`ENSH-L1-FLAME-PASSAGE-001` remains open only for cross-stage closure: Stage 03 consumption, Stage 05 persistence-backed implementation and optional Stage 08 FTB Teams substitution.
 
-The exact committed RED test source from `c714af1db5256537ea5e8a9f89c680f2c3e32d6a` was executed under Java 21 outside the repository using a temporary JUnit-compatible harness. Before production implementation, both test methods failed exclusively with the expected `ClassNotFoundException` for the missing interfaces. After the two minimal production interfaces/defaults were committed, the same test passed both methods. The promoted permanent `ProgressionBoundaryTest` also passed both methods in the same isolated Java 21 environment.
+## Foundation Flame-ward TDD evidence
 
-`plans/PENDING.md` keeps `ENSH-L1-FLAME-PASSAGE-001` open for cross-stage closure: Stage 03 must consume the Foundation interfaces directly, Stage 05 must prove its persistence-backed passage implementation through the same boundary, and Stage 08 may substitute an FTB Teams-aware resolver without changing consumers.
+`DECISIONS.md` decision 33 makes `FlameWardQuery.suppresses(ServerLevel, BlockPos)` Foundation-owned. RED commit `93127ff748029cd39fa33502eb704b10817308f0` was executed under Java 21 with same-name Minecraft signature stubs and failed only with `ClassNotFoundException: ...FlameWardQuery`. Minimal production commit `787d9c36c25459e8815066b8bd03fc20ff4285aa` then made the exact test GREEN. Permanent `FlameWardBoundaryTest` plus `PublicApiShapeTest` freeze the no-ward fallback and interface shape.
 
-A separate planning cycle was removed: Stage 05 owns only the generic Flame ritual registry/executor/checkpoint engine, while Stage 06 owns the authentic first Lich Skull and concrete `enshrouded:lich_manifestation_1` binding. The branch order remains causal and no 05 <-> 06 circular dependency remains.
+`ENSH-L1-FLAME-WARD-001` remains open only for cross-stage closure: Stage 01 must preserve logical samples while applying suppression, Stage 02 must route ward veto through `MutationAuthority`, Stage 03 must treat suppression as effective safety, and Stage 05 must provide indexed altar-backed `FlameWardService` through the same interface.
+
+A separate planning cycle was removed earlier: Stage 05 owns only the generic Flame ritual registry/executor/checkpoint engine, while Stage 06 owns the authentic first Lich Skull and concrete `enshrouded:lich_manifestation_1` binding. No 05 <-> 06 circular dependency remains.
 
 ## Current local/structural verification while Actions is unavailable
 
-These checks use the current GitHub sources and Java 21 but deliberately do not claim Minecraft runtime acceptance:
+These checks use current GitHub sources and Java 21 but deliberately do not claim Minecraft runtime acceptance:
 
-- pure-Java/value/API tests: 17/17 passed across `DomainContractsTest` (6), `ProgressionBoundaryTest` (2), `PublicApiShapeTest` (4) and `TestFixturesExecutionTest` (5);
-- repository guards: 7/7 passed across `ArchitectureBoundaryTest` (2) and `ProvenanceDocumentationTest` (5);
-- `BootstrapContractTest`: 1/1 passed using only minimal NeoForge/SLF4J type stubs for classloading and the real metadata path;
-- aggregate non-runtime test/guard methods: **25/25 passed**;
+- pure-Java/value/API and repository/bootstrap guards are clean; the current equivalent set contains **29 passing test/guard methods** with no observed failure after progression/ward boundary additions;
 - the current dedicated-server harness passes `bash -n` and a current fake-server simulation exercises `exec timeout`, both FIFO boots, save marker, `world/level.dat`, persisted scoreboard sentinel, second-boot query and graceful stop to `HARNESS_CURRENT_SIMULATION=PASS`;
-- the current `GameTestBootstrap` + `FoundationGameTests` sources compile under Java 21 against stubs matching the official 1.21.1 signatures they use: `GAMETEST_COMPILE_SHAPE=PASS`;
+- current `GameTestBootstrap` + `FoundationGameTests` sources compile under Java 21 against stubs matching the official 1.21.1 signatures they use: `GAMETEST_COMPILE_SHAPE=PASS`;
 - NeoGradle NG_7.1 source confirms `modSource(SourceSet)` adds a source set rather than replacing previous mod sources, so `configureEach { modSource main }` plus `gameTestServer { modSource gameTest }` retains main + gameTest inputs;
 - current `neoforge.mods.toml` / `pack.mcmeta` expansion with actual `gradle.properties` parses successfully as TOML/JSON with no residual placeholders and produces the intended NeoForge/Minecraft ranges and pack format.
 
@@ -97,14 +94,16 @@ This evidence substantially reduces static/configuration uncertainty but does **
 ## Current external verification blocker
 
 - Enshrouded push and pull-request runs repeatedly terminate before checkout with `steps=null`;
-- controlled Enshrouded reruns continue to produce the same no-step failure, with no downloadable job log blob;
-- an explicit `ubuntu-24.04` runner-label control also failed before steps and was reverted to `ubuntu-latest`, ruling out the `ubuntu-latest` alias as the specific cause;
+- controlled reruns continue to produce the same no-step failure, with no downloadable job log blob;
+- an explicit `ubuntu-24.04` runner-label control also failed before steps and was reverted to `ubuntu-latest`;
 - removing the workflow concurrency group was separately tested and did not change the failure mode, so that experiment was reverted;
-- cross-repository control: private `Gustavaopere/Volcanoes`, workflow `33099719939`, job `98615923587`, showed the same `steps=null` failure mode during the same period, demonstrating the blocker is not specific to the Enshrouded workflow/repository;
-- the local fallback environment cannot resolve `services.gradle.org` and has no usable Gradle/NeoForge cache;
+- private `Gustavaopere/Volcanoes`, workflow `33099719939`, job `98615923587`, showed the same `steps=null` failure mode during the same period;
+- the conversation-local environment still cannot resolve `services.gradle.org` and has no usable Gradle/NeoForge cache;
 - because no available real executor can start the build, these failures are not evidence of a failing Gradle build, unit test, GameTest or server reload test.
 
-Static review while Actions was unavailable caught and corrected multiple real defects: NeoGradle GameTest force-exit behavior, legacy NeoForge dependency metadata, noncanonical abbreviated Gradle launchers, missing reload proof, missing `runServer` stdin forwarding, lack of headless server argument, weak process-tree timeout handling, missing Gradle distribution checksum, missing repository license/artifact notices, weak JAR metadata validation, unenforced architecture boundaries and cross-stage progression/ritual ownership cycles. All corrections still require executable final-HEAD verification.
+GitHub Status currently reports the broad Actions incident as resolved while a Billing disruption remains under monitoring; this is compatible with, but does not prove, the account-specific pre-runner failure mode. No billing cause is asserted without account evidence.
+
+Static review while Actions was unavailable caught and corrected multiple real defects: NeoGradle GameTest force-exit behavior, legacy NeoForge dependency metadata, noncanonical abbreviated Gradle launchers, missing reload proof, missing `runServer` stdin forwarding, lack of headless server argument, weak process-tree timeout handling, missing Gradle distribution checksum, missing repository license/artifact notices, weak JAR metadata validation, unenforced architecture boundaries, progression/ritual ownership cycles and the pre-Stage-05 Flame-ward dependency/latent-field ambiguity. All corrections still require executable final-HEAD verification.
 
 ## Immediate next step
 
