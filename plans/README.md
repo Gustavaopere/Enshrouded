@@ -62,9 +62,9 @@ Canonical implementation sequence:
 17. `feat/04-magic-resistance`
 18. `feat/04-ecology-visuals`
 19. `feat/05-flame-state`
-20. `feat/05-flame-altar`
-21. `feat/05-sanctuary`
-22. `feat/05-level1-ritual`
+20. `feat/05-level1-ritual`
+21. `feat/05-flame-altar`
+22. `feat/05-sanctuary`
 23. `feat/06-story-state`
 24. `feat/06-boss-provider`
 25. `feat/06-first-manifestation`
@@ -99,7 +99,7 @@ A branch may be split only when the split preserves this causal order and each r
 
 ## Architecture order
 
-`00-foundation` establishes build, tests, contracts and upstream provenance. `01-shroud-field` creates the authoritative logical infestation. `02-terrain-corruption` establishes mutation safety first, then materializes that state through the pre-existing authority. `03-exposure` turns Shroud severity into player survival gameplay. `04-corrupted-ecology` applies persistent corruption to creatures. `05-flame-progression` creates protection and progression. `06-lich-story` supplies the recurring antagonist and Level 1 reward. `07-client-experience` communicates all server state. `08-integrations` binds verified mods without making them core dependencies. `09-hardening` proves the whole Level 1 vertical slice.
+`00-foundation` establishes build, tests, contracts and upstream provenance. `01-shroud-field` creates the authoritative logical infestation. `02-terrain-corruption` establishes mutation safety first, then materializes that state through the pre-existing authority. `03-exposure` turns Shroud severity into player survival gameplay. `04-corrupted-ecology` applies persistent corruption to creatures. `05-flame-progression` persists Flame state, builds the generic ritual engine before its physical altar adapter, then adds Sanctuary. `06-lich-story` supplies the recurring antagonist and Level 1 reward. `07-client-experience` communicates all server state. `08-integrations` binds verified mods without making them core dependencies. `09-hardening` proves the whole Level 1 vertical slice.
 
 ## Source strategy
 
