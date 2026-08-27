@@ -26,8 +26,8 @@ sourceSets {
         srcDir('src/generated/resources')
     }
     gameTest {
-        inherit.from sourceSets.main
-        depends.on sourceSets.main
+        compileClasspath = sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath = output + compileClasspath + sourceSets.main.runtimeClasspath
     }
 }
 
