@@ -38,6 +38,22 @@ final class ProvenanceDocumentationTest {
     }
 
     @Test
+    void declaredProjectLicenseIsPresentAndConsistent() throws IOException {
+        Path license = ROOT.resolve("LICENSE");
+        Path properties = ROOT.resolve("gradle.properties");
+        assertTrue(Files.isRegularFile(license), "LICENSE must exist when mod metadata declares a license");
+
+        String propertyText = Files.readString(properties);
+        assertTrue(propertyText.contains("mod_license=BSD-2-Clause"),
+                "gradle.properties must declare the repository license identifier");
+
+        String licenseText = Files.readString(license);
+        assertTrue(licenseText.startsWith("BSD 2-Clause License"),
+                "LICENSE must contain the BSD 2-Clause license text declared by mod metadata");
+        assertTrue(licenseText.contains("Copyright (c) 2026 Gustavaopere"));
+    }
+
+    @Test
     void excludedFungusModsNeverEnterBuildOrProductionSources() throws IOException {
         String buildText = Files.readString(ROOT.resolve("build.gradle")).toLowerCase(Locale.ROOT);
         String propertiesText = Files.readString(ROOT.resolve("gradle.properties")).toLowerCase(Locale.ROOT);
