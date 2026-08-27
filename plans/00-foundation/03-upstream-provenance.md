@@ -26,8 +26,8 @@
 
 ## TDD / verification
 
-- [ ] Add a documentation verification script/test that checks every source-derived code path listed later has a provenance entry.
-- [ ] Verify `THIRD_PARTY_NOTICES.md` contains the upstream license reference before any adapted source enters the project.
+- [x] Add a documentation verification test that checks every source-derived code path marker has a provenance entry.
+- [x] Verify `THIRD_PARTY_NOTICES.md` contains the upstream license reference before any adapted source enters the project.
 
 ## Current implementation checkpoint — 2026-08-27
 
@@ -39,14 +39,22 @@ Implemented on `round-1-foundation`:
 - the compatibility inventory records current optional integration candidates without promoting them to mandatory dependencies;
 - `ProvenanceDocumentationTest` verifies required documents, audited source/version markers, exclusion entries and all future `// UPSTREAM-DERIVED:` source markers against `THIRD_PARTY_NOTICES.md`;
 - the same test fails if `Spore` or `Infnexus` re-enter `build.gradle`, `gradle.properties` or production Java sources, turning the fungus exclusion into an executable regression guard rather than documentation only;
-- the repository now contains the BSD 2-Clause `LICENSE` declared by `mod_license=BSD-2-Clause`, and the provenance suite verifies that declaration/text remain consistent;
+- the repository contains the BSD 2-Clause `LICENSE` declared by `mod_license=BSD-2-Clause`, and the provenance suite verifies that declaration/text remain consistent;
 - the production JAR contract requires both `LICENSE` and `THIRD_PARTY_NOTICES.md` to be embedded, so binary distribution preserves the repository's own licensing declaration and the canonical third-party notice gate.
 
-No source-derived production code has entered the branch at this stage. Current final-HEAD GREEN verification remains blocked by GitHub Actions terminating before checkout, so this task stays open and unrenamed.
+## Verification evidence
+
+- provenance RED was established before the documents/inventory existed;
+- final historical provenance GREEN workflow `33040628571` passed the full then-current pipeline, including unit tests/build/JAR and dedicated-server smoke;
+- while current Actions execution is blocked, the current `ProvenanceDocumentationTest` passed 5/5 methods in the local Java 21 repository-guard harness using the actual current GitHub file contents;
+- `ArchitectureBoundaryTest` simultaneously passed 2/2, confirming optional-provider imports and client-only common-code leakage are still absent;
+- no production Java source currently contains an `UPSTREAM-DERIVED` marker, so no source-derived third-party implementation has entered Foundation.
+
+The local guard rerun proves current documentation/source policy only. It does not replace final `./gradlew test` or NeoForge acceptance on the branch HEAD, so this task remains open and unrenamed.
 
 ## Merge gate
 
-- [ ] All task-specific tests are GREEN on the final branch HEAD.
+- [ ] All task-specific tests are GREEN on the final branch HEAD under the committed Gradle/JUnit stack.
 - [ ] `./gradlew test` is GREEN.
 - [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
