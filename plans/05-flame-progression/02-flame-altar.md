@@ -2,7 +2,7 @@
 
 **Milestone:** Level 1 required.
 
-**Goal:** add the physical ritual block/block entity/menu that accepts registered ritual offerings without owning progression truth or depending on Stage 06 story items.
+**Goal:** add the physical ritual block/block entity/menu as a server-authoritative adapter over the already-merged generic ritual engine, without owning progression truth or depending on Stage 06 story items.
 
 **Planned types:** `FlameAltarBlock`, `FlameAltarBlockEntity`, `FlameAltarMenu`, `FlameAltarService`.
 
@@ -15,21 +15,24 @@
 ## Dependencies
 
 - 01 Flame state.
+- 04 Level 1 ritual framework merged first, providing `FlameRitualRegistry`/`FlameRitualExecutor`.
 
 ## Implementation contract
 
-- Altar inventory uses normal server container rules and validates ritual offerings server-side through the generic ritual framework/service boundary.
+- Altar inventory uses normal server container rules and submits ritual intents/offerings to the already-merged `FlameRitualExecutor`.
+- The altar never duplicates ritual eligibility, idempotence or progression mutation logic locally; those remain ritual-engine responsibilities.
 - This task does not import, register or require the real Lich Skull. Stage 05 tests use a synthetic/test ritual offering; Stage 06 later binds the authentic skull.
 - Breaking an altar returns/handles inventory according to explicit container policy but never rolls back earned Flame state.
-- Multiple altars cannot duplicate one ritual outcome for the same progression owner.
+- Multiple altars cannot duplicate one ritual outcome for the same progression owner because all execution passes through the same ritual engine.
 - Altar interaction displays current Flame/Passage Level and ritual readiness from authoritative state.
-- Client screen sends intents only; server revalidates item, owner, ritual and progression prerequisites.
+- Client screen sends intents only; server revalidates item, owner, ritual and progression prerequisites through the engine.
 
 ## TDD / verification
 
 - [ ] GameTest crafting/placing/reloading altar.
-- [ ] GameTest forged client-like ritual request without the registered synthetic test offering is denied.
+- [ ] GameTest forged client-like ritual request without the registered synthetic test offering is denied by the ritual engine.
 - [ ] GameTest double activation with one synthetic test offering grants at most one generic ritual outcome and consumes the offering exactly once.
+- [ ] Contract test proves altar service delegates to `FlameRitualExecutor` rather than maintaining a second ritual registry/state machine.
 - [ ] GameTest breaking/replacing altar preserves owner progression.
 - [ ] No Stage 05 test references the production Lich Skull; defeat -> skull -> altar coverage belongs to `06-lich-story/04-lich-skull.md`.
 
@@ -41,4 +44,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** A functional Flame Altar provides the physical progression interface without becoming an exploitable save authority or depending on Stage 06 story-item implementation.
+**Acceptance:** A functional Flame Altar provides the physical progression interface over the already-merged generic ritual engine, without becoming a second progression/ritual authority or depending on Stage 06 story-item implementation.
