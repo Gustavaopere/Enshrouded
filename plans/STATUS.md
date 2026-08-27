@@ -20,7 +20,7 @@ Last structural update: 2026-08-27.
 
 Branch: `round-1-foundation`
 
-Latest audited implementation changes before this status commit include:
+Key audited implementation commits include:
 
 - `38a5d92f6869215d7388851777335bee00b61700` — executable regression guard preventing Spore/Infnexus from entering build configuration or production Java;
 - `76ecc4c72c0d97ac4caaa9563832374e98f7aad1` / `6ef8962a92ce665dd78f51f2a72dafd363a62879` — two-boot dedicated-server save/reload harness and bounded graceful-stop handling;
