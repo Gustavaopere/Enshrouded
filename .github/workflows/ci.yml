@@ -97,34 +97,6 @@ jobs:
           fi
           exit "$STATUS"
 
-      - name: Dedicated-server smoke test
+      - name: Dedicated-server save/reload smoke test
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p runs/server build
-          printf 'eula=true\n' > runs/server/eula.txt
-          LOG="$PWD/build/server-smoke.log"
-          ./gradlew --no-daemon runServer >"$LOG" 2>&1 &
-          PID=$!
-          cleanup() {
-            kill "$PID" 2>/dev/null || true
-            wait "$PID" 2>/dev/null || true
-          }
-          trap cleanup EXIT
-          for _ in $(seq 1 150); do
-            if grep -Eq 'Done \([0-9.]+s\)! For help, type "help"' "$LOG"; then
-              grep -Fq 'Enshrouded bootstrap complete' "$LOG" || {
-                cat "$LOG"
-                exit 1
-              }
-              echo 'Dedicated-server smoke test: PASS'
-              exit 0
-            fi
-            if ! kill -0 "$PID" 2>/dev/null; then
-              cat "$LOG"
-              exit 1
-            fi
-            sleep 1
-          done
-          cat "$LOG"
-          exit 1
+        run: bash scripts/ci/dedicated-server-reload-smoke.sh
