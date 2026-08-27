@@ -25,10 +25,10 @@
 
 ## TDD / verification
 
-- [ ] Add a bootstrap smoke test that fails before the mod metadata/main class exists.
-- [ ] Run `./gradlew test` and verify the expected RED/bootstrap failure before implementation.
-- [ ] Implement minimal scaffold and verify `./gradlew test` plus `./gradlew build` GREEN.
-- [ ] Run a dedicated-server smoke command/profile and verify registry/bootstrap reaches a clean stop rather than classloading client code.
+- [x] Add a bootstrap smoke test that fails before the mod metadata/main class exists.
+- [x] Verify the expected RED/bootstrap failure before implementation — workflow `33000394152` reached `BootstrapContractTest` and failed only because the main mod class did not yet exist.
+- [ ] Verify the current final scaffold with committed `./gradlew test` plus `./gradlew build` GREEN.
+- [ ] Run the current dedicated-server save/reload profile and verify bootstrap/reload reaches a clean stop rather than classloading client code.
 
 ## Current implementation checkpoint — 2026-08-27
 
@@ -44,7 +44,16 @@ Implemented on `round-1-foundation`:
 - CI invokes verification through `./gradlew` and validates wrapper provenance, distribution checksum, metadata expansion, required dependencies, license/notices packaging, absence of GameTest classes, and the common entrypoint;
 - dedicated-server verification is now the two-boot save/reload harness rather than startup-only smoke.
 
-Historical runner evidence reached unit tests/build GREEN before the final wrapper/GameTest/reload changes, but this does not satisfy final-HEAD acceptance. Current Actions jobs terminate before checkout with `steps=null`; therefore the RED/GREEN history and final dedicated-server gate cannot currently be re-proved on the branch HEAD. This task stays open and unrenamed.
+Historical runner evidence reached unit tests/build GREEN before the final wrapper/GameTest/reload changes, but this does not satisfy final-HEAD acceptance. Current Actions jobs terminate before checkout with `steps=null`; therefore the final wrapper/build/dedicated-server gate cannot currently be re-proved on the branch HEAD. This task stays open and unrenamed.
+
+## Structural verification while final Actions execution is blocked
+
+- the current `neoforge.mods.toml` and `pack.mcmeta` were expanded with the actual current `gradle.properties` values outside Gradle and parsed successfully as TOML/JSON;
+- no `${...}` placeholders remained after expansion;
+- the resulting dependency metadata is `neoforge [21.1.248,) type=required` and `minecraft [1.21.1,1.21.2) type=required`;
+- the expanded resource pack metadata reports `pack_format=34` and `enshrouded resources`;
+- `BootstrapContractTest` passed in the local Java 21 structural suite using only minimal NeoForge/SLF4J type stubs for entrypoint classloading and the real current metadata path;
+- these structural checks do not replace the committed Gradle/NeoForge build/JAR/runtime gates.
 
 ## Merge gate
 
