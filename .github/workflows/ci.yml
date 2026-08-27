@@ -26,6 +26,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Verify shell harness prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/ci/dedicated-server-reload-smoke.sh
+          command -v timeout >/dev/null
+          timeout --version | head -n 1
+
       - name: Set up Java 21
         uses: actions/setup-java@v5
         with:
