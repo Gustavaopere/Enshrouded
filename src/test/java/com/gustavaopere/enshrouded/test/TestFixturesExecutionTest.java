@@ -23,4 +23,23 @@ final class TestFixturesExecutionTest {
         assertThrows(IllegalArgumentException.class, () -> clock.advance(-1L));
         assertEquals(5L, clock.currentTick());
     }
+
+    @Test
+    void scriptedRandomConsumesValuesDeterministically() {
+        TestFixtures.ScriptedRandom random = TestFixtures.randomInts(7, -1, 12);
+
+        assertEquals(2, random.nextInt(5));
+        assertEquals(4, random.nextInt(5));
+        assertEquals(0, random.nextInt(3));
+        assertThrows(IllegalStateException.class, () -> random.nextInt(2));
+    }
+
+    @Test
+    void scriptedRandomRejectsInvalidBounds() {
+        TestFixtures.ScriptedRandom random = TestFixtures.randomInts(0);
+
+        assertThrows(IllegalArgumentException.class, () -> random.nextInt(0));
+        assertThrows(IllegalArgumentException.class, () -> random.nextInt(-1));
+        assertEquals(0, random.nextInt(1));
+    }
 }
