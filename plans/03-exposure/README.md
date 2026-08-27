@@ -12,7 +12,10 @@
 ## Runtime contracts
 
 - Exposure is server-authoritative and samples `ShroudQuery`.
-- Flame progression modifies passage rules through an interface rather than hard-coded altar searches.
+- Sanctuary suppression is interpreted from the canonical `ShroudSample` overlay; Stage 03 does not scan Flame Altars or rewrite logical Shroud state.
+- Task 01 owns the internal `DeadlyExposurePolicy` seam plus a fail-closed Level 1 barrier fallback, so `ExposureService` never has a compile dependency on Task 03.
+- Task 03 replaces that fallback with `FlameGatedDeadlyExposurePolicy` through the same interface and reads progression only through Foundation `ProgressionOwnerResolver` + `FlamePassageQuery`.
+- Flame progression modifies passage rules through interfaces rather than hard-coded altar searches or Stage 05 implementation imports.
 - Client effects never determine death or remaining time.
 
 Tasks are implemented and merged in the order above unless `STATUS.md` explicitly records a reviewed dependency change.
