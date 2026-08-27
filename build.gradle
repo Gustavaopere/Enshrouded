@@ -21,6 +21,16 @@ repositories {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+sourceSets {
+    main.resources {
+        srcDir('src/generated/resources')
+    }
+    gameTest {
+        inherit.from sourceSets.main
+        depends.on sourceSets.main
+    }
+}
+
 runs {
     configureEach {
         workingDirectory project.layout.projectDirectory.dir('runs').dir(name)
@@ -30,16 +40,13 @@ runs {
     server {}
     gameTestServer {
         systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        modSource project.sourceSets.gameTest
     }
     data {
         arguments.addAll '--mod', mod_id, '--all',
                 '--output', file('src/generated/resources/').absolutePath,
                 '--existing', file('src/main/resources/').absolutePath
     }
-}
-
-sourceSets.main.resources {
-    srcDir('src/generated/resources')
 }
 
 configurations {
