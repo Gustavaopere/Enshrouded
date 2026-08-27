@@ -38,7 +38,9 @@ Implemented on `round-1-foundation`:
 - Spore and Infnexus are recorded only as explicit exclusions and are not core dependencies, providers or design authorities;
 - the compatibility inventory records current optional integration candidates without promoting them to mandatory dependencies;
 - `ProvenanceDocumentationTest` verifies required documents, audited source/version markers, exclusion entries and all future `// UPSTREAM-DERIVED:` source markers against `THIRD_PARTY_NOTICES.md`;
-- the same test now fails if `Spore` or `Infnexus` re-enter `build.gradle`, `gradle.properties` or production Java sources, turning the fungus exclusion into an executable regression guard rather than documentation only.
+- the same test fails if `Spore` or `Infnexus` re-enter `build.gradle`, `gradle.properties` or production Java sources, turning the fungus exclusion into an executable regression guard rather than documentation only;
+- the repository now contains the BSD 2-Clause `LICENSE` declared by `mod_license=BSD-2-Clause`, and the provenance suite verifies that declaration/text remain consistent;
+- the production JAR contract requires both `LICENSE` and `THIRD_PARTY_NOTICES.md` to be embedded, so binary distribution preserves the repository's own licensing declaration and the canonical third-party notice gate.
 
 No source-derived production code has entered the branch at this stage. Current final-HEAD GREEN verification remains blocked by GitHub Actions terminating before checkout, so this task stays open and unrenamed.
 
@@ -50,4 +52,4 @@ No source-derived production code has entered the branch at this stage. Current 
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** The repository contains an auditable source/integration inventory, excluded fungus mods cannot silently enter core, and no copied code can enter without provenance.
+**Acceptance:** The repository contains an auditable source/integration inventory, excluded fungus mods cannot silently enter core, the declared project license is distributable with the JAR, and no copied code can enter without provenance.
