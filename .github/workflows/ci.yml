@@ -78,14 +78,27 @@ jobs:
           test -n "$JAR"
           jar tf "$JAR" | grep -Fx 'META-INF/neoforge.mods.toml'
           jar tf "$JAR" | grep -Fx 'com/gustavaopere/enshrouded/Enshrouded.class'
+          if jar tf "$JAR" | grep -Fq 'com/gustavaopere/enshrouded/gametest/'; then
+            echo 'GameTest-only classes leaked into the production JAR'
+            exit 1
+          fi
 
       - name: GameTest server
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p runs/gameTestServer
+          mkdir -p runs/gameTestServer build
           printf 'eula=true\n' > runs/gameTestServer/eula.txt
-          gradle --no-daemon runGameTestServer
+          LOG="$PWD/build/gametest.log"
+          set +e
+          gradle --no-daemon runGameTestServer 2>&1 | tee "$LOG"
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          if grep -Fq 'No test functions were given!' "$LOG"; then
+            echo 'GameTest discovery failed: zero test functions were registered'
+            exit 1
+          fi
+          exit "$STATUS"
 
       - name: Dedicated-server smoke test
         shell: bash
