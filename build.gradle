@@ -41,6 +41,9 @@ runs {
     gameTestServer {
         systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
         modSource project.sourceSets.gameTest
+        // NeoGradle otherwise force-exits the run process, which makes Gradle
+        // report a build failure even when the required GameTests themselves pass.
+        setForceExit false
     }
     data {
         arguments.addAll '--mod', mod_id, '--all',
