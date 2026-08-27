@@ -26,7 +26,12 @@ Key audited implementation commits include:
 - `76ecc4c72c0d97ac4caaa9563832374e98f7aad1` / `6ef8962a92ce665dd78f51f2a72dafd363a62879` — two-boot dedicated-server save/reload harness and bounded graceful-stop handling;
 - `00a679c2dbeb5ee5d0d76add1edd5019beb35cbd` — CI switched from one-boot server smoke to the two-boot reload harness;
 - `8915cdadbcd43e68c1dec0fe80ed047e2eb9dc51` — explicit `System.in` forwarding to NeoGradle `runServer` because the generated `JavaExec` task does not configure `standardInput`;
-- `b212e539de7ebd26cdf54cb8b1c2a99e449ab4fa` — dedicated server run made explicitly headless with `--nogui`.
+- `b212e539de7ebd26cdf54cb8b1c2a99e449ab4fa` — dedicated server run made explicitly headless with `--nogui`;
+- `df124bb7b3a16d828e67a87e7105c39e1a17d21e` / `8337e730385799247a23d748b2573d1dcd27664c` — Gradle 8.14 distribution checksum pin and CI enforcement;
+- `e4547483af1ca4b642cf90ea04a593514cc8d3ad` / `beba82827f6650351dd5a11683540051a84ee144` — repository BSD-2-Clause license plus executable consistency test;
+- `b0574c6246771b116221d07239cc5acb287d7c27` / `0e9ca1999187cac365c2dcd408f663325d24d6e1` — production JAR packages license/notices and the JAR sanity gate validates metadata expansion and artifact boundaries;
+- `8294d6847bc77898177bf96c65269ae0e3aa2454` / `ac5f957fa3b890038d60c4146443722d8a599292` — architecture guard keeps optional providers out of the core API and client-only Minecraft classes out of common/server code;
+- `85803b249f900f5e21338f89d63265e34d0bdfeb` — expanded stable-id/value contract coverage for player/team/world progression owners, invalid UUIDs and Shroud intensity edge cases.
 
 Draft PR: #2 — `Foundation: scaffold, contracts, provenance and test infrastructure`.
 
@@ -37,6 +42,7 @@ Implemented scope includes:
 - upstream provenance and current-pack inventory;
 - deterministic unit-test fixtures and contract tests;
 - executable exclusion guard keeping Spore/Infnexus out of core/build configuration;
+- architecture boundary guard preventing optional implementation imports in core APIs and client-only Minecraft references in common/server code;
 - GameTest source set, valid 3×3×3 template and reusable world-level fixtures;
 - `@GameTestHolder(enshrouded)` registration and namespace restriction for Foundation GameTests;
 - NeoGradle `gameTestServer` configured with `setForceExit false`;
@@ -46,26 +52,30 @@ Implemented scope includes:
 - current NeoForge 1.21.1 dependency metadata schema using `type="required"`;
 - official Gradle 8.14 wrapper JAR and official generated launchers;
 - wrapper Git blob SHAs match Gradle `v8.14.0`: POSIX launcher `0f14772e0e50ffe504fa3be1a869e6281b09ccd1`, Windows launcher `8de1053a1f921b9ac5910187e2f99fdaa774f81a`, wrapper JAR `1b33c55baabb587c669f562ae36f953de2481846`;
+- Gradle distribution is pinned to `gradle-8.14-bin.zip` with SHA-256 `61ad310d3c7d3e5da131b76bbf22b5a4c0786e9d892dae8c1658d4b484de3caa`;
 - `gradlew` remains executable in Git (`100755`);
-- CI verifies wrapper provenance/executable mode, unit tests, diff sanity, NeoForge build, production JAR contents, GameTests and the two-boot reload scenario.
+- repository `LICENSE` matches `mod_license=BSD-2-Clause`;
+- production JAR contract embeds `LICENSE` and `THIRD_PARTY_NOTICES.md` and rejects unexpanded metadata placeholders or leaked GameTest classes;
+- CI verifies wrapper provenance/distribution checksum, unit tests, diff sanity, NeoForge build, production JAR contents, GameTests and the two-boot reload scenario.
 
 ## Structural evidence while Actions is unavailable
 
 - `scripts/ci/dedicated-server-reload-smoke.sh` passes `bash -n`;
 - a fake-server simulation exercised both FIFO boots, save marker, persistent scoreboard sentinel and graceful shutdown and reached its PASS marker;
 - inspection of NeoGradle `NG_7.1` `RunsUtil.createTasks(...)` confirmed run tasks are `JavaExec` and no `standardInput` forwarding is configured there, motivating the explicit project-side `System.in` fix;
-- these are structural/control-flow checks only and do not replace a real Minecraft/NeoForge runner.
+- NeoForge 1.21.1 API references confirm the GameTest helper methods used by Foundation and `MinecraftServer.saveEverything(boolean, boolean, boolean)` signatures;
+- these are structural/control-flow/API checks only and do not replace a real Minecraft/NeoForge runner.
 
 ## Current external verification blocker
 
 - Enshrouded push and pull-request runs repeatedly terminate before checkout with `steps=null`;
-- controlled Enshrouded reruns continue to produce the same no-step failure;
+- controlled Enshrouded reruns continue to produce the same no-step failure, with no downloadable job log blob;
 - cross-repository control: private `Gustavaopere/Volcanoes`, workflow `33099719939`, job `98615923587`, showed the same `steps=null` failure mode during the same period, demonstrating the blocker is not specific to the Enshrouded workflow/repository;
 - removing the workflow concurrency group was separately tested and did not change the failure mode, so that experiment was reverted;
 - the local fallback environment cannot resolve `services.gradle.org` and has no usable Gradle/NeoForge cache;
 - because no available real executor can start the build, these failures are not evidence of a failing Gradle build, unit test, GameTest or server reload test.
 
-Static review while Actions was unavailable has already caught and corrected multiple real defects: NeoGradle GameTest force-exit behavior, legacy NeoForge dependency metadata, noncanonical abbreviated Gradle launchers, missing reload proof, missing `runServer` stdin forwarding and lack of headless server argument. All corrections still require executable final-HEAD verification.
+Static review while Actions was unavailable has already caught and corrected multiple real defects: NeoGradle GameTest force-exit behavior, legacy NeoForge dependency metadata, noncanonical abbreviated Gradle launchers, missing reload proof, missing `runServer` stdin forwarding, lack of headless server argument, missing Gradle distribution checksum, missing repository license/artifact notices, weak JAR metadata validation and unenforced architecture boundaries. All corrections still require executable final-HEAD verification.
 
 ## Immediate next step
 
