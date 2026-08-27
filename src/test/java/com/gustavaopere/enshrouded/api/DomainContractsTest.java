@@ -22,6 +22,7 @@ final class DomainContractsTest {
         assertEquals("deadly", ShroudSeverity.DEADLY.id());
         assertEquals(Optional.of(ShroudSeverity.DEADLY), ShroudSeverity.fromId("deadly"));
         assertEquals(Optional.empty(), ShroudSeverity.fromId("future-tier"));
+        assertEquals(Optional.empty(), ShroudSeverity.fromId(null));
     }
 
     @Test
@@ -32,8 +33,25 @@ final class DomainContractsTest {
         assertEquals(owner, ProgressionOwner.parse(owner.stableKey()).orElseThrow());
 
         ProgressionOwner team = ProgressionOwner.team("ftb:builders");
+        assertEquals("team:ftb:builders", team.stableKey());
         assertEquals(team, ProgressionOwner.parse(team.stableKey()).orElseThrow());
+
+        ProgressionOwner world = ProgressionOwner.world("minecraft:overworld");
+        assertEquals("world:minecraft:overworld", world.stableKey());
+        assertEquals(world, ProgressionOwner.parse(world.stableKey()).orElseThrow());
+
         assertEquals(Optional.empty(), ProgressionOwner.parse("unknown:value"));
+        assertEquals(Optional.empty(), ProgressionOwner.parse("player:not-a-uuid"));
+        assertEquals(Optional.empty(), ProgressionOwner.parse("team:"));
+        assertEquals(Optional.empty(), ProgressionOwner.parse(null));
+    }
+
+    @Test
+    void progressionOwnerRejectsInvalidConstruction() {
+        assertThrows(IllegalArgumentException.class, () -> ProgressionOwner.team("  "));
+        assertThrows(IllegalArgumentException.class, () -> ProgressionOwner.world(""));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ProgressionOwner(ProgressionOwner.Kind.PLAYER, "not-a-uuid"));
     }
 
     @Test
@@ -45,6 +63,10 @@ final class DomainContractsTest {
                 () -> new ShroudSample(-0.01f, ShroudSeverity.SHROUD, Optional.empty(), false));
         assertThrows(IllegalArgumentException.class,
                 () -> new ShroudSample(1.01f, ShroudSeverity.DEADLY, Optional.empty(), false));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ShroudSample(Float.NaN, ShroudSeverity.SHROUD, Optional.empty(), false));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ShroudSample(Float.POSITIVE_INFINITY, ShroudSeverity.DEADLY, Optional.empty(), false));
     }
 
     @Test
@@ -54,6 +76,11 @@ final class DomainContractsTest {
                 MagicDamageConfidence.CERTAIN);
         assertTrue(classification.magical());
         assertEquals(MagicDamageKind.NECROTIC, classification.kind());
+
+        MagicDamageClassification unknown = new MagicDamageClassification(
+                MagicDamageKind.UNKNOWN,
+                MagicDamageConfidence.UNKNOWN);
+        assertFalse(unknown.magical(), "Unknown damage must fail safe and not gain magic resistance treatment");
     }
 
     @Test
