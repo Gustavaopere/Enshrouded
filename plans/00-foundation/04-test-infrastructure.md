@@ -45,23 +45,40 @@ Implemented on `round-1-foundation`:
 - official Gradle 8.14 wrapper is committed to the repository. The wrapper JAR Git blob SHA is `1b33c55baabb587c669f562ae36f953de2481846`, exactly matching Gradle upstream `v8.14.0`;
 - final CI commands execute through the committed `./gradlew` wrapper rather than an ambient Gradle installation.
 
-Verification evidence/blocker:
+### Open acceptance gap discovered by audit
+
+`GameTestBootstrap.forceSaveForReload(...)` currently provides only the **save/flush primitive**. The dedicated-server CI smoke starts one server process and stops it after startup; it does not yet prove a second process can reopen the same saved world. Therefore the "save/reload scenarios" contract is only partially implemented.
+
+Before Task 04 can be accepted, add a deterministic restart/reload harness that:
+
+1. starts a dedicated test server on a clean test world;
+2. creates or mutates a sentinel through a test-owned path and performs a graceful save/stop;
+3. starts a second server process against that same world;
+4. verifies the sentinel/world state is observable after reload;
+5. fails closed on startup, save, graceful-stop, or reload timeout.
+
+Do not claim `forceSaveForReload` alone proves reload persistence.
+
+## Verification evidence/blocker
 
 - an earlier functioning runner executed the unit-test and build portions successfully while the wrapper bootstrap was being established; that run is historical evidence only and does not satisfy the final-HEAD gate;
 - push run `33093634341` on code/CI HEAD `db183f21d80ecaa88fcba33c25998350c6361759` failed before checkout and exposes no steps (`steps=null`);
 - draft PR #2 triggered pull-request run `33093751380`, which failed with the same pre-checkout `steps=null` condition;
 - later push runs, including `33094149126`, continued to fail before checkout with `steps=null`;
 - a separate experiment removing the workflow concurrency group produced the same failure mode and was reverted;
+- a cross-repository control on private `Gustavaopere/Volcanoes` also produced `verify` jobs with `steps=null` during the same period, so the current runner-start failure is not specific to Enshrouded;
+- the local fallback environment has no Gradle/NeoForge cache and cannot resolve `services.gradle.org`, so it cannot execute the build offline;
 - therefore no current failure is attributable to unit tests, Gradle, GameTests or dedicated-server bootstrap because none of those steps executes.
 
-This task deliberately remains open. Its checkboxes and `✅-` rename require a normally initialized final-HEAD runner and GREEN unit, build, JAR sanity, GameTest and dedicated-server gates.
+This task deliberately remains open. Its checkboxes and `✅-` rename require both the restart/reload harness above and a normally initialized final-HEAD runner with GREEN unit, build, JAR sanity, GameTest and dedicated-server gates.
 
 ## Merge gate
 
 - [ ] All task-specific tests are GREEN on the final branch HEAD.
 - [ ] `./gradlew test` is GREEN.
 - [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
+- [ ] Save → graceful stop → second boot → reload path is proven by the dedicated-server harness.
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Every later branch has a proven test path appropriate to deterministic logic, world logic and server bootstrap.
+**Acceptance:** Every later branch has a proven test path appropriate to deterministic logic, world logic and server bootstrap/reload.
