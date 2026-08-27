@@ -61,8 +61,10 @@ Implemented on `round-1-foundation`:
 
 - the **current** reload harness passes `bash -n` after the GNU-timeout/process-supervision hardening;
 - a current fake-server simulation exercised `exec timeout`, both FIFO boots, startup/bootstrap markers, `save-all flush`, `world/level.dat`, persisted sentinel, second-boot sentinel query and graceful `stop`, and reached both `Dedicated-server save/reload smoke test: PASS` and `HARNESS_CURRENT_SIMULATION=PASS`;
-- the local pure-Java Foundation verification also passed 25/25 test/guard methods outside Minecraft runtime, including bootstrap classloading with minimal NeoForge/SLF4J type stubs;
-- these checks prove shell orchestration/pure-Java contracts only; they are **not** accepted as Minecraft/NeoForge runtime evidence.
+- the local pure-Java Foundation verification passed 25/25 test/guard methods outside Minecraft runtime, including bootstrap classloading with minimal NeoForge/SLF4J type stubs;
+- Java 21 compile-shape verification of the **current** `GameTestBootstrap` + `FoundationGameTests` sources passed against stubs matching the 1.21.1 API signatures actually used (`GameTestHelper#getLevel`, `makeMockPlayer`, `setBlock`, `assertBlockPresent`, generic `spawn`, `assertTrue`, `MinecraftServer#saveEverything`, `@GameTestHolder`, `@PrefixGameTestTemplate`), producing `GAMETEST_COMPILE_SHAPE=PASS`;
+- official NeoForge 1.21.1 documentation confirms `@GameTestHolder(enshrouded)` + `@PrefixGameTestTemplate(false)` resolves `template="foundation_empty"` to `data/enshrouded/structure/foundation_empty.nbt`;
+- these checks prove shell orchestration/pure-Java/API compilation only; they are **not** accepted as Minecraft/NeoForge runtime evidence.
 
 ## External verification blocker
 
@@ -70,7 +72,7 @@ Implemented on `round-1-foundation`:
 - a cross-repository control on private `Gustavaopere/Volcanoes` produces the same `verify` + `steps=null` behavior, so the current runner-start failure is not specific to Enshrouded;
 - explicit `ubuntu-24.04` and concurrency-group experiments did not change the pre-step failure and were reverted;
 - the local fallback environment has no Gradle/NeoForge cache and cannot resolve `services.gradle.org`, so it cannot execute the actual NeoForge build offline;
-- therefore the current two-boot harness has not yet run against a real Minecraft 1.21.1/NeoForge server.
+- therefore the current two-boot harness and current GameTests have not yet run GREEN against a real Minecraft 1.21.1/NeoForge server.
 
 The former restart/reload **implementation gap is closed**, but its executable acceptance gate remains open. This task deliberately remains unrenamed until a normally initialized final-HEAD runner proves unit, build, JAR, GameTest and two-boot dedicated-server reload gates GREEN.
 
