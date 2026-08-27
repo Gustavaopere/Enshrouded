@@ -9,6 +9,13 @@ FIRST_LOG="$BUILD_DIR/server-smoke-first.log"
 RELOAD_LOG="$BUILD_DIR/server-smoke-reload.log"
 SERVER_PID=""
 SERVER_LOG=""
+BOOT_TIMEOUT_SECONDS=360
+KILL_AFTER_SECONDS=15
+
+command -v timeout >/dev/null 2>&1 || {
+  echo 'GNU timeout is required for bounded dedicated-server smoke execution' >&2
+  exit 1
+}
 
 mkdir -p "$BUILD_DIR"
 rm -rf "$RUN_DIR"
@@ -82,7 +89,8 @@ start_server() {
   exec 3<> "$FIFO"
   (
     cd "$ROOT"
-    ./gradlew --no-daemon runServer < "$FIFO" > "$SERVER_LOG" 2>&1
+    timeout --kill-after="${KILL_AFTER_SECONDS}s" "${BOOT_TIMEOUT_SECONDS}s" \
+      ./gradlew --no-daemon runServer < "$FIFO" > "$SERVER_LOG" 2>&1
   ) &
   SERVER_PID=$!
 
