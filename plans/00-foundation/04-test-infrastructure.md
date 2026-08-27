@@ -37,47 +37,40 @@ Implemented on `round-1-foundation`:
 - `GameTestBootstrap` helpers for `ServerLevel`, block mutation, mock player state, entity spawning/state and forced save/flush;
 - Foundation GameTests for template/server-level/block mutation and player/entity/save fixtures;
 - a valid compressed NBT GameTest template at `data/enshrouded/structure/foundation_empty.nbt`, decoded during review as a 3×3×3 structure;
-- GameTests are registered through `@GameTestHolder(Enshrouded.MOD_ID)`, a supported NeoForge 1.21.1 registration mechanism;
-- `gameTestServer` sets `neoforge.enabledGameTestNamespaces` to `enshrouded`;
-- `gameTestServer` sets `setForceExit false`, required by the NeoForge 1.21.1 NeoGradle GameTest guidance so a normal test-server exit is observable by Gradle rather than being reported as an unconditional daemon failure;
-- dedicated-server smoke path requires normal server startup plus the Enshrouded bootstrap marker;
-- production-JAR sanity gate verifies mod metadata/main class and rejects leaked GameTest-only classes;
-- official Gradle 8.14 wrapper is committed to the repository. The wrapper JAR Git blob SHA is `1b33c55baabb587c669f562ae36f953de2481846`, exactly matching Gradle upstream `v8.14.0`;
-- final CI commands execute through the committed `./gradlew` wrapper rather than an ambient Gradle installation.
+- GameTests registered through `@GameTestHolder(Enshrouded.MOD_ID)` with the `enshrouded` namespace enabled;
+- `gameTestServer` uses `setForceExit false` so a successful test server is not reported as an unconditional Gradle daemon failure;
+- production-JAR sanity verifies mod metadata/main class and rejects leaked GameTest-only classes;
+- official Gradle 8.14 wrapper is committed and CI executes through `./gradlew`;
+- dedicated `scripts/ci/dedicated-server-reload-smoke.sh` now implements the save/reload scenario with two real server process launches against the same test world;
+- first boot creates scoreboard objective `ensh_reload`, sets `ensh_sentinel=1`, executes `save-all flush`, requires the save marker and performs a graceful `stop`;
+- the harness requires `world/level.dat` after the first shutdown;
+- second boot reopens the same world and succeeds only when `execute if score ensh_sentinel ensh_reload matches 1` emits `ENSHROUDED_RELOAD_SENTINEL_OK`;
+- startup, bootstrap marker, save, reload marker and graceful shutdown all have explicit fail-closed timeouts;
+- `runServer` forwards `System.in` explicitly because NeoGradle creates the run as `JavaExec` without configuring `standardInput`; this is required for FIFO-fed `save-all`/`stop` commands to reach Minecraft;
+- the dedicated server run also uses `--nogui` for a deterministic headless CI environment.
 
-### Open acceptance gap discovered by audit
+## Structural verification performed while Actions is unavailable
 
-`GameTestBootstrap.forceSaveForReload(...)` currently provides only the **save/flush primitive**. The dedicated-server CI smoke starts one server process and stops it after startup; it does not yet prove a second process can reopen the same saved world. Therefore the "save/reload scenarios" contract is only partially implemented.
+- the reload harness passes `bash -n`;
+- a local fake-server simulation exercised both FIFO boots, save marker, persisted scoreboard sentinel and graceful-stop control flow and reached `Dedicated-server save/reload smoke test: PASS`;
+- this simulation proves the shell orchestration only; it is **not** accepted as Minecraft/NeoForge runtime evidence.
 
-Before Task 04 can be accepted, add a deterministic restart/reload harness that:
+## External verification blocker
 
-1. starts a dedicated test server on a clean test world;
-2. creates or mutates a sentinel through a test-owned path and performs a graceful save/stop;
-3. starts a second server process against that same world;
-4. verifies the sentinel/world state is observable after reload;
-5. fails closed on startup, save, graceful-stop, or reload timeout.
+- current GitHub Actions jobs terminate before checkout and expose `steps=null`;
+- a cross-repository control on private `Gustavaopere/Volcanoes` produces the same `verify` + `steps=null` behavior, so the current runner-start failure is not specific to Enshrouded;
+- the local fallback environment has no Gradle/NeoForge cache and cannot resolve `services.gradle.org`, so it cannot execute the actual NeoForge build offline;
+- therefore the new two-boot harness has not yet run against a real Minecraft 1.21.1/NeoForge server.
 
-Do not claim `forceSaveForReload` alone proves reload persistence.
-
-## Verification evidence/blocker
-
-- an earlier functioning runner executed the unit-test and build portions successfully while the wrapper bootstrap was being established; that run is historical evidence only and does not satisfy the final-HEAD gate;
-- push run `33093634341` on code/CI HEAD `db183f21d80ecaa88fcba33c25998350c6361759` failed before checkout and exposes no steps (`steps=null`);
-- draft PR #2 triggered pull-request run `33093751380`, which failed with the same pre-checkout `steps=null` condition;
-- later push runs, including `33094149126`, continued to fail before checkout with `steps=null`;
-- a separate experiment removing the workflow concurrency group produced the same failure mode and was reverted;
-- a cross-repository control on private `Gustavaopere/Volcanoes` also produced `verify` jobs with `steps=null` during the same period, so the current runner-start failure is not specific to Enshrouded;
-- the local fallback environment has no Gradle/NeoForge cache and cannot resolve `services.gradle.org`, so it cannot execute the build offline;
-- therefore no current failure is attributable to unit tests, Gradle, GameTests or dedicated-server bootstrap because none of those steps executes.
-
-This task deliberately remains open. Its checkboxes and `✅-` rename require both the restart/reload harness above and a normally initialized final-HEAD runner with GREEN unit, build, JAR sanity, GameTest and dedicated-server gates.
+The former restart/reload **implementation gap is closed**, but its executable acceptance gate remains open. This task deliberately remains unrenamed until a normally initialized final-HEAD runner proves unit, build, JAR, GameTest and two-boot dedicated-server reload gates GREEN.
 
 ## Merge gate
 
 - [ ] All task-specific tests are GREEN on the final branch HEAD.
 - [ ] `./gradlew test` is GREEN.
-- [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
-- [ ] Save → graceful stop → second boot → reload path is proven by the dedicated-server harness.
+- [ ] NeoForge build is GREEN.
+- [ ] GameTests discover and execute the Foundation tests GREEN.
+- [ ] Save → graceful stop → second boot → persisted scoreboard sentinel is proven GREEN by `dedicated-server-reload-smoke.sh` on real NeoForge.
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
