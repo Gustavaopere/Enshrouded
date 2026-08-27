@@ -1,18 +1,14 @@
 # 00 — Foundation
 
-**Goal:** create a clean NeoForge 1.21.1/Java 21 project with CI, explicit domain contracts, provenance and test infrastructure.
+Foundation establishes the build, stable cross-stage contracts, upstream provenance and verification infrastructure required by every later Level 1 subsystem.
 
-## Task order
+Tasks:
 
-1. [`01 build scaffold`](01-build-scaffold.md)
-2. [`02 domain contracts`](02-domain-contracts.md)
-3. [`03 upstream provenance`](03-upstream-provenance.md)
-4. [`04 test infrastructure`](04-test-infrastructure.md)
+1. `01-build-scaffold.md`
+2. `02-domain-contracts.md`
+3. `03-upstream-provenance.md`
+4. `04-test-infrastructure.md`
 
-## Runtime contracts
+Foundation is not complete merely because the code is present. Acceptance requires a clean final-HEAD execution of the committed Gradle wrapper, unit tests, diff sanity, NeoForge build/JAR checks, GameTests and the dedicated-server **save → graceful stop → second boot → reload** harness.
 
-- No optional mod is a mandatory Gradle/runtime dependency of the core artifact.
-- Every later subsystem depends on stable interfaces established here rather than directly reaching into other subsystems.
-- Build/test/CI must be reproducible from a clean checkout.
-
-Tasks are implemented and merged in the order above unless `STATUS.md` explicitly records a reviewed dependency change.
+Until all four tasks satisfy their merge gates, keep `00 Foundation` open, do not rename task files with `✅-`, do not merge PR #2 and do not create the first Stage 01 implementation branch.
