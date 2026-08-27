@@ -37,6 +37,15 @@ jobs:
         with:
           cache-read-only: false
 
+      - name: Verify committed Gradle wrapper provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object gradlew)" = '0f14772e0e50ffe504fa3be1a869e6281b09ccd1'
+          test "$(git hash-object gradlew.bat)" = '8de1053a1f921b9ac5910187e2f99fdaa774f81a'
+          test "$(git hash-object gradle/wrapper/gradle-wrapper.jar)" = '1b33c55baabb587c669f562ae36f953de2481846'
+          test -x gradlew
+
       - name: Verify Gradle wrapper
         run: ./gradlew --no-daemon --version
 
