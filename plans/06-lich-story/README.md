@@ -11,9 +11,11 @@
 
 ## Runtime contracts
 
+- Story persistence keys ownership through Foundation `ProgressionOwner`; Story State does not import Stage 05 implementation classes.
 - External boss entities are encounter actors, never progression authorities.
 - Defeating a manifestation cannot kill the canonical Lich story entity permanently.
 - Every reward is idempotent and encounter-ID scoped.
+- Stage 06 core and its tests remain provider-neutral; optional-provider-specific behavior/false-positive tests belong to Stage 08 adapters.
 - Stage 06 owns the authentic first Lich Skull item/component validation and binds it into the generic Stage 05 ritual engine.
 - Stage 05 never depends back on Stage 06; the end-to-end defeat -> skull -> altar checkpoint closes here.
 
