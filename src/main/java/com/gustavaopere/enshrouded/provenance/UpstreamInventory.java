@@ -13,6 +13,7 @@ public final class UpstreamInventory {
 
     public static final String ARS_ZERO_RUNTIME_ID = "ars-zero-runtime-2.0.2";
     public static final String ARS_ZERO_PACK_VERSION = "2.0.2";
+    public static final String ARS_ZERO_SOURCE_SHA = "9478291a9f331ee2b4a391c4581a342d342ac7dc";
     public static final String ARS_ZERO_LICENSE = "GPLv3";
 
     private UpstreamInventory() {
