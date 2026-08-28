@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.registry;
 
+import com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreWorldgenRegistry;
 import net.neoforged.bus.api.IEventBus;
 
 import java.util.Objects;
@@ -12,5 +13,6 @@ public final class ModRegistries {
         Objects.requireNonNull(modBus, "modBus");
         ModBlocks.BLOCKS.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
+        ShroudCoreWorldgenRegistry.register(modBus);
     }
 }
