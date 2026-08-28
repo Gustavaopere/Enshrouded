@@ -4,7 +4,7 @@
 
 **Goal:** attach persistent Shroud corruption metadata to eligible living entities based on exposure to corrupted regions.
 
-**Planned types:** `EntityCorruptionAttachment`, `CorruptionStage`, `EntityCorruptionService`, `CorruptionEligibility`.
+**Planned types:** `EntityCorruptionAttachment`, `EntityCorruptionSchema`, `CorruptionStage`, `EntityCorruptionService`, `CorruptionEligibility`.
 
 ## Files
 
@@ -17,6 +17,8 @@
 
 ## Implementation contract
 
+- The corruption attachment carries an explicit schema version/stable evolution policy from its first persisted form; Stage 09 may test migrations later but must not retrofit versioning after entities have been saved.
+- Unknown future schema fails closed with a diagnostic and must not silently clear corruption state or replace entity identity.
 - Eligible entities accumulate corruption only while in effective Shroud; sanctuary/clear zones can regress according to policy.
 - Corruption stage/intensity persists through save/load and dimension transfer where entity persistence allows.
 - Players use Exposure, not this mob-corruption attachment.
@@ -25,6 +27,7 @@
 
 ## TDD / verification
 
+- [ ] Unit-test schema version round-trip plus unknown-future-schema diagnostic behavior.
 - [ ] Unit-test accumulation/regression and tag eligibility.
 - [ ] GameTest cow/wolf/zombie examples gain persistent corruption without changing entity type.
 - [ ] GameTest tame/owned entity preserves owner and inventory/state fields.
@@ -38,4 +41,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Existing creatures can become and remain corrupted without destructive entity replacement.
+**Acceptance:** Existing creatures can become and remain corrupted through a version-aware attachment without destructive entity replacement.
