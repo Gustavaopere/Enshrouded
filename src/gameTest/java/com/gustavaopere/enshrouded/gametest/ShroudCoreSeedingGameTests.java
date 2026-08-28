@@ -74,12 +74,19 @@ public final class ShroudCoreSeedingGameTests {
     @GameTest(template = "foundation_empty", timeoutTicks = 30)
     public static void ordinaryLoadedTestChunkDoesNotSeedWithoutPhysicalCore(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
-        int initialCoreCount = ShroudSavedData.get(level).state().cores().size();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+
+        helper.assertBlockNotPresent(ModBlocks.SHROUD_CORE.get(), relative);
+        helper.assertTrue(ShroudSavedData.get(level).state().cores().values().stream()
+                        .noneMatch(core -> core.center().equals(absolute)),
+                "No canonical core should exist at the empty test position before ticking");
 
         helper.runAtTickTime(8L, () -> {
-            int laterCoreCount = ShroudSavedData.get(level).state().cores().size();
-            helper.assertTrue(laterCoreCount == initialCoreCount,
-                    "Loading/ticking an existing chunk without a physical seed must not create a Shroud core");
+            helper.assertBlockNotPresent(ModBlocks.SHROUD_CORE.get(), relative);
+            helper.assertTrue(ShroudSavedData.get(level).state().cores().values().stream()
+                            .noneMatch(core -> core.center().equals(absolute)),
+                    "Loading/ticking an existing chunk without a physical seed must not register a core at that position");
             helper.succeed();
         });
     }
