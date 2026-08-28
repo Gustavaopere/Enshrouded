@@ -31,6 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           bash -n scripts/ci/dedicated-server-reload-smoke.sh
+          bash -n scripts/ci/shroud-saveddata-reload-gametest.sh
           command -v timeout >/dev/null
           timeout --version
 
@@ -127,6 +128,10 @@ jobs:
             exit 1
           fi
           exit "$STATUS"
+
+      - name: Shroud SavedData two-boot reload GameTest
+        shell: bash
+        run: bash scripts/ci/shroud-saveddata-reload-gametest.sh
 
       - name: Dedicated-server save/reload smoke test
         shell: bash
