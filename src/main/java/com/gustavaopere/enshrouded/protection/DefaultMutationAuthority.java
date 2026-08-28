@@ -7,14 +7,21 @@ import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Fail-closed Stage-02 terrain gate consumed by every world mutation sink. */
 public final class DefaultMutationAuthority implements MutationAuthority {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultMutationAuthority.class);
+
     private final MutationSafetyPolicy policy;
     private final FlameWardQuery wardQuery;
     private final ProtectedAreaService protectedAreas;
+    private final AtomicBoolean protectionFailureLogged = new AtomicBoolean();
+    private final AtomicBoolean wardFailureLogged = new AtomicBoolean();
 
     public DefaultMutationAuthority(
             MutationSafetyMode mode,
@@ -50,11 +57,8 @@ public final class DefaultMutationAuthority implements MutationAuthority {
         Objects.requireNonNull(kind, "kind");
 
         BlockState state = level.getBlockState(pos);
-        ProtectionDecision protection = Objects.requireNonNull(
-                protectedAreas.protectionAt(level, pos, kind),
-                "protectedAreas.protectionAt(...)"
-        );
-        boolean warded = wardQuery.suppresses(level, pos);
+        ProtectionDecision protection = protectionAt(level, pos, kind);
+        boolean warded = wardedAt(level, pos);
         boolean blockEntity = level.getBlockEntity(pos) != null;
         boolean safeTagged = state.is(TerrainSafetyTags.CORRUPTIBLE_SAFE);
         boolean aggressiveTagged = state.is(TerrainSafetyTags.CORRUPTIBLE_AGGRESSIVE);
@@ -69,5 +73,40 @@ public final class DefaultMutationAuthority implements MutationAuthority {
                 aggressiveTagged,
                 replaceable
         );
+    }
+
+    private ProtectionDecision protectionAt(ServerLevel level, BlockPos pos, MutationKind kind) {
+        try {
+            ProtectionDecision decision = protectedAreas.protectionAt(level, pos, kind);
+            if (decision != null) {
+                return decision;
+            }
+            logProtectionFailureOnce("Protection adapter returned null; treating the result as INDETERMINATE.", null);
+        } catch (RuntimeException failure) {
+            logProtectionFailureOnce("Protection adapter query failed; treating the result as INDETERMINATE.", failure);
+        }
+        return ProtectionDecision.INDETERMINATE;
+    }
+
+    private boolean wardedAt(ServerLevel level, BlockPos pos) {
+        try {
+            return wardQuery.suppresses(level, pos);
+        } catch (RuntimeException failure) {
+            if (wardFailureLogged.compareAndSet(false, true)) {
+                LOGGER.warn("Flame ward query failed; threat-introducing mutations will fail closed.", failure);
+            }
+            return true;
+        }
+    }
+
+    private void logProtectionFailureOnce(String message, RuntimeException failure) {
+        if (!protectionFailureLogged.compareAndSet(false, true)) {
+            return;
+        }
+        if (failure == null) {
+            LOGGER.warn(message);
+        } else {
+            LOGGER.warn(message, failure);
+        }
     }
 }
