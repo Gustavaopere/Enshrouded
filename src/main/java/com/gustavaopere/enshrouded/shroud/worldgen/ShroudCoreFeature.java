@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.worldgen;
 
 import com.gustavaopere.enshrouded.registry.ModBlocks;
+import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlockEntity;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
@@ -50,6 +51,12 @@ public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
             return false;
         }
 
-        return level.setBlock(corePos, ModBlocks.SHROUD_CORE.get().defaultBlockState(), Block.UPDATE_CLIENTS);
+        if (!level.setBlock(corePos, ModBlocks.SHROUD_CORE.get().defaultBlockState(), Block.UPDATE_CLIENTS)) {
+            return false;
+        }
+        if (level.getBlockEntity(corePos) instanceof ShroudCoreBlockEntity coreBlockEntity) {
+            coreBlockEntity.requestAutomaticActivation();
+        }
+        return true;
     }
 }
