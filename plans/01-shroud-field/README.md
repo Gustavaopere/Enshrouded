@@ -5,9 +5,9 @@
 ## Task order
 
 1. [`✅ 01 state/persistence`](✅-01-shroud-state-persistence.md)
-2. [`02 core lifecycle`](02-core-lifecycle.md)
-3. [`03 frontier expansion`](03-frontier-expansion.md)
-4. [`04 zone query/sync`](04-zone-query-sync.md)
+2. [`✅ 02 core lifecycle`](✅-02-core-lifecycle.md)
+3. [`✅ 03 frontier expansion`](✅-03-frontier-expansion.md)
+4. [`✅ 04 zone query/sync`](✅-04-zone-query-sync.md)
 5. [`05 core seeding`](05-core-seeding.md)
 
 ## Runtime contracts
