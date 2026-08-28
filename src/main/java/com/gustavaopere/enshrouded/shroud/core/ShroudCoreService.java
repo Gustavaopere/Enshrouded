@@ -63,6 +63,30 @@ public final class ShroudCoreService {
         return CoreMutationResult.changed(new ShroudWorldState(state.schemaVersion(), cores, regions));
     }
 
+    public static CoreMutationResult discardDormant(ShroudWorldState state, UUID coreId) {
+        Objects.requireNonNull(state, "state");
+        Objects.requireNonNull(coreId, "coreId");
+
+        ShroudCoreState core = state.cores().get(coreId);
+        if (core == null || core.lifecycleState() != CoreLifecycleState.DORMANT) {
+            return CoreMutationResult.unchanged(state);
+        }
+
+        ShroudRegionState region = state.regions().get(core.regionId());
+        if (region == null || !region.coreId().equals(coreId)) {
+            throw new IllegalStateException("dormant Shroud core has invalid owned region: " + coreId);
+        }
+        if (!region.cells().isEmpty()) {
+            throw new IllegalStateException("cannot discard dormant Shroud core with logical field cells: " + coreId);
+        }
+
+        LinkedHashMap<UUID, ShroudCoreState> cores = new LinkedHashMap<>(state.cores());
+        LinkedHashMap<UUID, ShroudRegionState> regions = new LinkedHashMap<>(state.regions());
+        cores.remove(coreId);
+        regions.remove(core.regionId());
+        return CoreMutationResult.changed(new ShroudWorldState(state.schemaVersion(), cores, regions));
+    }
+
     public static CoreMutationResult activate(ShroudWorldState state, UUID coreId) {
         return transition(state, coreId, CoreLifecycleState.ACTIVE, true);
     }

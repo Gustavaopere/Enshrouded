@@ -49,23 +49,30 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         }
     }
 
-    CoreMutationResult retireActivePersistentCore(ServerLevel serverLevel) {
+    CoreMutationResult retirePhysicalCore(ServerLevel serverLevel) {
         ShroudSavedData savedData = ShroudSavedData.get(serverLevel);
         if (coreId == null) {
             return CoreMutationResult.unchanged(savedData.state());
         }
 
         ShroudCoreState core = savedData.state().cores().get(coreId);
-        if (core == null || core.lifecycleState() != CoreLifecycleState.ACTIVE) {
+        if (core == null) {
             return CoreMutationResult.unchanged(savedData.state());
         }
 
-        CoreMutationResult destruction = ShroudCoreService.destroy(savedData.state(), coreId);
-        if (destruction.changed()) {
-            savedData.replace(destruction.state());
-            NeoForge.EVENT_BUS.post(new ShroudCoreDestroyedEvent(serverLevel, coreId));
+        CoreMutationResult retirement = switch (core.lifecycleState()) {
+            case DORMANT -> ShroudCoreService.discardDormant(savedData.state(), coreId);
+            case ACTIVE -> ShroudCoreService.destroy(savedData.state(), coreId);
+            case DESTROYED, PURIFIED -> CoreMutationResult.unchanged(savedData.state());
+        };
+
+        if (retirement.changed()) {
+            savedData.replace(retirement.state());
+            if (core.lifecycleState() == CoreLifecycleState.ACTIVE) {
+                NeoForge.EVENT_BUS.post(new ShroudCoreDestroyedEvent(serverLevel, coreId));
+            }
         }
-        return destruction;
+        return retirement;
     }
 
     @Override

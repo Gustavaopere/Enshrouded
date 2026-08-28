@@ -24,7 +24,7 @@ public final class ShroudCoreBlock extends Block implements EntityBlock {
         if (state.getBlock() != newState.getBlock()
                 && level instanceof ServerLevel serverLevel
                 && level.getBlockEntity(pos) instanceof ShroudCoreBlockEntity coreBlockEntity) {
-            coreBlockEntity.retireActivePersistentCore(serverLevel);
+            coreBlockEntity.retirePhysicalCore(serverLevel);
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }

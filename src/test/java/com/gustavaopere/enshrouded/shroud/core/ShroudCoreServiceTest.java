@@ -1,10 +1,16 @@
 package com.gustavaopere.enshrouded.shroud.core;
 
+import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
+import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
+import com.gustavaopere.enshrouded.shroud.state.ShroudRegionState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +32,36 @@ final class ShroudCoreServiceTest {
         assertEquals(CoreLifecycleState.DORMANT, core.lifecycleState());
         assertEquals(REGION_ID, core.regionId());
         assertEquals(CORE_ID, result.state().regions().get(REGION_ID).coreId());
+    }
+
+    @Test
+    void discardDormantRemovesOnlyUnactivatedCoreAndOwnedEmptyRegion() {
+        ShroudWorldState dormant = register(ShroudWorldState.empty()).state();
+
+        CoreMutationResult discarded = ShroudCoreService.discardDormant(dormant, CORE_ID);
+
+        assertTrue(discarded.changed());
+        assertFalse(discarded.state().cores().containsKey(CORE_ID));
+        assertFalse(discarded.state().regions().containsKey(REGION_ID));
+        assertFalse(ShroudCoreService.discardDormant(discarded.state(), CORE_ID).changed());
+    }
+
+    @Test
+    void discardDormantCannotEraseActiveCoreOrUnexpectedLogicalField() {
+        ShroudWorldState dormant = register(ShroudWorldState.empty()).state();
+        ShroudWorldState active = ShroudCoreService.activate(dormant, CORE_ID).state();
+
+        CoreMutationResult activeDiscard = ShroudCoreService.discardDormant(active, CORE_ID);
+        assertFalse(activeDiscard.changed());
+        assertSame(active, activeDiscard.state());
+
+        ShroudCellPos position = new ShroudCellPos(0, 0, 0);
+        ShroudCellState cell = new ShroudCellState(position, 0.25D, ShroudSeverity.SHROUD);
+        LinkedHashMap<UUID, ShroudRegionState> regions = new LinkedHashMap<>(dormant.regions());
+        regions.put(REGION_ID, new ShroudRegionState(REGION_ID, CORE_ID, Map.of(position, cell)));
+        ShroudWorldState unexpectedField = new ShroudWorldState(dormant.schemaVersion(), dormant.cores(), regions);
+
+        assertThrows(IllegalStateException.class, () -> ShroudCoreService.discardDormant(unexpectedField, CORE_ID));
     }
 
     @Test
@@ -105,6 +141,7 @@ final class ShroudCoreServiceTest {
         assertThrows(IllegalArgumentException.class, () -> ShroudCoreService.activate(empty, missing));
         assertThrows(IllegalArgumentException.class, () -> ShroudCoreService.destroy(empty, missing));
         assertThrows(IllegalArgumentException.class, () -> ShroudCoreService.markPurified(empty, missing));
+        assertFalse(ShroudCoreService.discardDormant(empty, missing).changed());
     }
 
     @Test
