@@ -7,6 +7,7 @@ import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.api.story.EncounterContext;
+import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -106,5 +107,16 @@ final class DomainContractsTest {
         assertEquals(1, context.manifestationLevel());
         assertThrows(IllegalArgumentException.class,
                 () -> new EncounterContext(UUID.randomUUID(), 0, 42L));
+    }
+
+    @Test
+    void encounterContextSnapshotsMutableOrigin() {
+        BlockPos.MutableBlockPos mutableOrigin = new BlockPos.MutableBlockPos(4, 5, 6);
+        EncounterContext context = new EncounterContext(UUID.randomUUID(), mutableOrigin, 1, 42L);
+
+        mutableOrigin.set(40, 50, 60);
+
+        assertEquals(new BlockPos(4, 5, 6), context.origin());
+        assertNotSame(mutableOrigin, context.origin(), "Encounter origin must not retain a mutable BlockPos reference");
     }
 }
