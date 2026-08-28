@@ -79,10 +79,11 @@ final class ShroudStatePersistenceTest {
                 0L,
                 regionId
         );
+        ShroudRegionState region = new ShroudRegionState(regionId, coreId, Map.of());
         ShroudWorldState state = new ShroudWorldState(
                 ShroudSchema.CURRENT_VERSION,
                 Map.of(coreId, core),
-                Map.of()
+                Map.of(regionId, region)
         );
         CompoundTag corrupted = ShroudStateCodec.encode(state);
         ListTag cores = corrupted.getList("cores", CompoundTag.TAG_COMPOUND);
@@ -137,5 +138,33 @@ final class ShroudStatePersistenceTest {
         assertNotEquals(overworldLike.regions().get(firstRegion), netherLike.regions().get(secondRegion));
         assertEquals(0.25D, overworldLike.regions().get(firstRegion).cells().get(local).intensity());
         assertEquals(0.75D, netherLike.regions().get(secondRegion).cells().get(local).intensity());
+    }
+
+    @Test
+    void rejectsCoreWhoseRegionIsMissing() {
+        UUID coreId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        UUID regionId = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        ShroudCoreState core = new ShroudCoreState(coreId, BlockPos.ZERO, 1, "active", 32, 3L, 0L, regionId);
+
+        assertThrows(IllegalArgumentException.class, () -> new ShroudWorldState(
+                ShroudSchema.CURRENT_VERSION,
+                Map.of(coreId, core),
+                Map.of()
+        ));
+    }
+
+    @Test
+    void rejectsRegionWhoseCoreDoesNotMatchItsOwner() {
+        UUID coreId = UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        UUID otherCoreId = UUID.fromString("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        UUID regionId = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
+        ShroudCoreState core = new ShroudCoreState(coreId, BlockPos.ZERO, 1, "active", 32, 4L, 0L, regionId);
+        ShroudRegionState region = new ShroudRegionState(regionId, otherCoreId, Map.of());
+
+        assertThrows(IllegalArgumentException.class, () -> new ShroudWorldState(
+                ShroudSchema.CURRENT_VERSION,
+                Map.of(coreId, core),
+                Map.of(regionId, region)
+        ));
     }
 }
