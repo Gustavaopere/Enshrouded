@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.core;
 
 import com.gustavaopere.enshrouded.registry.ModBlockEntities;
+import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -45,6 +46,32 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         if (registration.changed()) {
             savedData.replace(registration.state());
         }
+    }
+
+    CoreMutationResult retireActivePersistentCore(ServerLevel serverLevel) {
+        ShroudSavedData savedData = ShroudSavedData.get(serverLevel);
+        if (coreId == null) {
+            return CoreMutationResult.unchanged(savedData.state());
+        }
+
+        ShroudCoreState core = savedData.state().cores().get(coreId);
+        if (core == null || core.lifecycleState() != CoreLifecycleState.ACTIVE) {
+            return CoreMutationResult.unchanged(savedData.state());
+        }
+
+        CoreMutationResult destruction = ShroudCoreService.destroy(savedData.state(), coreId);
+        if (destruction.changed()) {
+            savedData.replace(destruction.state());
+        }
+        return destruction;
+    }
+
+    UUID coreId() {
+        return coreId;
+    }
+
+    UUID regionId() {
+        return regionId;
     }
 
     @Override
