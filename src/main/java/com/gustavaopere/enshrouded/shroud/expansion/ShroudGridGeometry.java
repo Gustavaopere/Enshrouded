@@ -9,6 +9,8 @@ import java.util.Objects;
  * Deterministic conversion between block coordinates and the sparse logical Shroud grid.
  */
 public final class ShroudGridGeometry {
+    public static final int LEVEL_ONE_CELL_SIZE_BLOCKS = 8;
+
     private final int cellSizeBlocks;
 
     public ShroudGridGeometry(int cellSizeBlocks) {
@@ -16,6 +18,10 @@ public final class ShroudGridGeometry {
             throw new IllegalArgumentException("cellSizeBlocks must be > 0");
         }
         this.cellSizeBlocks = cellSizeBlocks;
+    }
+
+    public static ShroudGridGeometry levelOne() {
+        return new ShroudGridGeometry(LEVEL_ONE_CELL_SIZE_BLOCKS);
     }
 
     public int cellSizeBlocks() {
