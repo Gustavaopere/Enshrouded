@@ -6,7 +6,7 @@ Last structural update: 2026-08-28.
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
-- [ ] 01 Shroud Field — not implemented.
+- [ ] 01 Shroud Field — Task 01 `Shroud state persistence` verified and merged; Tasks 02–05 remain open.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
 - [ ] 04 Corrupted Ecology — not implemented.
@@ -20,45 +20,29 @@ Last structural update: 2026-08-28.
 
 - Implementation branch: `round-1-foundation`
 - Final implementation HEAD: `0b1940012628ff0d762961cccb480dc72989455d`
-- PR: #2 — `Foundation: scaffold, contracts, provenance and test infrastructure`
-- Final verification workflow: `33165771852`
-- Final verification job: `98830694040`
-- Verification result: GREEN
-- Merge SHA on `main`: `0b3c345673b81adbbc34a61505cb16200f689ba2`
-- Completed task files: `✅-01-build-scaffold.md`, `✅-02-domain-contracts.md`, `✅-03-upstream-provenance.md`, `✅-04-test-infrastructure.md`
+- PR: #2
+- Final verification workflow/job: `33165771852` / `98830694040` — GREEN
+- Merge SHA: `0b3c345673b81adbbc34a61505cb16200f689ba2`
+- Completed files: `✅-01-build-scaffold.md`, `✅-02-domain-contracts.md`, `✅-03-upstream-provenance.md`, `✅-04-test-infrastructure.md`
 
-### Final executable gates
+## 01 Shroud Field — Task 01 merged record
 
-- [x] Shell harness prerequisites.
-- [x] Official Gradle wrapper provenance/integrity.
-- [x] Gradle 8.14 wrapper execution under Java 21.
-- [x] `./gradlew test` — 33/33 tests GREEN.
-- [x] Diff sanity.
-- [x] NeoForge build.
-- [x] Production JAR sanity, including metadata/license/notices and no GameTest leakage.
-- [x] GameTest server with Foundation tests discovered and GREEN.
-- [x] Dedicated-server two-boot save/reload sentinel GREEN.
+- Task: `01-shroud-state-persistence`
+- Implementation branch: `feat/01-shroud-state`
+- Initial RED: `9e3f1a4a5295a9d749ca7edf8a0610ec98de72f0`
+- Ownership-integrity RED: `e4b6b61e7bee713ba5deeb7596d620a47f403b67`
+- Verified implementation HEAD: `6b8a4fbd550721b74bccc7f1b705d99c62ff054d`
+- PR: #8 — `Stage 01: persist dimension-local Shroud state`
+- Verification workflow/job: `33168930216` / `98841011566` — GREEN
+- Verification: 43 unit tests, NeoForge build/JAR sanity, GameTest server, Shroud SavedData two-boot reload and dedicated-server two-boot reload all GREEN.
+- Merge SHA on `main`: `46250e44e119c4a7e7adb4d7c23ecf5afe5a5434`
+- Completed task file: `✅-01-shroud-state-persistence.md`
 
-### Final corrections found by executable CI
-
-- `1c221423ebb9a62c487368d358788a1596048441` removed unsupported NeoGradle 7.1.26 `setForceExit false` DSL after the first real runner failed during project evaluation.
-- `0b1940012628ff0d762961cccb480dc72989455d` added the audited Ars Zero source SHA required by `ProvenanceDocumentationTest`; the subsequent final run passed all 33 tests and every downstream runtime gate.
-
-### Foundation-owned contracts now frozen
-
-- Shroud query/severity/sample boundaries.
-- `MutationAuthority` / mutation kinds.
-- `ProgressionOwner`, `ProgressionOwnerResolver`, `FlamePassageQuery`.
-- `FlameWardQuery` and latent-field Sanctuary semantics.
-- Magic classification boundary.
-- Lich manifestation provider boundary and explicit immutable encounter origin.
-- Architecture/provenance guards and excluded fungus regression protection.
-
-Cross-stage implementation/consumption obligations remain tracked in `PENDING.md`; they do not make Foundation incomplete.
+Task 01 provides dimension-local sparse/versioned `ShroudSavedData`, deterministic NBT codec, persisted core/region/cell state, fail-closed future schema handling, duplicate rejection and bidirectional core↔region ownership integrity.
 
 ## Immediate next step
 
-Create `feat/01-shroud-state` from the latest `main`. Read `plans/01-shroud-field/README.md` and `plans/01-shroud-field/01-shroud-state-persistence.md`, then start with an observed RED before production SavedData/state implementation.
+Create `feat/01-core-lifecycle` from the latest `main`. Read `plans/01-shroud-field/README.md` and `plans/01-shroud-field/02-core-lifecycle.md`, then begin with an observed RED before production lifecycle behavior.
 
 ## Level 1 release gate
 
