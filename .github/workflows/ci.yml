@@ -81,12 +81,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          JAR="$(find build/libs -maxdepth 1 -type f -name 'Enshrouded*.jar' | head -n 1)"
-          test -n "$JAR"
-          jar tf "$JAR" | grep -Fx 'META-INF/neoforge.mods.toml'
-          jar tf "$JAR" | grep -Fx 'com/gustavaopere/enshrouded/Enshrouded.class'
-          jar tf "$JAR" | grep -Fx 'LICENSE'
-          jar tf "$JAR" | grep -Fx 'THIRD_PARTY_NOTICES.md'
+          shopt -s nullglob
+          JARS=(build/libs/Enshrouded*.jar)
+          if (( ${#JARS[@]} != 1 )); then
+            echo "Expected exactly one Enshrouded JAR, found ${#JARS[@]}"
+            printf '%s\n' "${JARS[@]:-}"
+            exit 1
+          fi
+          JAR="${JARS[0]}"
+          JAR_LIST="$(jar tf "$JAR")"
+
+          grep -Fxq 'META-INF/neoforge.mods.toml' <<<"$JAR_LIST"
+          grep -Fxq 'com/gustavaopere/enshrouded/Enshrouded.class' <<<"$JAR_LIST"
+          grep -Fxq 'LICENSE' <<<"$JAR_LIST"
+          grep -Fxq 'THIRD_PARTY_NOTICES.md' <<<"$JAR_LIST"
 
           MODS_TOML="$(unzip -p "$JAR" META-INF/neoforge.mods.toml)"
           grep -Fq 'modId="enshrouded"' <<<"$MODS_TOML"
@@ -98,7 +106,7 @@ jobs:
             exit 1
           fi
 
-          if jar tf "$JAR" | grep -Fq 'com/gustavaopere/enshrouded/gametest/'; then
+          if grep -Fq 'com/gustavaopere/enshrouded/gametest/' <<<"$JAR_LIST"; then
             echo 'GameTest-only classes leaked into the production JAR'
             exit 1
           fi
