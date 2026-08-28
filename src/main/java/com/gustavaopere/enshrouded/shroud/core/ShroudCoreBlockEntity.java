@@ -66,14 +66,6 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         return destruction;
     }
 
-    UUID coreId() {
-        return coreId;
-    }
-
-    UUID regionId() {
-        return regionId;
-    }
-
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
