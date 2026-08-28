@@ -6,7 +6,7 @@ Last structural update: 2026-08-28.
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
-- [ ] 01 Shroud Field — 2/5 tasks merged; state/persistence and core lifecycle complete.
+- [ ] 01 Shroud Field — 3/5 tasks merged; state/persistence, core lifecycle and bounded frontier expansion complete.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
 - [ ] 04 Corrupted Ecology — not implemented.
@@ -107,9 +107,41 @@ Cross-stage implementation/consumption obligations remain tracked in `PENDING.md
 
 Stage 02 remains the owner of the runtime `DESTROYED -> PURIFIED` trigger; Stage 01 only defines and enforces the legal lifecycle shape.
 
+### ✅ 03 bounded frontier expansion
+
+- Implementation branch: `feat/01-frontier-expansion`
+- Initial RED: `39cf5d602baf8b20be29c42c505f6ded37e7a510`
+- Review-regression RED: `d457d46d4d7b774cb26aac906e94d35ac36bb15c`
+- Final implementation HEAD: `6fc270e4d5faaf35b1d52365f34ab2b318b41811`
+- PR: #11 — `Stage 01: implement bounded frontier expansion`
+- Final PR-head verification workflow: `33195407903`
+- Final PR-head verification job: `98931223350`
+- Verification result: GREEN
+- Merge SHA on `main`: `bd2ae8faee2b1c69d8e1f08e314f48e71ae418c8`
+- Completed task file: `✅-03-frontier-expansion.md`
+
+### Frontier expansion executable gates on exact merged PR head
+
+- [x] Wrapper provenance/integrity.
+- [x] Unit tests, including scheduler-owned hard-radius and capacity-1 overflow regressions.
+- [x] Reject-only 10k/100k frontier benchmark.
+- [x] Apply-heavy `20k existing + 5k applied` performance regression benchmark.
+- [x] Diff sanity.
+- [x] NeoForge build and production JAR sanity.
+- [x] GameTest server.
+- [x] Shroud SavedData two-boot reload GameTest.
+- [x] Dedicated-server two-boot save/reload smoke.
+
+### Frontier review closeout
+
+- Scheduler now enforces `maxInfluenceRadius` independently of `ShroudPropagationPolicy`.
+- Region updates use one mutable working map per touched region/tick and freeze once, avoiding per-cell full-region copies.
+- Frontier capacity remains strictly bounded; retryable overflow is reconstructed deterministically from persisted logical region state after queue exhaustion without Minecraft world/chunk scans or an unbounded auxiliary queue.
+- All three Codex review findings were answered with regression-test and CI evidence before merge.
+
 ## Immediate next step
 
-Create `feat/01-frontier-expansion` from the latest `main`. Read `plans/01-shroud-field/03-frontier-expansion.md`, inspect the merged state/core lifecycle contracts, then begin with an observed RED before production frontier scheduling/expansion code.
+Create `feat/01-zone-query-sync` from the latest `main`. Read `plans/01-shroud-field/04-zone-query-sync.md`, inspect the merged state/core/frontier contracts and Foundation `ShroudQuery`/`ShroudSample`/`FlameWardQuery` boundaries, then begin with an observed RED before production query/sync code.
 
 ## Level 1 release gate
 
