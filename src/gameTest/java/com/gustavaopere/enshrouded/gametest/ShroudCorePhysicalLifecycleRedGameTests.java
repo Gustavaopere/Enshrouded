@@ -59,7 +59,8 @@ public final class ShroudCorePhysicalLifecycleRedGameTests {
             ShroudCoreState core = data.state().cores().values().stream()
                     .filter(candidate -> candidate.center().equals(absolute))
                     .findFirst()
-                    .orElseThrow(() -> helper.fail("Placed core did not register before destruction"));
+                    .orElse(null);
+            helper.assertTrue(core != null, "Placed core did not register before destruction");
             coreId[0] = core.id();
 
             CoreMutationResult activation = ShroudCoreService.activate(data.state(), core.id());
