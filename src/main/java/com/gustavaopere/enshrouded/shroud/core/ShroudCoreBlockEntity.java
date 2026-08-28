@@ -17,10 +17,12 @@ import java.util.UUID;
 public final class ShroudCoreBlockEntity extends BlockEntity {
     private static final String CORE_ID_TAG = "CoreId";
     private static final String REGION_ID_TAG = "RegionId";
+    private static final String AUTO_ACTIVATE_TAG = "AutoActivate";
     private static final int LEVEL_ONE_TIER = 1;
 
     private UUID coreId;
     private UUID regionId;
+    private boolean autoActivate;
 
     public ShroudCoreBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SHROUD_CORE.get(), pos, state);
@@ -34,19 +36,43 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         }
 
         ensureLocalIdentity();
-        ShroudSavedData savedData = ShroudSavedData.get(serverLevel);
-        CoreMutationResult registration = ShroudCoreService.registerDormant(
-                savedData.state(),
+        ShroudCoreRegistrationQueue.enqueue(
+                serverLevel,
+                worldPosition,
                 coreId,
                 regionId,
-                worldPosition,
                 LEVEL_ONE_TIER,
                 EnshroudedConfig.coreMaxInfluenceRadius(),
-                expansionSeed(coreId)
+                expansionSeed(coreId),
+                autoActivate
         );
-        if (registration.changed()) {
-            savedData.replace(registration.state());
+    }
+
+    /**
+     * Marks this physical core as an automatic seed rather than a manually placed dormant core.
+     * The flag is persisted locally; canonical activation still happens only when the registration
+     * queue drains on the server tick.
+     */
+    public void requestAutomaticActivation() {
+        autoActivate = true;
+        setChanged();
+        if (level instanceof ServerLevel serverLevel) {
+            ensureLocalIdentity();
+            ShroudCoreRegistrationQueue.enqueue(
+                    serverLevel,
+                    worldPosition,
+                    coreId,
+                    regionId,
+                    LEVEL_ONE_TIER,
+                    EnshroudedConfig.coreMaxInfluenceRadius(),
+                    expansionSeed(coreId),
+                    true
+            );
         }
+    }
+
+    boolean matchesIdentity(UUID expectedCoreId, UUID expectedRegionId) {
+        return expectedCoreId.equals(coreId) && expectedRegionId.equals(regionId);
     }
 
     CoreMutationResult retirePhysicalCore(ServerLevel serverLevel) {
@@ -85,6 +111,7 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         }
         coreId = hasCoreId ? tag.getUUID(CORE_ID_TAG) : null;
         regionId = hasRegionId ? tag.getUUID(REGION_ID_TAG) : null;
+        autoActivate = tag.getBoolean(AUTO_ACTIVATE_TAG);
     }
 
     @Override
@@ -93,6 +120,9 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         if (coreId != null && regionId != null) {
             tag.putUUID(CORE_ID_TAG, coreId);
             tag.putUUID(REGION_ID_TAG, regionId);
+        }
+        if (autoActivate) {
+            tag.putBoolean(AUTO_ACTIVATE_TAG, true);
         }
     }
 
