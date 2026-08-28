@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.gametest;
 
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,14 +38,13 @@ public final class ShroudSavedDataGameTests {
         ShroudSavedData data = ShroudSavedData.get(level);
         helper.assertTrue(data == ShroudSavedData.get(level), "Same ServerLevel must return the same SavedData instance");
 
-        ShroudWorldState expected = sentinelState();
-        if (data.state().cores().isEmpty()) {
-            data.replace(expected);
-            helper.assertTrue(data.isDirty(), "Replacing Shroud state must mark SavedData dirty");
+        if (!data.state().cores().containsKey(CORE_ID)) {
+            data.replace(withSentinel(data.state()));
+            helper.assertTrue(data.isDirty(), "Installing the Shroud reload sentinel must mark SavedData dirty");
             GameTestBootstrap.forceSaveForReload(helper);
             System.out.println("ENSHROUDED_SHROUD_SAVEDDATA_CREATED");
         } else {
-            helper.assertTrue(data.state().equals(expected), "Reloaded Shroud SavedData must match the persisted sentinel exactly");
+            assertSentinelPreserved(helper, data.state());
             System.out.println("ENSHROUDED_SHROUD_SAVEDDATA_RELOADED");
         }
 
@@ -66,12 +67,37 @@ public final class ShroudSavedDataGameTests {
         helper.succeed();
     }
 
+    private static ShroudWorldState withSentinel(ShroudWorldState existing) {
+        ShroudWorldState sentinel = sentinelState();
+        if (existing.regions().containsKey(REGION_ID)) {
+            throw new IllegalStateException("Shroud reload sentinel region id collided with pre-existing state");
+        }
+
+        LinkedHashMap<UUID, ShroudCoreState> cores = new LinkedHashMap<>(existing.cores());
+        LinkedHashMap<UUID, ShroudRegionState> regions = new LinkedHashMap<>(existing.regions());
+        cores.put(CORE_ID, sentinel.cores().get(CORE_ID));
+        regions.put(REGION_ID, sentinel.regions().get(REGION_ID));
+        return new ShroudWorldState(existing.schemaVersion(), cores, regions);
+    }
+
+    private static void assertSentinelPreserved(GameTestHelper helper, ShroudWorldState actual) {
+        ShroudWorldState sentinel = sentinelState();
+        helper.assertTrue(
+                sentinel.cores().get(CORE_ID).equals(actual.cores().get(CORE_ID)),
+                "Reloaded Shroud SavedData must preserve the sentinel core exactly"
+        );
+        helper.assertTrue(
+                sentinel.regions().get(REGION_ID).equals(actual.regions().get(REGION_ID)),
+                "Reloaded Shroud SavedData must preserve the sentinel region/cell data exactly"
+        );
+    }
+
     private static ShroudWorldState sentinelState() {
         ShroudCoreState core = new ShroudCoreState(
                 CORE_ID,
                 new BlockPos(96, 64, -48),
                 1,
-                "active",
+                CoreLifecycleState.ACTIVE,
                 128,
                 0x51A0D5EEDL,
                 11L,

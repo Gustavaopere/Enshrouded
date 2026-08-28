@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.state;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -58,7 +59,7 @@ public final class ShroudStateCodec {
         tag.putInt("center_y", core.center().getY());
         tag.putInt("center_z", core.center().getZ());
         tag.putInt("tier", core.tier());
-        tag.putString("lifecycle_state", core.lifecycleState());
+        tag.putString("lifecycle_state", core.lifecycleState().id());
         tag.putInt("max_influence_radius", core.maxInfluenceRadius());
         tag.putLong("expansion_seed", core.expansionSeed());
         tag.putLong("expansion_epoch", core.expansionEpoch());
@@ -72,11 +73,14 @@ public final class ShroudStateCodec {
             CompoundTag tag = list.getCompound(index);
             UUID id = parseUuid(tag.getString("id"), "core id");
             UUID regionId = parseUuid(tag.getString("region_id"), "core region id");
+            String lifecycleId = tag.getString("lifecycle_state");
+            CoreLifecycleState lifecycle = CoreLifecycleState.fromId(lifecycleId)
+                    .orElseThrow(() -> new IllegalArgumentException("unknown core lifecycle state: " + lifecycleId));
             ShroudCoreState state = new ShroudCoreState(
                     id,
                     new BlockPos(tag.getInt("center_x"), tag.getInt("center_y"), tag.getInt("center_z")),
                     tag.getInt("tier"),
-                    tag.getString("lifecycle_state"),
+                    lifecycle,
                     tag.getInt("max_influence_radius"),
                     tag.getLong("expansion_seed"),
                     tag.getLong("expansion_epoch"),
