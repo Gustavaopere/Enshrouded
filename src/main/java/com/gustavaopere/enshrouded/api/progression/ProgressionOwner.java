@@ -11,6 +11,9 @@ public record ProgressionOwner(Kind kind, String id) {
         if (id.isBlank()) {
             throw new IllegalArgumentException("progression owner id must not be blank");
         }
+        if (!id.equals(id.strip())) {
+            throw new IllegalArgumentException("progression owner id must not contain leading or trailing whitespace");
+        }
         if (kind == Kind.PLAYER) {
             UUID parsed = UUID.fromString(id);
             String canonical = parsed.toString();
