@@ -6,7 +6,7 @@ Last structural update: 2026-08-28.
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
-- [ ] 01 Shroud Field — not implemented.
+- [ ] 01 Shroud Field — 1/5 tasks merged; state/persistence complete.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
 - [ ] 04 Corrupted Ecology — not implemented.
@@ -56,9 +56,35 @@ Last structural update: 2026-08-28.
 
 Cross-stage implementation/consumption obligations remain tracked in `PENDING.md`; they do not make Foundation incomplete.
 
+## 01 Shroud Field — progress
+
+### ✅ 01 state/persistence
+
+- Implementation branch: `feat/01-shroud-state`
+- Initial RED: `9e3f1a4a5295a9d749ca7edf8a0610ec98de72f0`
+- Ownership-integrity RED: `e4b6b61e7bee713ba5deeb7596d620a47f403b67`
+- Verified implementation HEAD: `6b8a4fbd550721b74bccc7f1b705d99c62ff054d`
+- PR: #8 — `Stage 01: persist dimension-local Shroud state`
+- Final PR head: `3b893d9c54a4252b551f130715dfef7cc6210aab`
+- Final PR-head verification workflow: `33169285643`
+- Final PR-head verification job: `98842192376`
+- Verification result: GREEN
+- Merge SHA on `main`: `46250e44e119c4a7e7adb4d7c23ecf5afe5a5434`
+- Completed task file: `✅-01-shroud-state-persistence.md`
+
+### Executable gates on exact merged PR head
+
+- [x] Wrapper provenance/integrity.
+- [x] Unit tests.
+- [x] Diff sanity.
+- [x] NeoForge build and production JAR sanity.
+- [x] GameTest server.
+- [x] Shroud SavedData two-boot reload GameTest.
+- [x] Dedicated-server two-boot save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/01-shroud-state` from the latest `main`. Read `plans/01-shroud-field/README.md` and `plans/01-shroud-field/01-shroud-state-persistence.md`, then start with an observed RED before production SavedData/state implementation.
+Create `feat/01-core-lifecycle` from the latest `main`. Read `plans/01-shroud-field/02-core-lifecycle.md`, inspect the merged Shroud state contracts, then begin with an observed RED before production core-lifecycle implementation.
 
 ## Level 1 release gate
 

@@ -53,7 +53,7 @@ Implementation HEAD `6b8a4fbd550721b74bccc7f1b705d99c62ff054d` passed workflow `
 - Shroud SavedData two-boot reload GameTest;
 - dedicated-server two-boot save/reload smoke.
 
-The closing documentation-only checkpoint must itself pass the same CI before merge. If it does not, the task is reopened.
+The exact merged PR head `3b893d9c54a4252b551f130715dfef7cc6210aab` then passed workflow `33169285643`, job `98842192376` with every committed gate GREEN before PR #8 merged.
 
 ## Merge gate
 
@@ -61,6 +61,14 @@ The closing documentation-only checkpoint must itself pass the same CI before me
 - [x] `./gradlew test` is GREEN.
 - [x] NeoForge build, GameTests, Shroud SavedData reload and dedicated-server smoke are GREEN.
 - [x] No unresolved cross-stage contract introduced by this task is hidden; existing later-stage boundaries remain tracked in `plans/PENDING.md`.
-- [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
+- [x] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
+
+## Merge record
+
+- Branch: `feat/01-shroud-state`
+- PR: #8 — `Stage 01: persist dimension-local Shroud state`
+- Final PR head: `3b893d9c54a4252b551f130715dfef7cc6210aab`
+- Final PR-head CI: workflow `33169285643`, job `98842192376` — GREEN
+- Merge SHA on `main`: `46250e44e119c4a7e7adb4d7c23ecf5afe5a5434`
 
 **Acceptance:** A server restart preserves the exact dimension-local logical Shroud field with bounded serialized data, no duplicate/inconsistent core identities and no cross-dimension state leakage.
