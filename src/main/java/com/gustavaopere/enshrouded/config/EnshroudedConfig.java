@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.config;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import com.gustavaopere.enshrouded.shroud.core.CoreSafetyLimits;
 import com.gustavaopere.enshrouded.shroud.query.ShroudSeverityThresholds;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -12,6 +13,9 @@ public final class EnshroudedConfig {
     private static final ModConfigSpec.IntValue CORE_MAX_INFLUENCE_RADIUS;
     private static final ModConfigSpec.IntValue CORE_GROWTH_WORK_PER_TICK;
     private static final ModConfigSpec.DoubleValue SHROUD_DEADLY_INTENSITY_THRESHOLD;
+    private static final ModConfigSpec.EnumValue<MutationSafetyMode> TERRAIN_MUTATION_MODE;
+    private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_INDETERMINATE_PROTECTION;
+    private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -44,6 +48,19 @@ public final class EnshroudedConfig {
                         1.0D
                 );
         builder.pop();
+
+        builder.push("terrainSafety");
+        TERRAIN_MUTATION_MODE = builder
+                .comment("Terrain mutation policy. SAFE mutates only explicitly safe-tagged terrain; AGGRESSIVE additionally permits aggressive-tagged terrain.")
+                .defineEnum("mutationMode", MutationSafetyMode.SAFE);
+        TERRAIN_ALLOW_INDETERMINATE_PROTECTION = builder
+                .comment("Expert override: allow mutation when an installed protection adapter cannot determine protection. Fail-closed by default.")
+                .define("allowIndeterminateProtection", false);
+        TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION = builder
+                .comment("Expert override: allow tagged block entities/containers to be mutated. Disabled by default.")
+                .define("allowBlockEntityMutation", false);
+        builder.pop();
+
         SERVER_SPEC = builder.build();
     }
 
@@ -60,5 +77,17 @@ public final class EnshroudedConfig {
 
     public static float shroudDeadlyIntensityThreshold() {
         return SHROUD_DEADLY_INTENSITY_THRESHOLD.get().floatValue();
+    }
+
+    public static MutationSafetyMode terrainMutationMode() {
+        return TERRAIN_MUTATION_MODE.get();
+    }
+
+    public static boolean terrainAllowIndeterminateProtection() {
+        return TERRAIN_ALLOW_INDETERMINATE_PROTECTION.get();
+    }
+
+    public static boolean terrainAllowBlockEntityMutation() {
+        return TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION.get();
     }
 }
