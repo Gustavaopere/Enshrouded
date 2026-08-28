@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ShroudCoreWorldgenContractRedTest {
@@ -17,11 +16,9 @@ class ShroudCoreWorldgenContractRedTest {
             "src/main/resources/data/enshrouded/neoforge/biome_modifier/shroud_core.json");
 
     @Test
-    void featureAndRegistryBootstrapExist() {
-        assertDoesNotThrow(() -> Class.forName(
-                "com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreFeature"));
-        assertDoesNotThrow(() -> Class.forName(
-                "com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreWorldgenRegistry"));
+    void featureAndRegistryBootstrapExist() throws Exception {
+        Class.forName("com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreFeature");
+        Class.forName("com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreWorldgenRegistry");
     }
 
     @Test
