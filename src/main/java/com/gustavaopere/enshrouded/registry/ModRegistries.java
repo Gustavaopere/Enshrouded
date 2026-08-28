@@ -10,5 +10,6 @@ public final class ModRegistries {
 
     public static void register(IEventBus modBus) {
         Objects.requireNonNull(modBus, "modBus");
+        ModBlocks.BLOCKS.register(modBus);
     }
 }
