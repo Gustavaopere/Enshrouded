@@ -6,7 +6,7 @@ Last structural update: 2026-08-28.
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
-- [ ] 01 Shroud Field — 3/5 tasks merged; state/persistence, core lifecycle and bounded frontier expansion complete.
+- [ ] 01 Shroud Field — 4/5 tasks merged; state/persistence, core lifecycle, bounded frontier expansion and canonical zone query/client sync complete.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
 - [ ] 04 Corrupted Ecology — not implemented.
@@ -139,9 +139,47 @@ Stage 02 remains the owner of the runtime `DESTROYED -> PURIFIED` trigger; Stage
 - Frontier capacity remains strictly bounded; retryable overflow is reconstructed deterministically from persisted logical region state after queue exhaustion without Minecraft world/chunk scans or an unbounded auxiliary queue.
 - All three Codex review findings were answered with regression-test and CI evidence before merge.
 
+### ✅ 04 canonical zone query and client sync
+
+- Implementation branch: `feat/01-zone-query-sync`
+- Initial query/sync RED: `4c1dc0d44cc1dc9493c239cb70c96950c1051136`
+- Spatial-semantics RED: `b071ba032f4cbc80741cb8f3c54eabe3783a933d`
+- Sync ordering/rate-limit RED: `192402664738f4e400d1ff5442873e7ad87df39a`
+- Final implementation HEAD: `844760a4cbc411b3cce2409fa99f4b20e19bddaa`
+- PR: #13 — `Stage 01: implement canonical zone query and client sync`
+- Push verification workflow: `33198832868`
+- Push verification job: `98942849019`
+- Final PR-head verification workflow: `33199383533`
+- Final PR-head verification job: `98944636449`
+- Verification result: GREEN
+- Merge SHA on `main`: `39ed2b1a689b1560a06b6a9e961fde50c68c18a1`
+- Completed task file: `✅-04-zone-query-sync.md`
+
+### Zone query/sync executable gates on exact merged PR head
+
+- [x] Wrapper provenance/integrity.
+- [x] Unit tests for severity thresholds, deterministic overlap, latent-field Flame Ward semantics, payload ordering and sync rate limits.
+- [x] Indexed local-query complexity regression benchmark.
+- [x] Clientbound-only network direction guard; no Shroud serverbound/bidirectional payload registration.
+- [x] Connection-scoped client sequence reset and stale payload rejection.
+- [x] Frontier performance baseline.
+- [x] Diff sanity.
+- [x] NeoForge build and production JAR sanity.
+- [x] GameTest server.
+- [x] Shroud SavedData two-boot reload GameTest.
+- [x] Dedicated-server two-boot save/reload smoke.
+
+### Zone query/sync closeout
+
+- The canonical query consumes existing logical SavedData and does not introduce a second world-state authority.
+- Spatial lookup is cached/indexed per immutable logical snapshot and does not scan all world cores per sample.
+- Overlap resolution is deterministic; server config owns severity thresholds.
+- Sanctuary remains an effective overlay through `sanctuarySuppressed`; latent logical severity/intensity/source are preserved.
+- Client synchronization is compact, clientbound-only, change-driven and rate-limited; renderer-specific presentation stays local.
+
 ## Immediate next step
 
-Create `feat/01-zone-query-sync` from the latest `main`. Read `plans/01-shroud-field/04-zone-query-sync.md`, inspect the merged state/core/frontier contracts and Foundation `ShroudQuery`/`ShroudSample`/`FlameWardQuery` boundaries, then begin with an observed RED before production query/sync code.
+Create `feat/01-core-seeding` from the latest `main`. Read `plans/01-shroud-field/05-core-seeding.md`, inspect the merged core lifecycle, frontier, query and safety/config contracts, then begin with an observed RED before production seeding code.
 
 ## Level 1 release gate
 
