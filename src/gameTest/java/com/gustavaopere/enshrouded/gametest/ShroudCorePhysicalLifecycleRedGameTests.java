@@ -46,6 +46,42 @@ public final class ShroudCorePhysicalLifecycleRedGameTests {
     }
 
     @GameTest(template = "foundation_empty", timeoutTicks = 40)
+    public static void removingDormantPhysicalCoreDiscardsUnactivatedPersistentRegistration(GameTestHelper helper) {
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        UUID[] coreId = new UUID[1];
+        UUID[] regionId = new UUID[1];
+
+        helper.setBlock(relative, ModBlocks.SHROUD_CORE.get());
+
+        helper.runAtTickTime(2L, () -> {
+            ShroudCoreState core = ShroudSavedData.get(level).state().cores().values().stream()
+                    .filter(candidate -> candidate.center().equals(absolute))
+                    .findFirst()
+                    .orElse(null);
+            helper.assertTrue(core != null, "Placed dormant core did not register before removal");
+            helper.assertTrue(core.lifecycleState() == CoreLifecycleState.DORMANT,
+                    "Freshly placed core must still be DORMANT before activation");
+            coreId[0] = core.id();
+            regionId[0] = core.regionId();
+            helper.destroyBlock(relative);
+        });
+
+        helper.runAtTickTime(4L, () -> {
+            helper.assertTrue(coreId[0] != null && regionId[0] != null,
+                    "Dormant core identity must be captured before physical removal");
+            var persisted = ShroudSavedData.get(level).state();
+            helper.assertTrue(!persisted.cores().containsKey(coreId[0]),
+                    "Removing an unactivated DORMANT physical core must not leave an orphan core registration");
+            helper.assertTrue(!persisted.regions().containsKey(regionId[0]),
+                    "Removing an unactivated DORMANT physical core must not leave an orphan region registration");
+            helper.assertBlockNotPresent(ModBlocks.SHROUD_CORE.get(), relative);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "foundation_empty", timeoutTicks = 40)
     public static void destroyingActivePhysicalCoreTransitionsPersistentCoreToDestroyed(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos relative = new BlockPos(1, 1, 1);
