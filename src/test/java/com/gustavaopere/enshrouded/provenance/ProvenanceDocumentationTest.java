@@ -29,6 +29,7 @@ final class ProvenanceDocumentationTest {
         assertTrue(noticeText.contains("491aaa7e3c8c01eff0a7859ccfe2a62500ed15bc"));
         assertTrue(noticeText.contains("Apache License 2.0"));
         assertTrue(noticeText.contains("Ars Zero"));
+        assertTrue(noticeText.contains("9478291a9f331ee2b4a391c4581a342d342ac7dc"));
         assertTrue(noticeText.contains("GPLv3"));
 
         String packText = Files.readString(compatibility);
@@ -84,8 +85,10 @@ final class ProvenanceDocumentationTest {
         Class<?> inventory = Class.forName("com.gustavaopere.enshrouded.provenance.UpstreamInventory");
         Field sculkSha = inventory.getField("SCULK_HORDE_SOURCE_SHA");
         Field arsZeroVersion = inventory.getField("ARS_ZERO_PACK_VERSION");
+        Field arsZeroSourceSha = inventory.getField("ARS_ZERO_SOURCE_SHA");
         assertEquals("491aaa7e3c8c01eff0a7859ccfe2a62500ed15bc", sculkSha.get(null));
         assertEquals("2.0.2", arsZeroVersion.get(null));
+        assertEquals("9478291a9f331ee2b4a391c4581a342d342ac7dc", arsZeroSourceSha.get(null));
     }
 
     @Test
