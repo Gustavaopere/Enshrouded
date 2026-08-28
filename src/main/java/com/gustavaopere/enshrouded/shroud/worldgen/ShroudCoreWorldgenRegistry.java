@@ -1,7 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.worldgen;
 
 import com.gustavaopere.enshrouded.Enshrouded;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.neoforged.bus.api.IEventBus;
@@ -13,7 +13,7 @@ public final class ShroudCoreWorldgenRegistry {
     public static final int MINIMUM_SPACING_BLOCKS = 128;
 
     public static final DeferredRegister<Feature<?>> FEATURES =
-            DeferredRegister.create(Registries.FEATURE, Enshrouded.MOD_ID);
+            DeferredRegister.create(BuiltInRegistries.FEATURE, Enshrouded.MOD_ID);
 
     public static final DeferredHolder<Feature<?>, ShroudCoreFeature> SHROUD_CORE = FEATURES.register(
             "shroud_core",
