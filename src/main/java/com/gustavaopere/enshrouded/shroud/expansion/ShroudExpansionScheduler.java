@@ -6,6 +6,7 @@ import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudRegionState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
+import net.minecraft.core.BlockPos;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public final class ShroudExpansionScheduler {
     private final int frontierCapacityPerCore;
     private final Map<UUID, ShroudFrontier> frontiers = new HashMap<>();
     private final Map<UUID, Long> nextSequence = new HashMap<>();
+    private final Map<UUID, Long> exhaustedEpochs = new HashMap<>();
     private UUID nextCoreHint;
 
     public ShroudExpansionScheduler(
@@ -48,6 +50,7 @@ public final class ShroudExpansionScheduler {
         ShroudFrontier frontier = frontiers.computeIfAbsent(coreId, ignored -> new ShroudFrontier(frontierCapacityPerCore));
         boolean accepted = frontier.offer(entry);
         if (accepted) {
+            exhaustedEpochs.remove(coreId);
             nextSequence.merge(coreId, Math.addExact(entry.sequence(), 1L), Math::max);
         }
         return accepted;
@@ -64,6 +67,7 @@ public final class ShroudExpansionScheduler {
         Objects.requireNonNull(budget, "budget");
 
         discardIneligibleFrontiers(state);
+        refillEmptyFrontiers(state);
         List<UUID> activeCoreIds = activeQueuedCoreIds(state);
         if (activeCoreIds.isEmpty()) {
             nextCoreHint = null;
@@ -71,6 +75,7 @@ public final class ShroudExpansionScheduler {
         }
 
         LinkedHashMap<UUID, ShroudRegionState> regions = new LinkedHashMap<>(state.regions());
+        Map<UUID, WorkingRegion> workingRegions = new HashMap<>();
         LinkedHashMap<UUID, Integer> processedPerCore = new LinkedHashMap<>();
         int processedEntries = 0;
         int appliedCells = 0;
@@ -95,7 +100,7 @@ public final class ShroudExpansionScheduler {
                 if (core != null
                         && core.lifecycleState().expansionEligible()
                         && entry.expansionEpoch() == core.expansionEpoch()) {
-                    appliedCells += processEntry(core, entry, regions);
+                    appliedCells += processEntry(core, entry, regions, workingRegions);
                 }
             } else {
                 visitsWithoutProgress++;
@@ -105,16 +110,24 @@ public final class ShroudExpansionScheduler {
             nextCoreHint = activeCoreIds.get(index);
         }
 
-        ShroudWorldState nextState = appliedCells == 0
-                ? state
-                : new ShroudWorldState(state.schemaVersion(), state.cores(), regions);
+        if (appliedCells == 0) {
+            return new TickResult(state, processedEntries, 0, processedPerCore);
+        }
+
+        workingRegions.forEach((regionId, workingRegion) -> regions.put(regionId, workingRegion.freeze()));
+        ShroudWorldState nextState = new ShroudWorldState(state.schemaVersion(), state.cores(), regions);
         return new TickResult(nextState, processedEntries, appliedCells, processedPerCore);
     }
 
     private int processEntry(
             ShroudCoreState core,
             ShroudFrontierEntry entry,
-            Map<UUID, ShroudRegionState> regions) {
+            Map<UUID, ShroudRegionState> regions,
+            Map<UUID, WorkingRegion> workingRegions) {
+        if (!withinMaximumInfluenceRadius(core, entry.position())) {
+            return 0;
+        }
+
         double intensity = policy.intensity(core, geometry, entry.position());
         if (intensity <= 0.0D) {
             return 0;
@@ -125,25 +138,31 @@ public final class ShroudExpansionScheduler {
             throw new IllegalStateException("core has no valid owned Shroud region: " + core.id());
         }
 
-        if (region.cells().containsKey(entry.position())) {
+        WorkingRegion existingWorkingRegion = workingRegions.get(region.id());
+        Map<ShroudCellPos, ShroudCellState> currentCells = existingWorkingRegion == null
+                ? region.cells()
+                : existingWorkingRegion.cells();
+        if (currentCells.containsKey(entry.position())) {
             return 0;
         }
 
-        LinkedHashMap<ShroudCellPos, ShroudCellState> cells = new LinkedHashMap<>(region.cells());
-        cells.put(entry.position(), new ShroudCellState(entry.position(), intensity, ShroudSeverity.SHROUD));
-        ShroudRegionState updatedRegion = new ShroudRegionState(region.id(), region.coreId(), cells);
-        regions.put(region.id(), updatedRegion);
+        WorkingRegion workingRegion = workingRegions.computeIfAbsent(region.id(), ignored -> new WorkingRegion(region));
+        workingRegion.cells().put(
+                entry.position(),
+                new ShroudCellState(entry.position(), intensity, ShroudSeverity.SHROUD));
 
-        enqueueEligibleNeighbors(core, entry.position(), updatedRegion);
+        enqueueEligibleNeighbors(core, entry.position(), workingRegion.cells());
         return 1;
     }
 
     private void enqueueEligibleNeighbors(
             ShroudCoreState core,
             ShroudCellPos source,
-            ShroudRegionState region) {
+            Map<ShroudCellPos, ShroudCellState> cells) {
         for (ShroudCellPos neighbor : policy.neighbors(source)) {
-            if (region.cells().containsKey(neighbor) || policy.intensity(core, geometry, neighbor) <= 0.0D) {
+            if (cells.containsKey(neighbor)
+                    || !withinMaximumInfluenceRadius(core, neighbor)
+                    || policy.intensity(core, geometry, neighbor) <= 0.0D) {
                 continue;
             }
             long sequence = nextSequence.getOrDefault(core.id(), 0L);
@@ -151,6 +170,76 @@ public final class ShroudExpansionScheduler {
                 nextSequence.put(core.id(), Math.addExact(sequence, 1L));
             }
         }
+    }
+
+    /**
+     * Rebuilds only an exhausted runtime frontier from persisted logical cells. This is the
+     * backpressure recovery path when a bounded queue could not admit every eligible sibling.
+     * It scans no Minecraft world/chunks and runs at most once per exhaustion cycle/epoch.
+     */
+    private void refillEmptyFrontiers(ShroudWorldState state) {
+        state.cores().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    UUID coreId = entry.getKey();
+                    ShroudCoreState core = entry.getValue();
+                    if (!core.lifecycleState().expansionEligible()) {
+                        return;
+                    }
+                    if (Objects.equals(exhaustedEpochs.get(coreId), core.expansionEpoch())) {
+                        return;
+                    }
+
+                    ShroudFrontier frontier = frontiers.computeIfAbsent(
+                            coreId, ignored -> new ShroudFrontier(frontierCapacityPerCore));
+                    if (!frontier.isEmpty()) {
+                        return;
+                    }
+
+                    ShroudRegionState region = state.regions().get(core.regionId());
+                    if (region == null || !region.coreId().equals(core.id())) {
+                        throw new IllegalStateException("core has no valid owned Shroud region: " + core.id());
+                    }
+
+                    boolean refilled = refillFromKnownRegion(core, region, frontier);
+                    if (!refilled) {
+                        exhaustedEpochs.put(coreId, core.expansionEpoch());
+                    }
+                });
+    }
+
+    private boolean refillFromKnownRegion(
+            ShroudCoreState core,
+            ShroudRegionState region,
+            ShroudFrontier frontier) {
+        for (ShroudCellPos source : region.cells().keySet().stream().sorted().toList()) {
+            for (ShroudCellPos neighbor : policy.neighbors(source)) {
+                if (region.cells().containsKey(neighbor)
+                        || !withinMaximumInfluenceRadius(core, neighbor)
+                        || policy.intensity(core, geometry, neighbor) <= 0.0D) {
+                    continue;
+                }
+
+                long sequence = nextSequence.getOrDefault(core.id(), 0L);
+                if (enqueue(core.id(), new ShroudFrontierEntry(neighbor, core.expansionEpoch(), sequence))) {
+                    nextSequence.put(core.id(), Math.addExact(sequence, 1L));
+                }
+                if (frontier.size() >= frontier.capacity()) {
+                    return true;
+                }
+            }
+        }
+        return !frontier.isEmpty();
+    }
+
+    private boolean withinMaximumInfluenceRadius(ShroudCoreState core, ShroudCellPos candidate) {
+        BlockPos candidateCenter = geometry.cellCenter(candidate);
+        long dx = (long) candidateCenter.getX() - core.center().getX();
+        long dy = (long) candidateCenter.getY() - core.center().getY();
+        long dz = (long) candidateCenter.getZ() - core.center().getZ();
+        double distanceSquared = (double) dx * dx + (double) dy * dy + (double) dz * dz;
+        double radius = core.maxInfluenceRadius();
+        return distanceSquared <= radius * radius;
     }
 
     private void discardIneligibleFrontiers(ShroudWorldState state) {
@@ -164,6 +253,7 @@ public final class ShroudExpansionScheduler {
         discard.forEach(coreId -> {
             frontiers.remove(coreId);
             nextSequence.remove(coreId);
+            exhaustedEpochs.remove(coreId);
             if (coreId.equals(nextCoreHint)) {
                 nextCoreHint = null;
             }
@@ -188,6 +278,26 @@ public final class ShroudExpansionScheduler {
         }
         int index = activeCoreIds.indexOf(nextCoreHint);
         return index < 0 ? 0 : index;
+    }
+
+    private static final class WorkingRegion {
+        private final UUID id;
+        private final UUID coreId;
+        private final LinkedHashMap<ShroudCellPos, ShroudCellState> cells;
+
+        private WorkingRegion(ShroudRegionState region) {
+            this.id = region.id();
+            this.coreId = region.coreId();
+            this.cells = new LinkedHashMap<>(region.cells());
+        }
+
+        private LinkedHashMap<ShroudCellPos, ShroudCellState> cells() {
+            return cells;
+        }
+
+        private ShroudRegionState freeze() {
+            return new ShroudRegionState(id, coreId, cells);
+        }
     }
 
     public record TickResult(
