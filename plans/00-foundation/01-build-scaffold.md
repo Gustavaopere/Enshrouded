@@ -27,40 +27,35 @@
 
 - [x] Add a bootstrap smoke test that fails before the mod metadata/main class exists.
 - [x] Verify the expected RED/bootstrap failure before implementation — workflow `33000394152` reached `BootstrapContractTest` and failed only because the main mod class did not yet exist.
-- [ ] Verify the current final scaffold with committed `./gradlew test` plus `./gradlew build` GREEN.
-- [ ] Run the current dedicated-server save/reload profile and verify bootstrap/reload reaches a clean stop rather than classloading client code.
+- [x] Verify the final scaffold with committed `./gradlew test` plus `./gradlew build` GREEN — PR workflow `33165771852`, job `98830694040`, HEAD `0b1940012628ff0d762961cccb480dc72989455d`.
+- [x] Run the dedicated-server save/reload profile and verify bootstrap/reload reaches a clean stop rather than classloading client code — the same job completed `Dedicated-server save/reload smoke test` GREEN.
 
-## Current implementation checkpoint — 2026-08-27
+## Final implementation checkpoint — 2026-08-28
 
 Implemented on `round-1-foundation`:
 
 - Minecraft `1.21.1`, NeoForge `21.1.248`, Java 21 and mod id `enshrouded` are pinned in the build/metadata;
 - `Enshrouded`, `ModRegistries` and the initial config namespace exist without client-side imports in the common bootstrap path;
-- NeoForge dependency metadata uses the current 1.21.1 schema (`type="required"`) rather than the legacy `mandatory=true` form;
+- NeoForge dependency metadata uses the current 1.21.1 schema (`type="required"`) rather than legacy `mandatory=true`;
 - official Gradle 8.14 wrapper is committed, with executable Unix launcher and byte-identical upstream wrapper JAR (`1b33c55baabb587c669f562ae36f953de2481846`);
 - wrapper distribution is pinned to `gradle-8.14-bin.zip` with SHA-256 `61ad310d3c7d3e5da131b76bbf22b5a4c0786e9d892dae8c1658d4b484de3caa`;
 - project license is declared as `BSD-2-Clause` and a matching repository `LICENSE` is present;
 - production JAR packaging includes `LICENSE` and `THIRD_PARTY_NOTICES.md`;
 - CI invokes verification through `./gradlew` and validates wrapper provenance, distribution checksum, metadata expansion, required dependencies, license/notices packaging, absence of GameTest classes, and the common entrypoint;
-- dedicated-server verification is now the two-boot save/reload harness rather than startup-only smoke.
+- dedicated-server verification is the two-boot save/reload harness rather than startup-only smoke.
 
-Historical runner evidence reached unit tests/build GREEN before the final wrapper/GameTest/reload changes, but this does not satisfy final-HEAD acceptance. Current Actions jobs terminate before checkout with `steps=null`; therefore the final wrapper/build/dedicated-server gate cannot currently be re-proved on the branch HEAD. This task stays open and unrenamed.
+## Executable acceptance evidence
 
-## Structural verification while final Actions execution is blocked
+PR workflow `33165771852`, job `98830694040`, on exact implementation HEAD `0b1940012628ff0d762961cccb480dc72989455d` completed GREEN. The job executed checkout, shell harness prerequisites, Java 21 setup, wrapper provenance/integrity, unit tests, diff sanity, NeoForge build, built-JAR verification, GameTest server and dedicated-server save/reload smoke.
 
-- the current `neoforge.mods.toml` and `pack.mcmeta` were expanded with the actual current `gradle.properties` values outside Gradle and parsed successfully as TOML/JSON;
-- no `${...}` placeholders remained after expansion;
-- the resulting dependency metadata is `neoforge [21.1.248,) type=required` and `minecraft [1.21.1,1.21.2) type=required`;
-- the expanded resource pack metadata reports `pack_format=34` and `enshrouded resources`;
-- `BootstrapContractTest` passed in the local Java 21 structural suite using only minimal NeoForge/SLF4J type stubs for entrypoint classloading and the real current metadata path;
-- these structural checks do not replace the committed Gradle/NeoForge build/JAR/runtime gates.
+The closing documentation-only checkpoint that renames/completes Foundation must itself pass the same pipeline before merge; if it does not, this task is reopened.
 
 ## Merge gate
 
-- [ ] All task-specific tests are GREEN on the final branch HEAD.
-- [ ] `./gradlew test` is GREEN.
-- [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
-- [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
-- [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
+- [x] All task-specific tests are GREEN on the verified implementation HEAD.
+- [x] `./gradlew test` is GREEN.
+- [x] NeoForge build is GREEN and GameTest/dedicated-server smoke are GREEN.
+- [x] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` contains only genuine later-stage boundaries.
+- [x] Task is ready to be renamed with `✅-` in the Foundation closing checkpoint merged to `main`.
 
-**Acceptance:** A clean checkout builds a NeoForge 1.21.1 JAR under Java 21 and CI can prove server-safe bootstrap.
+**Acceptance:** A clean checkout builds a NeoForge 1.21.1 JAR under Java 21 and CI proves server-safe bootstrap and reload.
