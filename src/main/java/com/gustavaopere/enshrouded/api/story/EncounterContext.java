@@ -8,7 +8,7 @@ import java.util.UUID;
 public record EncounterContext(UUID encounterId, BlockPos origin, int manifestationLevel, long seed) {
     public EncounterContext {
         Objects.requireNonNull(encounterId, "encounterId");
-        Objects.requireNonNull(origin, "origin");
+        origin = Objects.requireNonNull(origin, "origin").immutable();
         if (manifestationLevel < 1) {
             throw new IllegalArgumentException("manifestationLevel must be >= 1");
         }
