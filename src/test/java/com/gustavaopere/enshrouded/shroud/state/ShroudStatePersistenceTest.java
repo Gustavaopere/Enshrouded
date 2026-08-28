@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.state;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -21,7 +22,7 @@ final class ShroudStatePersistenceTest {
                 coreId,
                 new BlockPos(128, 64, -32),
                 1,
-                "dormant",
+                CoreLifecycleState.DORMANT,
                 192,
                 0x5EEDL,
                 7L,
@@ -42,6 +43,7 @@ final class ShroudStatePersistenceTest {
 
         CompoundTag encoded = ShroudStateCodec.encode(original);
         assertEquals(ShroudSchema.CURRENT_VERSION, encoded.getInt("schema_version"));
+        assertEquals("dormant", encoded.getList("cores", CompoundTag.TAG_COMPOUND).getCompound(0).getString("lifecycle_state"));
         assertEquals(original, ShroudStateCodec.decode(encoded));
     }
 
@@ -66,6 +68,22 @@ final class ShroudStatePersistenceTest {
     }
 
     @Test
+    void rejectsUnknownLifecycleStateInsteadOfGuessing() {
+        UUID coreId = UUID.fromString("12121212-1212-1212-1212-121212121212");
+        UUID regionId = UUID.fromString("34343434-3434-3434-3434-343434343434");
+        ShroudCoreState core = new ShroudCoreState(coreId, BlockPos.ZERO, 1, CoreLifecycleState.ACTIVE, 32, 1L, 0L, regionId);
+        ShroudWorldState state = new ShroudWorldState(
+                ShroudSchema.CURRENT_VERSION,
+                Map.of(coreId, core),
+                Map.of(regionId, new ShroudRegionState(regionId, coreId, Map.of()))
+        );
+        CompoundTag encoded = ShroudStateCodec.encode(state);
+        encoded.getList("cores", CompoundTag.TAG_COMPOUND).getCompound(0).putString("lifecycle_state", "future_state");
+
+        assertThrows(IllegalArgumentException.class, () -> ShroudStateCodec.decode(encoded));
+    }
+
+    @Test
     void rejectsDuplicateCoreIdsFromCorruptedInput() {
         UUID coreId = UUID.fromString("33333333-3333-3333-3333-333333333333");
         UUID regionId = UUID.fromString("44444444-4444-4444-4444-444444444444");
@@ -73,7 +91,7 @@ final class ShroudStatePersistenceTest {
                 coreId,
                 new BlockPos(0, 64, 0),
                 1,
-                "active",
+                CoreLifecycleState.ACTIVE,
                 64,
                 4L,
                 0L,
@@ -101,7 +119,7 @@ final class ShroudStatePersistenceTest {
                 coreId,
                 BlockPos.ZERO,
                 1,
-                "active",
+                CoreLifecycleState.ACTIVE,
                 0,
                 1L,
                 0L,
@@ -124,13 +142,13 @@ final class ShroudStatePersistenceTest {
 
         ShroudWorldState overworldLike = new ShroudWorldState(
                 ShroudSchema.CURRENT_VERSION,
-                Map.of(firstCore, new ShroudCoreState(firstCore, BlockPos.ZERO, 1, "active", 32, 1L, 0L, firstRegion)),
+                Map.of(firstCore, new ShroudCoreState(firstCore, BlockPos.ZERO, 1, CoreLifecycleState.ACTIVE, 32, 1L, 0L, firstRegion)),
                 Map.of(firstRegion, new ShroudRegionState(firstRegion, firstCore,
                         Map.of(local, new ShroudCellState(local, 0.25D, ShroudSeverity.SHROUD))))
         );
         ShroudWorldState netherLike = new ShroudWorldState(
                 ShroudSchema.CURRENT_VERSION,
-                Map.of(secondCore, new ShroudCoreState(secondCore, BlockPos.ZERO, 1, "active", 32, 2L, 0L, secondRegion)),
+                Map.of(secondCore, new ShroudCoreState(secondCore, BlockPos.ZERO, 1, CoreLifecycleState.ACTIVE, 32, 2L, 0L, secondRegion)),
                 Map.of(secondRegion, new ShroudRegionState(secondRegion, secondCore,
                         Map.of(local, new ShroudCellState(local, 0.75D, ShroudSeverity.DEADLY))))
         );
@@ -144,7 +162,7 @@ final class ShroudStatePersistenceTest {
     void rejectsCoreWhoseRegionIsMissing() {
         UUID coreId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         UUID regionId = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
-        ShroudCoreState core = new ShroudCoreState(coreId, BlockPos.ZERO, 1, "active", 32, 3L, 0L, regionId);
+        ShroudCoreState core = new ShroudCoreState(coreId, BlockPos.ZERO, 1, CoreLifecycleState.ACTIVE, 32, 3L, 0L, regionId);
 
         assertThrows(IllegalArgumentException.class, () -> new ShroudWorldState(
                 ShroudSchema.CURRENT_VERSION,
@@ -158,7 +176,7 @@ final class ShroudStatePersistenceTest {
         UUID coreId = UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddddd");
         UUID otherCoreId = UUID.fromString("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
         UUID regionId = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
-        ShroudCoreState core = new ShroudCoreState(coreId, BlockPos.ZERO, 1, "active", 32, 4L, 0L, regionId);
+        ShroudCoreState core = new ShroudCoreState(coreId, BlockPos.ZERO, 1, CoreLifecycleState.ACTIVE, 32, 4L, 0L, regionId);
         ShroudRegionState region = new ShroudRegionState(regionId, otherCoreId, Map.of());
 
         assertThrows(IllegalArgumentException.class, () -> new ShroudWorldState(
