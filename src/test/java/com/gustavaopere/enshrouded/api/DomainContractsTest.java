@@ -106,11 +106,19 @@ final class DomainContractsTest {
     void encounterContextRejectsNonPositiveManifestationLevels() {
         EncounterContext context = new EncounterContext(
                 UUID.fromString("b4094537-860e-4e6d-ab11-d88942dbaae1"),
+                new BlockPos(10, 64, 10),
                 1,
                 42L);
         assertEquals(1, context.manifestationLevel());
         assertThrows(IllegalArgumentException.class,
-                () -> new EncounterContext(UUID.randomUUID(), 0, 42L));
+                () -> new EncounterContext(UUID.randomUUID(), new BlockPos(10, 64, 10), 0, 42L));
+    }
+
+    @Test
+    void encounterContextRequiresExplicitOrigin() {
+        assertThrows(NoSuchMethodException.class,
+                () -> EncounterContext.class.getDeclaredConstructor(UUID.class, int.class, long.class),
+                "EncounterContext must not silently substitute BlockPos.ZERO for a missing encounter origin");
     }
 
     @Test
