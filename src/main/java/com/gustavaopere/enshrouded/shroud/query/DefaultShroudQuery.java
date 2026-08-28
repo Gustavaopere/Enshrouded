@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
+import java.util.function.Supplier;
 
 /**
  * Canonical server-authoritative Shroud lookup backed by dimension-local SavedData.
@@ -27,13 +28,20 @@ import java.util.WeakHashMap;
 public final class DefaultShroudQuery implements ShroudQuery {
     private final ShroudGridGeometry geometry;
     private final FlameWardQuery wardQuery;
-    private final ShroudSeverityThresholds thresholds;
+    private final Supplier<ShroudSeverityThresholds> thresholds;
     private final Map<ServerLevel, CacheEntry> cache = Collections.synchronizedMap(new WeakHashMap<>());
 
     public DefaultShroudQuery(
             ShroudGridGeometry geometry,
             FlameWardQuery wardQuery,
             ShroudSeverityThresholds thresholds) {
+        this(geometry, wardQuery, () -> Objects.requireNonNull(thresholds, "thresholds"));
+    }
+
+    private DefaultShroudQuery(
+            ShroudGridGeometry geometry,
+            FlameWardQuery wardQuery,
+            Supplier<ShroudSeverityThresholds> thresholds) {
         this.geometry = Objects.requireNonNull(geometry, "geometry");
         this.wardQuery = Objects.requireNonNull(wardQuery, "wardQuery");
         this.thresholds = Objects.requireNonNull(thresholds, "thresholds");
@@ -43,7 +51,7 @@ public final class DefaultShroudQuery implements ShroudQuery {
         return new DefaultShroudQuery(
                 geometry,
                 FlameWardQuery.none(),
-                new ShroudSeverityThresholds(EnshroudedConfig.shroudDeadlyIntensityThreshold()));
+                () -> new ShroudSeverityThresholds(EnshroudedConfig.shroudDeadlyIntensityThreshold()));
     }
 
     @Override
@@ -54,7 +62,7 @@ public final class DefaultShroudQuery implements ShroudQuery {
         ShroudWorldState state = ShroudSavedData.get(level).state();
         ShroudSpatialIndex index = indexFor(level, state);
         boolean warded = wardQuery.suppresses(level, pos);
-        return index.sample(geometry.cellAt(pos), thresholds, warded);
+        return index.sample(geometry.cellAt(pos), Objects.requireNonNull(thresholds.get(), "thresholds result"), warded);
     }
 
     private ShroudSpatialIndex indexFor(ServerLevel level, ShroudWorldState state) {
