@@ -22,7 +22,8 @@ public final class ShroudSampleSyncService {
     public boolean sync(ServerPlayer player) {
         Objects.requireNonNull(player, "player");
         ShroudSample sample = query.sample(player.serverLevel(), player.blockPosition(), player);
-        return tracker.update(player.getUUID(), player.serverLevel().getGameTime(), sample)
+        long serverTick = player.serverLevel().getServer().getTickCount();
+        return tracker.update(player.getUUID(), serverTick, sample)
                 .map(payload -> {
                     PacketDistributor.sendToPlayer(player, payload);
                     return true;
