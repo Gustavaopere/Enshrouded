@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.gametest;
 
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
@@ -71,7 +72,7 @@ public final class ShroudSavedDataGameTests {
                 CORE_ID,
                 new BlockPos(96, 64, -48),
                 1,
-                "active",
+                CoreLifecycleState.ACTIVE,
                 128,
                 0x51A0D5EEDL,
                 11L,
