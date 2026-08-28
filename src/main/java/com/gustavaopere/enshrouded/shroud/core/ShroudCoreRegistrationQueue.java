@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.shroud.core;
 
+import com.gustavaopere.enshrouded.shroud.expansion.ShroudExpansionRuntime;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
 import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
@@ -126,6 +127,7 @@ public final class ShroudCoreRegistrationQueue {
                 if (registeredCore != null && registeredCore.lifecycleState() == CoreLifecycleState.DORMANT) {
                     nextState = ShroudCoreService.activate(nextState, request.coreId()).state();
                 }
+                ShroudExpansionRuntime.enqueueInitialCellIfNeeded(level, nextState, request.coreId());
             }
 
             savedData.replace(nextState);
@@ -146,12 +148,14 @@ public final class ShroudCoreRegistrationQueue {
 
     private static void onServerTickPost(ServerTickEvent.Post event) {
         for (ServerLevel level : event.getServer().getAllLevels()) {
+            ShroudExpansionRuntime.advance(level);
             drain(level);
         }
     }
 
     private static void onServerStopping(ServerStoppingEvent event) {
         clear();
+        ShroudExpansionRuntime.clear();
     }
 
     private record RegistrationRequest(
