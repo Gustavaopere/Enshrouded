@@ -41,6 +41,26 @@ public record ShroudWorldState(
             }
         });
 
+        coreCopy.forEach((coreId, core) -> {
+            ShroudRegionState region = regionCopy.get(core.regionId());
+            if (region == null) {
+                throw new IllegalArgumentException("core " + coreId + " references missing region " + core.regionId());
+            }
+            if (!region.coreId().equals(coreId)) {
+                throw new IllegalArgumentException("core " + coreId + " and region " + region.id() + " disagree on ownership");
+            }
+        });
+
+        regionCopy.forEach((regionId, region) -> {
+            ShroudCoreState core = coreCopy.get(region.coreId());
+            if (core == null) {
+                throw new IllegalArgumentException("region " + regionId + " references missing core " + region.coreId());
+            }
+            if (!core.regionId().equals(regionId)) {
+                throw new IllegalArgumentException("region " + regionId + " and core " + core.id() + " disagree on ownership");
+            }
+        });
+
         cores = Map.copyOf(coreCopy);
         regions = Map.copyOf(regionCopy);
     }
