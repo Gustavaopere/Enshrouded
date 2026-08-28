@@ -17,8 +17,9 @@ class ShroudCoreWorldgenContractRedTest {
 
     @Test
     void featureAndRegistryBootstrapExist() throws Exception {
-        Class.forName("com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreFeature");
-        Class.forName("com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreWorldgenRegistry");
+        ClassLoader loader = ShroudCoreWorldgenContractRedTest.class.getClassLoader();
+        Class.forName("com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreFeature", false, loader);
+        Class.forName("com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreWorldgenRegistry", false, loader);
     }
 
     @Test
