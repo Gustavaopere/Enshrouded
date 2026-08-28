@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.UUID;
 
@@ -62,6 +63,7 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         CoreMutationResult destruction = ShroudCoreService.destroy(savedData.state(), coreId);
         if (destruction.changed()) {
             savedData.replace(destruction.state());
+            NeoForge.EVENT_BUS.post(new ShroudCoreDestroyedEvent(serverLevel, coreId));
         }
         return destruction;
     }
