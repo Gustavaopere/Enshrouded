@@ -13,8 +13,4 @@ public record EncounterContext(UUID encounterId, BlockPos origin, int manifestat
             throw new IllegalArgumentException("manifestationLevel must be >= 1");
         }
     }
-
-    public EncounterContext(UUID encounterId, int manifestationLevel, long seed) {
-        this(encounterId, BlockPos.ZERO, manifestationLevel, seed);
-    }
 }
