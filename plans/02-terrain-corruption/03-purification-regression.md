@@ -23,7 +23,8 @@
 - Regression ordering is deterministic and preferably retreats from frontier toward former core center.
 - Native growths are removed gradually when their logical cell clears.
 - Replaced natural blocks are restored only where a rule has an explicit safe reverse mapping and the current block still matches the expected corrupted state.
-- Every cleanup/restoration world mutation passes through the already-merged `MutationAuthority`; purification may be more conservative than corruption but may never bypass the same safety/claim/Sanctuary gate.
+- Every cleanup/restoration world mutation passes through the already-merged `MutationAuthority`; purification may be more conservative than corruption but may never bypass claim/container/player-edit safety.
+- Sanctuary is **not** a blanket veto for `MutationKind.PURIFICATION`. Once the logical field regresses, authorized restoration/growth cleanup may proceed inside an active ward so stale corrupted visuals are not stranded indefinitely. The same ward still prevents new `CORRUPTION`/`CORE_PLACEMENT`, and purification never edits the latent Shroud field merely because a ward exists.
 - If a player changed a corrupted block after corruption, restoration fails closed rather than overwriting the player change.
 
 ## TDD / verification
@@ -32,6 +33,7 @@
 - [ ] Static/test scan proves restoration/removal mutation sinks route through `MutationAuthority`.
 - [ ] GameTest player-modified corrupted block is not overwritten during cleanup.
 - [ ] GameTest native growth disappears as the cell clears only when mutation is authorized.
+- [ ] GameTest warded cleared cell can purify while new corruption remains vetoed at the same position.
 - [ ] Save/reload mid-purification resumes from persistent logical state without re-expansion.
 
 ## Merge gate
@@ -42,4 +44,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Destroyed cores cause visible gradual healing with no whole-region block snapshot, no unsafe overwrite of subsequent player edits and no cleanup path that bypasses canonical terrain safety.
+**Acceptance:** Destroyed cores cause visible gradual healing with no whole-region block snapshot, no unsafe overwrite of subsequent player edits, no cleanup path that bypasses canonical terrain safety and no Sanctuary-created pocket of permanently stranded corruption after logical regression.
