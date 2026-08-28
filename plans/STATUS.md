@@ -6,7 +6,7 @@ Last structural update: 2026-08-28.
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
-- [ ] 01 Shroud Field — 1/5 tasks merged; state/persistence complete.
+- [ ] 01 Shroud Field — 2/5 tasks merged; state/persistence and core lifecycle complete.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
 - [ ] 04 Corrupted Ecology — not implemented.
@@ -82,9 +82,34 @@ Cross-stage implementation/consumption obligations remain tracked in `PENDING.md
 - [x] Shroud SavedData two-boot reload GameTest.
 - [x] Dedicated-server two-boot save/reload smoke.
 
+### ✅ 02 core lifecycle
+
+- Implementation branch: `feat/01-core-lifecycle`
+- Initial RED: `c0e03e6c0c5dd00adacf981bdc76da21f79bb254`
+- Final implementation HEAD: `950c75b39c0c5c9c3cb2f9fc9203dc3597208647`
+- PR: #10 — `Stage 01: implement Shroud core lifecycle`
+- Final verification workflow: `33188789656`
+- Final verification job: `98908621757`
+- Verification result: GREEN
+- Merge SHA on `main`: `4eac58f685592e518a6d36c24591bc498003b361`
+- Completed task file: `✅-02-core-lifecycle.md`
+
+### Core lifecycle executable gates on exact merged PR head
+
+- [x] Wrapper provenance/integrity.
+- [x] Unit tests and lifecycle/resurrection contracts.
+- [x] Diff sanity.
+- [x] NeoForge build and production JAR sanity.
+- [x] GameTest server, including physical core lifecycle edge cases.
+- [x] Shroud SavedData two-boot reload GameTest.
+- [x] Dedicated-server two-boot save/reload smoke.
+- [x] Server-side core radius/growth safety clamps.
+
+Stage 02 remains the owner of the runtime `DESTROYED -> PURIFIED` trigger; Stage 01 only defines and enforces the legal lifecycle shape.
+
 ## Immediate next step
 
-Create `feat/01-core-lifecycle` from the latest `main`. Read `plans/01-shroud-field/02-core-lifecycle.md`, inspect the merged Shroud state contracts, then begin with an observed RED before production core-lifecycle implementation.
+Create `feat/01-frontier-expansion` from the latest `main`. Read `plans/01-shroud-field/03-frontier-expansion.md`, inspect the merged state/core lifecycle contracts, then begin with an observed RED before production frontier scheduling/expansion code.
 
 ## Level 1 release gate
 
