@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.config;
 
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.shroud.core.CoreSafetyLimits;
+import com.gustavaopere.enshrouded.shroud.query.ShroudSeverityThresholds;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class EnshroudedConfig {
@@ -10,6 +11,7 @@ public final class EnshroudedConfig {
 
     private static final ModConfigSpec.IntValue CORE_MAX_INFLUENCE_RADIUS;
     private static final ModConfigSpec.IntValue CORE_GROWTH_WORK_PER_TICK;
+    private static final ModConfigSpec.DoubleValue SHROUD_DEADLY_INTENSITY_THRESHOLD;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -31,6 +33,17 @@ public final class EnshroudedConfig {
                         CoreSafetyLimits.MAX_GROWTH_WORK_PER_TICK
                 );
         builder.pop();
+
+        builder.push("shroudQuery");
+        SHROUD_DEADLY_INTENSITY_THRESHOLD = builder
+                .comment("Intensity at or above which the authoritative Level 1 Shroud query classifies a logical cell as DEADLY.")
+                .defineInRange(
+                        "deadlyIntensityThreshold",
+                        (double) ShroudSeverityThresholds.DEFAULT_DEADLY_AT_OR_ABOVE,
+                        0.01D,
+                        1.0D
+                );
+        builder.pop();
         SERVER_SPEC = builder.build();
     }
 
@@ -43,5 +56,9 @@ public final class EnshroudedConfig {
 
     public static int coreGrowthWorkPerTick() {
         return CoreSafetyLimits.clampGrowthWorkPerTick(CORE_GROWTH_WORK_PER_TICK.getAsInt());
+    }
+
+    public static float shroudDeadlyIntensityThreshold() {
+        return SHROUD_DEADLY_INTENSITY_THRESHOLD.get().floatValue();
     }
 }
