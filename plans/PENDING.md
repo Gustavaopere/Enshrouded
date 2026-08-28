@@ -24,7 +24,7 @@ This file records blockers that must not be silently papered over by later branc
 - `ENSH-L1-CORE-TO-EXPOSURE-001`: player exposure must query the same canonical severity service used by terrain/client state.
 - `ENSH-L1-LICH-REWARD-001`: first-manifestation death must produce one Enshrouded skull even when an external boss provider supplies the entity.
 - `ENSH-L1-MAGIC-CLASSIFY-001`: core magic-resistance classification must work standalone and adapters may only enrich it.
-- `ENSH-L1-CLAIM-SAFETY-001`: FTB Chunks/MineColonies adapters must prove fail-closed mutation protection when installed; standalone safe-tag behavior must remain valid without them.
+- `ENSH-L1-CLAIM-SAFETY-001`: Stage 02 `ProtectedAreaService` must use the tri-state `ProtectionDecision` contract from `DECISIONS.md` decision 41. FTB Chunks/MineColonies adapters must prove claimed/protected -> `PROTECTED`, definite no-claim/no-colony -> `UNPROTECTED`, and installed/enabled adapter uncertainty -> `INDETERMINATE`; `DefaultMutationAuthority` must veto both `PROTECTED` and `INDETERMINATE` by default. An absent optional mod must register no adapter and must not block standalone safe-tag behavior. Keep this open until Stage 02 authority behavior and Stage 08 adapters are both proven by executable tests.
 
 ## Closure rule
 
