@@ -63,6 +63,13 @@ jobs:
       - name: Unit tests
         run: ./gradlew --no-daemon test
 
+      - name: Frontier benchmark baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/reports/frontier-expansion-benchmark.txt
+          cat build/reports/frontier-expansion-benchmark.txt
+
       - name: Diff sanity
         shell: bash
         run: |
