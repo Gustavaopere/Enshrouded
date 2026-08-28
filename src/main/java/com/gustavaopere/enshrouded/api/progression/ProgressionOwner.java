@@ -12,7 +12,12 @@ public record ProgressionOwner(Kind kind, String id) {
             throw new IllegalArgumentException("progression owner id must not be blank");
         }
         if (kind == Kind.PLAYER) {
-            UUID.fromString(id);
+            UUID parsed = UUID.fromString(id);
+            String canonical = parsed.toString();
+            if (!canonical.equalsIgnoreCase(id)) {
+                throw new IllegalArgumentException("player progression owner id must use canonical UUID form");
+            }
+            id = canonical;
         }
     }
 
