@@ -30,11 +30,12 @@ public final class ShroudCorePhysicalLifecycleRedGameTests {
         helper.assertTrue(blockEntity instanceof ShroudCoreBlockEntity,
                 "Placed enshrouded:shroud_core must create ShroudCoreBlockEntity");
 
-        long ownedAtPosition = ShroudSavedData.get(level).state().cores().values().stream()
-                .filter(core -> core.center().equals(absolute))
-                .count();
-        helper.assertTrue(ownedAtPosition == 1L,
-                "Placed Shroud core must register exactly one persistent identity at its absolute position");
-        helper.succeed();
+        helper.succeedWhen(() -> {
+            long ownedAtPosition = ShroudSavedData.get(level).state().cores().values().stream()
+                    .filter(core -> core.center().equals(absolute))
+                    .count();
+            helper.assertTrue(ownedAtPosition == 1L,
+                    "Placed Shroud core must register exactly one persistent identity at its absolute position");
+        });
     }
 }
