@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+RUN_DIR="$ROOT/runs/gameTestServer"
+BUILD_DIR="$ROOT/build"
+FIRST_LOG="$BUILD_DIR/shroud-saveddata-first.log"
+RELOAD_LOG="$BUILD_DIR/shroud-saveddata-reload.log"
+BOOT_TIMEOUT_SECONDS=240
+KILL_AFTER_SECONDS=15
+
+command -v timeout >/dev/null 2>&1 || {
+  echo 'GNU timeout is required for Shroud SavedData reload verification' >&2
+  exit 1
+}
+
+mkdir -p "$BUILD_DIR"
+rm -rf "$RUN_DIR"
+mkdir -p "$RUN_DIR"
+printf 'eula=true\n' > "$RUN_DIR/eula.txt"
+
+run_gametest_boot() {
+  local log_file="$1"
+  rm -f "$log_file"
+
+  set +e
+  (
+    cd "$ROOT"
+    timeout --kill-after="${KILL_AFTER_SECONDS}s" "${BOOT_TIMEOUT_SECONDS}s" \
+      ./gradlew --no-daemon runGameTestServer
+  ) 2>&1 | tee "$log_file"
+  local status=${PIPESTATUS[0]}
+  set -e
+
+  if grep -Fq 'No test functions were given!' "$log_file"; then
+    echo 'GameTest discovery failed during Shroud SavedData reload verification' >&2
+    return 1
+  fi
+  if (( status != 0 )); then
+    echo "GameTest boot failed with status $status" >&2
+    return "$status"
+  fi
+}
+
+run_gametest_boot "$FIRST_LOG"
+grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_CREATED' "$FIRST_LOG" || {
+  echo 'First GameTest boot did not create the Shroud SavedData sentinel' >&2
+  exit 1
+}
+if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$FIRST_LOG"; then
+  echo 'First GameTest boot unexpectedly loaded pre-existing Shroud SavedData' >&2
+  exit 1
+fi
+
+mapfile -t SHROUD_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_shroud.dat' -print)
+if (( ${#SHROUD_DATA_FILES[@]} != 1 )); then
+  echo "Expected exactly one dimension-local enshrouded_shroud.dat after first boot, found ${#SHROUD_DATA_FILES[@]}" >&2
+  printf '%s\n' "${SHROUD_DATA_FILES[@]:-}"
+  exit 1
+fi
+
+run_gametest_boot "$RELOAD_LOG"
+grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$RELOAD_LOG" || {
+  echo 'Second GameTest boot did not reload the persisted Shroud SavedData sentinel' >&2
+  exit 1
+}
+if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_CREATED' "$RELOAD_LOG"; then
+  echo 'Second GameTest boot recreated Shroud SavedData instead of loading it' >&2
+  exit 1
+fi
+
+echo "Shroud SavedData two-boot reload GameTest: PASS (${SHROUD_DATA_FILES[0]})"
