@@ -14,6 +14,10 @@ This file records blockers that must not be silently papered over by later branc
 
 - `ENSH-L1-FLAME-WARD-001`: Foundation now owns and implements `FlameWardQuery` per `DECISIONS.md` decision 33. The no-ward fallback returns `false`, and the boundary completed an isolated Java 21 RED -> GREEN cycle before permanent `FlameWardBoundaryTest`/`PublicApiShapeTest` coverage was installed. `ShroudSample` must retain canonical logical intensity/severity/source and use `sanctuarySuppressed` as the effective overlay; exposure treats suppression as safe and `MutationAuthority` vetoes terrain using the same ward query. Keep this contract open until Stage 01 proves logical samples are preserved while setting suppression, Stage 02 proves the ward veto flows through `MutationAuthority`, Stage 03 proves suppressed samples are effectively safe, Stage 05 proves indexed `FlameWardService` implements the same interface without logical-field rewriting, and the final committed Gradle/NeoForge suite validates the Foundation HEAD.
 
+## Progression owner snapshot semantics — cross-stage closure open
+
+- `ENSH-L1-OWNER-SNAPSHOT-001`: `DECISIONS.md` decision 40 requires any transactional progression operation to resolve `ProgressionOwner` exactly once at operation start and retain that stable key through completion. Keep this open until Stage 05 proves ritual execution cannot be redirected by resolver/team changes after invocation begins, Stage 06 proves active Lich encounters/rewards remain bound to the stored encounter owner, and Stage 08 proves FTB Teams membership changes affect only future operations while player↔team migration is explicit and idempotent. No consumer may silently re-resolve an in-flight transaction or silently migrate/merge existing progression ownership.
+
 ## Initially open contracts
 
 - `ENSH-L1-CORE-TO-TERRAIN-001`: terrain materialization must consume the canonical Shroud field and never invent independent spread state.
