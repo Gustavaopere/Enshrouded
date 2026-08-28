@@ -11,8 +11,7 @@ public final class ModBlocks {
 
     public static final DeferredBlock<Block> SHROUD_CORE = BLOCKS.registerSimpleBlock(
             "shroud_core",
-            () -> BlockBehaviour.Properties.of()
-                    .strength(5.0F, 1200.0F)
+            BlockBehaviour.Properties.of().strength(5.0F, 1200.0F)
     );
 
     private ModBlocks() {
