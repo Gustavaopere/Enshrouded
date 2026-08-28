@@ -1,6 +1,8 @@
 package com.gustavaopere.enshrouded;
 
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
+import com.gustavaopere.enshrouded.network.ModNetworking;
+import com.gustavaopere.enshrouded.network.ShroudSyncRuntime;
 import com.gustavaopere.enshrouded.registry.ModRegistries;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -18,7 +20,9 @@ public final class Enshrouded {
 
     public Enshrouded(IEventBus modBus, ModContainer modContainer) {
         ModRegistries.register(modBus);
+        modBus.addListener(ModNetworking::register);
         modContainer.registerConfig(ModConfig.Type.SERVER, EnshroudedConfig.SERVER_SPEC);
+        ShroudSyncRuntime.register();
         LOGGER.info("Enshrouded bootstrap complete");
     }
 }
