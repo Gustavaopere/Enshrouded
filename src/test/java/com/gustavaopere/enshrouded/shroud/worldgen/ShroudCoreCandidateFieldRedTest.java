@@ -60,9 +60,9 @@ class ShroudCoreCandidateFieldRedTest {
                         ShroudCoreCandidateField.Candidate neighbor = field.candidate(seed, cellX + dx, cellZ + dz);
                         long deltaX = (long) origin.blockX() - neighbor.blockX();
                         long deltaZ = (long) origin.blockZ() - neighbor.blockZ();
-                        assertTrue(deltaX * deltaX + deltaZ * deltaZ >= minimumSquared,
-                                () -> "candidate spacing violated between cells " + cellX + "," + cellZ
-                                        + " and " + (cellX + dx) + "," + (cellZ + dz));
+                        String message = "candidate spacing violated between cells " + cellX + "," + cellZ
+                                + " and " + (cellX + dx) + "," + (cellZ + dz);
+                        assertTrue(deltaX * deltaX + deltaZ * deltaZ >= minimumSquared, message);
                     }
                 }
             }
