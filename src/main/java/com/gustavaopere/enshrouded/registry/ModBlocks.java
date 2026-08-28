@@ -2,8 +2,8 @@ package com.gustavaopere.enshrouded.registry;
 
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlock;
-import net.minecraft.world.level.block.PushReaction;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
