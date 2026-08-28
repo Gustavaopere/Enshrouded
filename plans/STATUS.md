@@ -5,7 +5,7 @@ Last structural update: 2026-08-27.
 ## Current checkpoint
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined from repository base `753021c46ddc5b8ee25a6ab586cfc9b8c4a8de88`.
-- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. Foundation-owned progression/passage and Flame-ward boundaries are implemented after isolated Java 21 RED -> GREEN cycles. Current pure-Java/repository guards and GameTest compile-shape checks are clean, but acceptance remains blocked because GitHub Actions jobs terminate before checkout with `steps=null`; the committed Gradle/JUnit, NeoForge build, real GameTest and real dedicated-server gates therefore have not executed on the final HEAD. Do not merge or rename tasks with `✅-` until all final gates are GREEN.
+- [ ] 00 Foundation — implementation is present on `round-1-foundation`; draft PR #2 is open. Foundation-owned progression/passage and Flame-ward boundaries are implemented after isolated Java 21 RED -> GREEN cycles. Current pure-Java/repository guards and GameTest compile-shape checks are clean, but acceptance remains blocked because GitHub Actions jobs terminate before runner allocation with `runner_id=0`, `runner_name=""` and `steps=[]`; the committed Gradle/JUnit, NeoForge build, real GameTest and real dedicated-server gates therefore have not executed on the final HEAD. Do not merge or rename tasks with `✅-` until all final gates are GREEN.
 - [ ] 01 Shroud Field — not implemented.
 - [ ] 02 Terrain Corruption — not implemented.
 - [ ] 03 Exposure — not implemented.
@@ -63,7 +63,8 @@ Implemented scope includes:
 - `gradlew` remains executable in Git (`100755`);
 - repository `LICENSE` matches `mod_license=BSD-2-Clause`;
 - production JAR contract embeds `LICENSE` and `THIRD_PARTY_NOTICES.md` and rejects unexpanded metadata placeholders or leaked GameTest classes;
-- CI verifies shell harness prerequisites, wrapper provenance/distribution checksum, unit tests, diff sanity, NeoForge build, production JAR contents, GameTests and the two-boot reload scenario.
+- CI verifies shell harness prerequisites, wrapper provenance/distribution checksum, unit tests, diff sanity, NeoForge build, production JAR contents, GameTests and the two-boot reload scenario;
+- persistence policy is schema-at-first-write: Shroud, Exposure, Entity Corruption, Flame and Story formats must be version-aware in the originating implementation branch; Stage 09 owns migration/recovery fixtures rather than retrofitting schema versions later.
 
 ## Foundation progression-boundary TDD evidence
 
@@ -79,6 +80,8 @@ Implemented scope includes:
 
 A separate planning cycle was removed earlier: Stage 05 owns only the generic Flame ritual registry/executor/checkpoint engine, while Stage 06 owns the authentic first Lich Skull and concrete `enshrouded:lich_manifestation_1` binding. No 05 <-> 06 circular dependency remains.
 
+`DECISIONS.md` decision 39 establishes schema-at-first-write persistence. Shroud already declared `ShroudSchema`; Exposure, Entity Corruption, Flame and Story plans now explicitly declare their own schema/evolution contracts and unknown-future-schema fail-closed behavior. Stage 09 validates migrations/recovery over those pre-versioned formats rather than introducing versioning after save data already exists.
+
 ## Current local/structural verification while Actions is unavailable
 
 These checks use current GitHub sources and Java 21 but deliberately do not claim Minecraft runtime acceptance:
@@ -93,17 +96,19 @@ This evidence substantially reduces static/configuration uncertainty but does **
 
 ## Current external verification blocker
 
-- Enshrouded push and pull-request runs repeatedly terminate before checkout with `steps=null`;
-- controlled reruns continue to produce the same no-step failure, with no downloadable job log blob;
+- Enshrouded push and pull-request runs repeatedly terminate before checkout with `steps=[]`, `runner_id=0`, `runner_name=""` and no runner group allocation;
+- workflow `33128980956`, job `98713792167`, on candidate `f4e2b38ff3b9397e66a3f82b045af2ddafc97c54` reproduced the same pre-runner failure;
+- a controlled rerun of the previous synchronized candidate (`33127434701`, attempt 3 / job `98713226337`) also failed before runner allocation;
+- no downloadable job log exists because no step starts;
 - an explicit `ubuntu-24.04` runner-label control also failed before steps and was reverted to `ubuntu-latest`;
 - removing the workflow concurrency group was separately tested and did not change the failure mode, so that experiment was reverted;
 - private `Gustavaopere/Volcanoes`, workflow `33099719939`, job `98615923587`, showed the same `steps=null` failure mode during the same period;
 - the conversation-local environment still cannot resolve `services.gradle.org` and has no usable Gradle/NeoForge cache;
 - because no available real executor can start the build, these failures are not evidence of a failing Gradle build, unit test, GameTest or server reload test.
 
-GitHub Status currently reports the broad Actions incident as resolved while a Billing disruption remains under monitoring; this is compatible with, but does not prove, the account-specific pre-runner failure mode. No billing cause is asserted without account evidence.
+GitHub Status currently reports **All Systems Operational**, including Actions, and the August 27 Billing incident is resolved. The persistent `runner_id=0` behavior therefore has no confirmed active global GitHub incident explanation. The APIs available here do not expose account Actions quota/billing/policy state, so no account-specific cause is asserted without evidence.
 
-Static review while Actions was unavailable caught and corrected multiple real defects: NeoGradle GameTest force-exit behavior, legacy NeoForge dependency metadata, noncanonical abbreviated Gradle launchers, missing reload proof, missing `runServer` stdin forwarding, lack of headless server argument, weak process-tree timeout handling, missing Gradle distribution checksum, missing repository license/artifact notices, weak JAR metadata validation, unenforced architecture boundaries, progression/ritual ownership cycles and the pre-Stage-05 Flame-ward dependency/latent-field ambiguity. All corrections still require executable final-HEAD verification.
+Static review while Actions was unavailable caught and corrected multiple real defects: NeoGradle GameTest force-exit behavior, legacy NeoForge dependency metadata, noncanonical abbreviated Gradle launchers, missing reload proof, missing `runServer` stdin forwarding, lack of headless server argument, weak process-tree timeout handling, missing Gradle distribution checksum, missing repository license/artifact notices, weak JAR metadata validation, unenforced architecture boundaries, progression/ritual ownership cycles, pre-Stage-05 Flame-ward dependency/latent-field ambiguity and late schema-versioning risk. All corrections still require executable final-HEAD verification.
 
 ## Immediate next step
 
