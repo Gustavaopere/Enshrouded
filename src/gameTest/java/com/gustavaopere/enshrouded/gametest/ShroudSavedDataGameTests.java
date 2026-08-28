@@ -93,11 +93,13 @@ public final class ShroudSavedDataGameTests {
     }
 
     private static ShroudWorldState sentinelState() {
+        // Keep the persistence sentinel inert. ACTIVE cores are intentionally advanced by the
+        // runtime scheduler after load, which would make an exact codec/reload assertion invalid.
         ShroudCoreState core = new ShroudCoreState(
                 CORE_ID,
                 new BlockPos(96, 64, -48),
                 1,
-                CoreLifecycleState.ACTIVE,
+                CoreLifecycleState.DORMANT,
                 128,
                 0x51A0D5EEDL,
                 11L,
