@@ -50,9 +50,13 @@ final class DomainContractsTest {
     @Test
     void progressionOwnerRejectsInvalidConstruction() {
         assertThrows(IllegalArgumentException.class, () -> ProgressionOwner.team("  "));
+        assertThrows(IllegalArgumentException.class, () -> ProgressionOwner.team(" ftb:builders"));
+        assertThrows(IllegalArgumentException.class, () -> ProgressionOwner.world("minecraft:overworld "));
         assertThrows(IllegalArgumentException.class, () -> ProgressionOwner.world(""));
         assertThrows(IllegalArgumentException.class,
                 () -> new ProgressionOwner(ProgressionOwner.Kind.PLAYER, "not-a-uuid"));
+        assertEquals(Optional.empty(), ProgressionOwner.parse("team: ftb:builders"));
+        assertEquals(Optional.empty(), ProgressionOwner.parse("world:minecraft:overworld "));
     }
 
     @Test
