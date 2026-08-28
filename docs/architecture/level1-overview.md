@@ -2,7 +2,7 @@
 
 The Level 1 dependency flow is:
 
-`Shroud Core -> persistent logical field -> canonical ShroudQuery -> logical ShroudSample`
+`Shroud Core -> dimension-local persistent logical field -> canonical ShroudQuery -> logical ShroudSample`
 
 `Foundation FlameWardQuery -> ShroudSample.sanctuarySuppressed overlay -> effective player exposure/client presentation`
 
@@ -16,8 +16,9 @@ The Level 1 dependency flow is:
 
 Key separation rules:
 
-- The persistent logical Shroud field is authoritative. Sanctuary never rewrites or deletes logical intensity/severity; it only suppresses effective interaction while the ward is active.
-- Terrain mutation has one gate: `MutationAuthority`. `ProtectedAreaService` and Flame ward state are inputs to that authority, not parallel mutation paths.
+- The persistent logical Shroud field is authoritative and is stored/indexed per `ServerLevel`/dimension. There is no global coordinate/index space shared by dimensions; cross-dimension persistent references must carry an explicit dimension key.
+- Sanctuary never rewrites or deletes logical intensity/severity; it only suppresses effective interaction while the ward is active.
+- Terrain mutation has one gate: `MutationAuthority`. `ProtectedAreaService` and Flame ward state are inputs to that authority, not parallel mutation paths. Sanctuary veto is mutation-kind-aware: it blocks new corruption/core placement, not otherwise-safe purification cleanup.
 - Stage 01/02/03 consume Foundation-owned no-op/default ward/progression boundaries and do not depend on Stage 05 implementation classes.
 - Stage 05 replaces those defaults with persistence/index-backed implementations without changing earlier consumers.
 - World visuals, external bosses and client effects consume authoritative Enshrouded state; none of them are the source of truth.

@@ -18,18 +18,21 @@
 
 ## Implementation contract
 
-- Placing/seeding a valid core registers exactly one persistent `ShroudCoreState` with a stable UUID.
-- Core block entity stores only the reference/state needed for local interaction; authoritative expansion data remains in SavedData.
+- Placing/seeding a valid core registers exactly one persistent `ShroudCoreState` with a stable UUID in the owning `ServerLevel`/dimension.
+- Core block entity stores only the reference/state needed for local interaction; authoritative expansion data remains in that dimension's SavedData.
 - Breaking a live core through a permitted server action transitions it to `DESTROYED`, stops future expansion immediately and emits one core-destroy event.
-- Piston movement, duplicate placement, explosions and chunk unload/reload cannot duplicate or resurrect a destroyed core.
+- Stage 01 defines the legal lifecycle shape `DORMANT -> ACTIVE -> DESTROYED -> PURIFIED`, but does **not** decide when a destroyed core has fully regressed. Stage 02 `ShroudRegressionScheduler` owns the runtime `DESTROYED -> PURIFIED` trigger.
+- `PURIFIED` means logical threat is terminal: no effective owned Shroud cells/frontier work remain. It does not assert that every physical block has been restored; lazy/safely-skipped terrain cleanup is allowed to outlive the logical transition.
+- Piston movement, duplicate placement, explosions and chunk unload/reload cannot duplicate or resurrect a destroyed/purified core.
 - Level 1 core maximum radius and growth rate are server-configurable with hard safety clamps.
 
 ## TDD / verification
 
-- [ ] Unit-test legal lifecycle transitions `DORMANT -> ACTIVE -> DESTROYED -> PURIFIED` and reject resurrection.
+- [ ] Unit-test legal lifecycle transitions `DORMANT -> ACTIVE -> DESTROYED -> PURIFIED` and reject resurrection, while keeping the Stage 02 terminal trigger outside Stage 01 runtime behavior.
 - [ ] GameTest core placement/register/reload and destruction/unregister behavior.
 - [ ] GameTest explosion/piston edge cases fail closed.
-- [ ] Verify no expansion work is scheduled for a destroyed core.
+- [ ] Verify no expansion work is scheduled for a destroyed or purified core.
+- [ ] Contract test proves a logically `PURIFIED` core cannot reactivate merely because physical cleanup is incomplete or skipped.
 
 ## Merge gate
 
@@ -39,4 +42,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** One physical core has one persistent identity, can be destroyed exactly once, and its lifecycle is authoritative after reload.
+**Acceptance:** One physical core has one persistent dimension-local identity, can be destroyed exactly once, cannot resurrect, and later reaches the logical terminal `PURIFIED` state independently of best-effort terrain cleanup.

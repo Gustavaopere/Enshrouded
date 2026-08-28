@@ -1,0 +1,107 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'eclipse'
+    id 'idea'
+    id 'net.neoforged.gradle.userdev' version '7.1.26'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_file_name
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.neoforged.net/releases' }
+    maven { url = 'https://maven.parchmentmc.org' }
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+sourceSets {
+    main.resources {
+        srcDir('src/generated/resources')
+    }
+    gameTest {
+        compileClasspath = sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath = output + compileClasspath + sourceSets.main.runtimeClasspath
+    }
+}
+
+runs {
+    configureEach {
+        workingDirectory project.layout.projectDirectory.dir('runs').dir(name)
+        modSource project.sourceSets.main
+    }
+    client {}
+    server {
+        arguments.add '--nogui'
+    }
+    gameTestServer {
+        systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        modSource project.sourceSets.gameTest
+    }
+    data {
+        arguments.addAll '--mod', mod_id, '--all',
+                '--output', file('src/generated/resources/').absolutePath,
+                '--existing', file('src/main/resources/').absolutePath
+    }
+}
+
+// NeoGradle creates runServer as a JavaExec task but does not forward stdin.
+// The dedicated-server reload harness needs console commands (save-all / stop),
+// so opt this one run task into the Gradle process stdin explicitly.
+tasks.withType(JavaExec).configureEach {
+    if (name == 'runServer') {
+        standardInput = System.in
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neo_version}"
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
+}
+
+tasks.named('jar', Jar).configure {
+    from('LICENSE')
+    from('THIRD_PARTY_NOTICES.md')
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+tasks.withType(ProcessResources).configureEach {
+    def replaceProperties = [
+        minecraft_version: minecraft_version,
+        minecraft_version_range: minecraft_version_range,
+        neo_version: neo_version,
+        loader_version_range: loader_version_range,
+        mod_id: mod_id,
+        mod_name: mod_name,
+        mod_license: mod_license,
+        mod_version: mod_version,
+        mod_authors: mod_authors,
+        mod_description: mod_description
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

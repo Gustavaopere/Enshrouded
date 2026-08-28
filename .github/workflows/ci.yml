@@ -1,0 +1,133 @@
+name: Enshrouded CI
+
+on:
+  push:
+    branches:
+      - main
+      - round-1-foundation
+      - 'feat/**'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enshrouded-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify shell harness prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/ci/dedicated-server-reload-smoke.sh
+          command -v timeout >/dev/null
+          timeout --version
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Verify committed Gradle wrapper provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object gradlew)" = '0f14772e0e50ffe504fa3be1a869e6281b09ccd1'
+          test "$(git hash-object gradlew.bat)" = '8de1053a1f921b9ac5910187e2f99fdaa774f81a'
+          test "$(git hash-object gradle/wrapper/gradle-wrapper.jar)" = '1b33c55baabb587c669f562ae36f953de2481846'
+          grep -Fx 'distributionUrl=https\://services.gradle.org/distributions/gradle-8.14-bin.zip' gradle/wrapper/gradle-wrapper.properties
+          grep -Fx 'distributionSha256Sum=61ad310d3c7d3e5da131b76bbf22b5a4c0786e9d892dae8c1658d4b484de3caa' gradle/wrapper/gradle-wrapper.properties
+          test -x gradlew
+
+      - name: Verify Gradle wrapper
+        run: ./gradlew --no-daemon --version
+
+      - name: Unit tests
+        run: ./gradlew --no-daemon test
+
+      - name: Diff sanity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          if [[ "$GITHUB_REF" == 'refs/heads/main' ]]; then
+            git diff --check HEAD^ HEAD
+          else
+            BASE="$(git merge-base origin/main HEAD)"
+            git diff --check "$BASE" HEAD
+          fi
+
+      - name: NeoForge build
+        run: ./gradlew --no-daemon build
+
+      - name: Verify built JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          JARS=(build/libs/Enshrouded*.jar)
+          if (( ${#JARS[@]} != 1 )); then
+            echo "Expected exactly one Enshrouded JAR, found ${#JARS[@]}"
+            printf '%s\n' "${JARS[@]:-}"
+            exit 1
+          fi
+          JAR="${JARS[0]}"
+          JAR_LIST="$(jar tf "$JAR")"
+
+          grep -Fxq 'META-INF/neoforge.mods.toml' <<<"$JAR_LIST"
+          grep -Fxq 'com/gustavaopere/enshrouded/Enshrouded.class' <<<"$JAR_LIST"
+          grep -Fxq 'LICENSE' <<<"$JAR_LIST"
+          grep -Fxq 'THIRD_PARTY_NOTICES.md' <<<"$JAR_LIST"
+
+          MODS_TOML="$(unzip -p "$JAR" META-INF/neoforge.mods.toml)"
+          grep -Fq 'modId="enshrouded"' <<<"$MODS_TOML"
+          grep -Fq 'license="BSD-2-Clause"' <<<"$MODS_TOML"
+          grep -Fq 'type="required"' <<<"$MODS_TOML"
+          if grep -Fq '${' <<<"$MODS_TOML"; then
+            echo 'Unexpanded placeholder leaked into neoforge.mods.toml'
+            printf '%s\n' "$MODS_TOML"
+            exit 1
+          fi
+
+          if grep -Fq 'com/gustavaopere/enshrouded/gametest/' <<<"$JAR_LIST"; then
+            echo 'GameTest-only classes leaked into the production JAR'
+            exit 1
+          fi
+
+      - name: GameTest server
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p runs/gameTestServer build
+          printf 'eula=true\n' > runs/gameTestServer/eula.txt
+          LOG="$PWD/build/gametest.log"
+          set +e
+          ./gradlew --no-daemon runGameTestServer 2>&1 | tee "$LOG"
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          if grep -Fq 'No test functions were given!' "$LOG"; then
+            echo 'GameTest discovery failed: zero test functions were registered'
+            exit 1
+          fi
+          exit "$STATUS"
+
+      - name: Dedicated-server save/reload smoke test
+        shell: bash
+        run: bash scripts/ci/dedicated-server-reload-smoke.sh
