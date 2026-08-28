@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.shroud.state;
 
+import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import net.minecraft.core.BlockPos;
 
 import java.util.Objects;
@@ -9,7 +10,7 @@ public record ShroudCoreState(
         UUID id,
         BlockPos center,
         int tier,
-        String lifecycleState,
+        CoreLifecycleState lifecycleState,
         int maxInfluenceRadius,
         long expansionSeed,
         long expansionEpoch,
@@ -22,9 +23,6 @@ public record ShroudCoreState(
         Objects.requireNonNull(regionId, "regionId");
         if (tier < 1) {
             throw new IllegalArgumentException("tier must be >= 1");
-        }
-        if (lifecycleState.isBlank()) {
-            throw new IllegalArgumentException("lifecycleState must not be blank");
         }
         if (maxInfluenceRadius <= 0) {
             throw new IllegalArgumentException("maxInfluenceRadius must be > 0");
