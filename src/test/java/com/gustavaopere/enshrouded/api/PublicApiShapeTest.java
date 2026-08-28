@@ -111,6 +111,21 @@ final class PublicApiShapeTest {
     }
 
     @Test
+    void encounterContextShapeRequiresExplicitOrigin() throws Exception {
+        var constructor = EncounterContext.class.getDeclaredConstructor(
+                UUID.class,
+                BlockPos.class,
+                int.class,
+                long.class);
+
+        assertArrayEquals(
+                new Class<?>[]{UUID.class, BlockPos.class, int.class, long.class},
+                constructor.getParameterTypes());
+        assertEquals(1, EncounterContext.class.getDeclaredConstructors().length,
+                "EncounterContext must not add an origin-omitting convenience constructor");
+    }
+
+    @Test
     void lichProviderOwnsEntityProvisionButNotStoryRewardSurface() throws Exception {
         Method id = LichManifestationProvider.class.getDeclaredMethod("id");
         Method available = LichManifestationProvider.class.getDeclaredMethod("isAvailable");
