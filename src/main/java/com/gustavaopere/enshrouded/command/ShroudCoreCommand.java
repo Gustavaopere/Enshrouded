@@ -6,6 +6,7 @@ import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlockEntity;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -37,33 +38,35 @@ public final class ShroudCoreCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal(Enshrouded.MOD_ID)
-                .requires(source -> source.hasPermission(2))
-                .then(Commands.literal("core")
-                        .then(Commands.literal("create")
+        LiteralArgumentBuilder<CommandSourceStack> core = Commands.literal("core")
+                .then(Commands.literal("create")
+                        .executes(context -> create(
+                                context.getSource(),
+                                BlockPos.containing(context.getSource().getPosition())))
+                        .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .executes(context -> create(
                                         context.getSource(),
-                                        BlockPos.containing(context.getSource().getPosition())))
-                                .then(Commands.argument("pos", BlockPosArgument.blockPos())
-                                        .executes(context -> create(
-                                                context.getSource(),
-                                                BlockPosArgument.getLoadedBlockPos(context, "pos")))))
-                        .then(Commands.literal("inspect")
+                                        BlockPosArgument.getLoadedBlockPos(context, "pos")))))
+                .then(Commands.literal("inspect")
+                        .executes(context -> inspect(
+                                context.getSource(),
+                                BlockPos.containing(context.getSource().getPosition())))
+                        .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .executes(context -> inspect(
                                         context.getSource(),
-                                        BlockPos.containing(context.getSource().getPosition())))
-                                .then(Commands.argument("pos", BlockPosArgument.blockPos())
-                                        .executes(context -> inspect(
-                                                context.getSource(),
-                                                BlockPosArgument.getLoadedBlockPos(context, "pos")))))
-                        .then(Commands.literal("destroy")
+                                        BlockPosArgument.getLoadedBlockPos(context, "pos")))))
+                .then(Commands.literal("destroy")
+                        .executes(context -> destroy(
+                                context.getSource(),
+                                BlockPos.containing(context.getSource().getPosition())))
+                        .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .executes(context -> destroy(
                                         context.getSource(),
-                                        BlockPos.containing(context.getSource().getPosition())))
-                                .then(Commands.argument("pos", BlockPosArgument.blockPos())
-                                        .executes(context -> destroy(
-                                                context.getSource(),
-                                                BlockPosArgument.getLoadedBlockPos(context, "pos"))))));
+                                        BlockPosArgument.getLoadedBlockPos(context, "pos")))));
+
+        dispatcher.register(Commands.literal(Enshrouded.MOD_ID)
+                .requires(source -> source.hasPermission(2))
+                .then(core));
     }
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
