@@ -55,6 +55,20 @@ final class DomainContractsTest {
     }
 
     @Test
+    void progressionOwnerUsesOneCanonicalPlayerUuidRepresentation() {
+        UUID player = UUID.fromString("b23f4057-68c3-4a2f-839c-04998bd4ddda");
+        ProgressionOwner uppercase = new ProgressionOwner(
+                ProgressionOwner.Kind.PLAYER,
+                "B23F4057-68C3-4A2F-839C-04998BD4DDDA");
+
+        assertEquals(player.toString(), uppercase.id());
+        assertEquals("player:" + player, uppercase.stableKey());
+        assertThrows(IllegalArgumentException.class,
+                () -> new ProgressionOwner(ProgressionOwner.Kind.PLAYER, "1-1-1-1-1"));
+        assertEquals(Optional.empty(), ProgressionOwner.parse("player:1-1-1-1-1"));
+    }
+
+    @Test
     void shroudSampleRejectsImpossibleIntensity() {
         UUID core = UUID.fromString("6745ac8a-04b4-45dd-8d56-7d1ec73c3f18");
         ShroudSample sample = new ShroudSample(0.75f, ShroudSeverity.SHROUD, Optional.of(core), false);
