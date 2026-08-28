@@ -15,7 +15,7 @@
 ## Dependencies
 
 - Foundation `ProgressionOwner` / `ProgressionOwnerResolver` contracts.
-- 02 terrain safety.
+- 02 terrain safety and its `ProtectionDecision` / `ProtectedAreaService` semantics.
 - 05 persistent progression state/service.
 - 06 boss encounter.
 
@@ -26,15 +26,18 @@
 - Resolver results are snapshots for the operation that requested them: rituals, encounters and reward transactions resolve once and keep that stable owner until completion. Joining/leaving/changing FTB teams affects only future operations and cannot redirect an in-flight ritual/encounter/reward.
 - Enabling team ownership over an existing player-owned world does not silently rewrite or merge progression. Any player↔team migration must be an explicit migration/admin flow with deterministic conflict/idempotence rules.
 - Stage 03 exposure and Stage 05 progression consumers must not import FTB Teams classes; swapping the resolver must be sufficient.
-- FTB Chunks claims veto terrain mutation through `ProtectedAreaService`.
-- MineColonies colony/building areas veto terrain mutation through the same service.
+- FTB Chunks and MineColonies adapters plug into Stage 02 `ProtectedAreaService`; they never mutate terrain or bypass `DefaultMutationAuthority` themselves.
+- Each protection adapter must distinguish a definite unprotected result from query uncertainty: protected -> `PROTECTED`, definite no-claim/no-colony -> `UNPROTECTED`, present/enabled adapter unable to answer -> `INDETERMINATE`.
+- An absent target mod registers no adapter and therefore contributes no uncertainty. A present target mod with API mismatch/query failure must not be treated as unprotected; the aggregate authority fails closed on `INDETERMINATE` unless an explicit expert override is enabled.
 - Claim/protection lookup is cached/indexed and never executed as an expensive global search per mutation candidate.
-- If adapter API is unavailable/mismatched, mutations in uncertain protected contexts fail closed when practical and a diagnostic is recorded.
+- Diagnostics for adapter mismatch/query failure are rate-limited/bounded and identify which adapter produced uncertainty.
 
 ## TDD / verification
 
-- [ ] Integration test claimed position denies mutation and adjacent unclaimed position follows normal authority.
-- [ ] Integration test MineColonies protected position denies mutation.
+- [ ] Integration test claimed position returns `PROTECTED` and adjacent definitely-unclaimed position returns `UNPROTECTED`.
+- [ ] Integration test MineColonies protected position returns `PROTECTED`.
+- [ ] Integration test enabled adapter query/API failure returns `INDETERMINATE`; `DefaultMutationAuthority` vetoes it by default and logs a bounded diagnostic.
+- [ ] Integration test target mod absent registers no adapter and does not globally block ordinary standalone-safe terrain.
 - [ ] Owner resolver tests player vs team key stability and no duplicate ritual progression.
 - [ ] Contract test FTB resolver is substitutable for the Foundation resolver without changing passage/exposure consumers.
 - [ ] Transaction test changes team membership/resolver output after ritual or encounter start and proves the in-flight operation remains bound to the original owner.
@@ -49,4 +52,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** The pack’s multiplayer claims and colonies are protected, team progression can be shared deliberately through the Foundation owner boundary without silent ownership transfer, and Epic Fight does not break combat.
+**Acceptance:** The pack’s multiplayer claims and colonies are protected with explicit fail-closed uncertainty semantics, team progression can be shared deliberately through the Foundation owner boundary without silent ownership transfer, and Epic Fight does not break combat.
