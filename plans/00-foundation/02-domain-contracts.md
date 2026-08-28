@@ -31,6 +31,7 @@
 - Stage 03 consumes only Foundation progression/ward boundaries; it must not depend on Stage 05 implementation classes or scan altar blocks.
 - `MagicDamageClassifier.classify(DamageSource)` returns a core-owned classification/confidence contract.
 - `LichManifestationProvider` spawns/matches encounter entities without owning story rewards.
+- `EncounterContext` requires an explicit caller-supplied `BlockPos origin`; it snapshots that position with `immutable()` and exposes no convenience constructor that silently substitutes `BlockPos.ZERO` or another sentinel.
 
 ## TDD / verification
 
@@ -41,8 +42,9 @@
 - [x] Observe that RED before production implementation: the exact committed test source was compiled/executed under Java 21 with a temporary JUnit-compatible harness outside the repository and both tests failed only with the expected `ClassNotFoundException` for the two absent interfaces.
 - [x] Implement the minimal owner/passage interfaces/defaults and verify the same test GREEN in the isolated Java 21 harness.
 - [x] Add and observe RED for Foundation `FlameWardQuery` before production implementation, then implement the minimal no-ward fallback and permanent API-shape/behavior tests — RED commit `93127ff748029cd39fa33502eb704b10817308f0`, production commit `787d9c36c25459e8815066b8bd03fc20ff4285aa`.
+- [x] Add and observe RED requiring `EncounterContext` to reject the convenience `(UUID, int, long)` constructor that silently injected `BlockPos.ZERO` — RED commit `3794568bbaebf105b070e08055e92715d30c1a3c`; production commit `5fb833e1b9e912819b0c1438a923dfa8ce7f0981` removes that overload and the same reflection contract is GREEN under Java 21.
 
-## Current implementation checkpoint — 2026-08-27
+## Current implementation checkpoint — 2026-08-28
 
 Enshrouded-owned contracts are present under `src/main/java/com/gustavaopere/enshrouded/api/` with no optional-mod imports:
 
@@ -54,6 +56,7 @@ Enshrouded-owned contracts are present under `src/main/java/com/gustavaopere/ens
 - `FlamePassageQuery` is a read-only `@FunctionalInterface`; `levelOneFallback()` validates its owner argument and returns stable Passage Level `1` for player/team/world owners;
 - magic classification is represented by Enshrouded-owned kind/confidence values, with `UNKNOWN` explicitly failing safe as non-magical;
 - `LichManifestationProvider` owns entity selection/spawn/matching only, while its contract explicitly leaves rewards/progression to the story runtime;
+- `EncounterContext` snapshots mutable positions and now requires an explicit origin, preventing omitted-location calls from becoming a valid world-origin encounter by accident;
 - JUnit contract tests cover stable IDs, player/team/world owner round trips, invalid owner keys and value invariants;
 - `PublicApiShapeTest` freezes the exact public shapes of Shroud/mutation/ward/progression/magic/Lich provider boundaries;
 - `ProgressionBoundaryTest` permanently verifies standalone UUID owner resolution, owner-agnostic Level 1 passage fallback and fail-fast null behavior;
@@ -95,6 +98,18 @@ The same test then passed; it was promoted to permanent `FlameWardBoundaryTest`,
 
 `plans/PENDING.md` keeps `ENSH-L1-FLAME-WARD-001` open only for cross-stage closure: Stage 01 must preserve logical samples while setting the suppression flag, Stage 02 must route ward veto through `MutationAuthority`, Stage 03 must interpret suppression as effective safety, and Stage 05 must supply the indexed altar-backed implementation.
 
+### Encounter-origin TDD evidence
+
+The initial `EncounterContext` exposed a convenience `(UUID, int, long)` constructor that silently supplied `BlockPos.ZERO`. That made omission of an encounter location indistinguishable from a deliberate world-origin encounter.
+
+RED source commit: `3794568bbaebf105b070e08055e92715d30c1a3c`.
+
+The exact new reflection contract was executed under Java 21 against the then-current `EncounterContext` with a minimal same-name `BlockPos` stub. RED was observed only because the forbidden convenience constructor was still present.
+
+Minimal production commit: `5fb833e1b9e912819b0c1438a923dfa8ce7f0981`.
+
+The convenience constructor was removed; the canonical record constructor still validates non-null `encounterId`/`origin`, snapshots `origin.immutable()` and rejects manifestation levels below `1`. The same reflection contract then passed GREEN. `DECISIONS.md` decision 42 freezes explicit encounter origin as a Foundation invariant.
+
 ### Broader pure-Java verification while Actions is blocked
 
 A Java 21 micro-runner executed the current logical bodies of the Foundation tests that do not require Minecraft runtime behavior. Minecraft classes referenced only for API signature reflection were represented by empty same-name stubs; no Minecraft behavior was simulated.
@@ -110,7 +125,8 @@ This isolated evidence proves pure-Java value/API behavior only. It does **not**
 - [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
 - [x] `ProgressionOwnerResolver` and `FlamePassageQuery` Foundation contracts/defaults are implemented and isolated RED -> GREEN is proven.
 - [x] `FlameWardQuery` Foundation contract/default is implemented test-first and isolated RED -> GREEN is proven.
+- [x] `EncounterContext` requires explicit origin and its no-default-origin RED -> GREEN is proven.
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Later tasks compile against one stable set of Enshrouded-owned interfaces, including progression, passage and ward queries, without importing optional-mod or later-stage implementation classes.
+**Acceptance:** Later tasks compile against one stable set of Enshrouded-owned interfaces, including progression, passage and ward queries, without importing optional-mod or later-stage implementation classes or silently inventing encounter locations.
