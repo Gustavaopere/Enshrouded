@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#enshrouded:corruptible_safe",
+    "minecraft:cobblestone",
+    "minecraft:mossy_cobblestone",
+    "minecraft:deepslate",
+    "minecraft:tuff"
+  ]
+}
