@@ -31,6 +31,7 @@ Policy: Enshrouded may adapt isolated source from this pinned Apache-2.0 snapsho
 
 - Provenance id: `ars-zero-runtime-2.0.2`
 - Current pack version: **2.0.2** for Minecraft 1.21.1.
+- Audited source snapshot: `9478291a9f331ee2b4a391c4581a342d342ac7dc`.
 - License of the current project/release audited for this integration: **GPLv3**.
 - Relevant runtime entity: `ars_zero:lich`.
 - Relevant observed behavior: the Lich implementation supports flight, blink-style movement, regeneration and multiple spell behaviours.
