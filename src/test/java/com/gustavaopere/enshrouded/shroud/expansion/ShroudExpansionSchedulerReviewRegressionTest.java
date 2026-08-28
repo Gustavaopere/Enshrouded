@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,10 +71,7 @@ final class ShroudExpansionSchedulerReviewRegressionTest {
             state = scheduler.tick(state, new ShroudWorkBudget(1, 1)).state();
         }
 
-        assertEquals(Map.of(seed, state.regions().get(REGION_ID).cells().get(seed),
-                        east, state.regions().get(REGION_ID).cells().get(east),
-                        south, state.regions().get(REGION_ID).cells().get(south)).keySet(),
-                state.regions().get(REGION_ID).cells().keySet());
+        assertEquals(Set.of(seed, east, south), state.regions().get(REGION_ID).cells().keySet());
         assertEquals(3, state.regions().get(REGION_ID).cells().size());
     }
 
