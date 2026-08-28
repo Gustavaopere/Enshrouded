@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.shroud.core;
 
+import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.registry.ModBlockEntities;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
@@ -17,7 +18,6 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
     private static final String CORE_ID_TAG = "CoreId";
     private static final String REGION_ID_TAG = "RegionId";
     private static final int LEVEL_ONE_TIER = 1;
-    private static final int LEVEL_ONE_DEFAULT_MAX_INFLUENCE_RADIUS = 128;
 
     private UUID coreId;
     private UUID regionId;
@@ -41,7 +41,7 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
                 regionId,
                 worldPosition,
                 LEVEL_ONE_TIER,
-                LEVEL_ONE_DEFAULT_MAX_INFLUENCE_RADIUS,
+                EnshroudedConfig.coreMaxInfluenceRadius(),
                 expansionSeed(coreId)
         );
         if (registration.changed()) {
