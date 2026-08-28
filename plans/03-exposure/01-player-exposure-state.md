@@ -4,7 +4,7 @@
 
 **Goal:** give each player a persistent/synchronized Shroud exposure reserve with deterministic drain/recovery and a stable policy seam for Deadly Shroud.
 
-**Planned types:** `ShroudExposureAttachment`, `ExposureService`, `ExposureSnapshot`, `ExposurePayload`, `DeadlyExposurePolicy`.
+**Planned types:** `ShroudExposureAttachment`, `ExposureSchema`, `ExposureService`, `ExposureSnapshot`, `ExposurePayload`, `DeadlyExposurePolicy`.
 
 ## Files
 
@@ -18,6 +18,8 @@
 
 ## Implementation contract
 
+- The persistent attachment carries an explicit schema version/stable evolution policy from its first implementation; Stage 09 may migrate older fixtures later but must not retrofit versioning after saves exist.
+- Unknown future attachment schema fails closed with a diagnostic rather than silently resetting an unsafe exposure/progression state.
 - Default ordinary-Shroud maximum exposure reserve is configurable and initially 300 seconds, clamped to safe bounds.
 - Effective exposure interprets `ShroudSample.sanctuarySuppressed=true` as safe/recovery without discarding the sample's underlying logical severity/intensity.
 - Without Sanctuary suppression: `CLEAR` regenerates reserve; `SHROUD` drains it; `DEADLY` delegates through injected `DeadlyExposurePolicy`.
@@ -30,6 +32,7 @@
 
 ## TDD / verification
 
+- [ ] Unit-test schema version round-trip plus rejection/diagnostic for an unknown future schema.
 - [ ] Unit-test drain/recovery boundary math and configured max clamping.
 - [ ] Unit-test suppressed `SHROUD`/`DEADLY` samples recover as safe while their logical sample data remains unchanged.
 - [ ] Unit-test `DeadlyExposurePolicy.levelOneBarrier()` is fail-closed and clamps exposure to the configured emergency window.
@@ -46,4 +49,4 @@
 - [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
 - [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
-**Acceptance:** Ordinary Shroud starts a reliable server timer, Sanctuary suppression makes effective exposure safe without erasing latent Shroud state, Deadly behavior is injected through a stable fail-closed policy seam, safe air recovers reserve, and state survives normal multiplayer lifecycle correctly.
+**Acceptance:** Ordinary Shroud starts a reliable server timer, Sanctuary suppression makes effective exposure safe without erasing latent Shroud state, Deadly behavior is injected through a stable fail-closed policy seam, safe air recovers reserve, and versioned state survives normal multiplayer lifecycle correctly.
