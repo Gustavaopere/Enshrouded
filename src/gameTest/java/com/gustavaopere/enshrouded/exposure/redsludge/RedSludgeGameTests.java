@@ -19,6 +19,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
@@ -42,6 +43,7 @@ public final class RedSludgeGameTests {
     public static void levelOneContactTriggersDeadlyExposureImmediately(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         FakePlayer player = FakePlayerFactory.get(level, new GameProfile(CONTACT_PLAYER_ID, "RedSludgeContact"));
+        player.setGameMode(GameType.SURVIVAL);
         player.setInvulnerable(false);
         player.setHealth(player.getMaxHealth());
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
@@ -71,6 +73,7 @@ public final class RedSludgeGameTests {
         helper.assertBlockPresent(ModBlocks.RED_SLUDGE.get(), relative);
 
         FakePlayer player = FakePlayerFactory.get(level, new GameProfile(RELOCATED_PLAYER_ID, "RelocatedSludge"));
+        player.setGameMode(GameType.SURVIVAL);
         player.setInvulnerable(false);
         player.setHealth(player.getMaxHealth());
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
