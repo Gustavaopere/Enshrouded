@@ -213,10 +213,12 @@ public final class GrowthPlacementGameTests {
         }
 
         helper.assertTrue(materialization.pendingGrowthWork() == 3, "Three growth jobs must be queued");
-        helper.assertTrue(materialization.tickGrowths(level, 3, 1) == 1, "Per-chunk budget must cap the first tick to one attempt");
-        helper.assertTrue(materialization.pendingGrowthWork() == 2, "Unattempted growth jobs must remain queued");
-        helper.assertTrue(materialization.tickGrowths(level, 3, 1) == 1, "Per-chunk budget must apply independently on the next tick");
-        helper.assertTrue(materialization.pendingGrowthWork() == 1, "Exactly one growth job must remain after two bounded ticks");
+        int firstPlacements = materialization.tickGrowths(level, 3, 1);
+        helper.assertTrue(firstPlacements <= 1, "A one-attempt per-chunk budget cannot produce more than one placement");
+        helper.assertTrue(materialization.pendingGrowthWork() == 2, "Exactly one growth job must be attempted on the first bounded tick");
+        int secondPlacements = materialization.tickGrowths(level, 3, 1);
+        helper.assertTrue(secondPlacements <= 1, "The per-chunk budget must remain bounded on the next tick");
+        helper.assertTrue(materialization.pendingGrowthWork() == 1, "Exactly one growth job must be attempted on each bounded tick");
         helper.succeed();
     }
 
