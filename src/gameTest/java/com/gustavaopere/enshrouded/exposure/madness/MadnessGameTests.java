@@ -7,27 +7,36 @@ import com.gustavaopere.enshrouded.exposure.DeadlyExposurePolicy;
 import com.gustavaopere.enshrouded.exposure.ExposureSchema;
 import com.gustavaopere.enshrouded.exposure.ExposureService;
 import com.gustavaopere.enshrouded.exposure.ExposureSnapshot;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameType;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+
+import java.util.UUID;
 
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class MadnessGameTests {
+    private static final UUID FATAL_PLAYER_ID = UUID.fromString("dbec3dfd-5c80-4375-b71a-8f4619928f67");
+    private static final UUID RECOVERY_PLAYER_ID = UUID.fromString("d099cf89-8117-4612-a9ae-7e111c7ce0df");
+
     private MadnessGameTests() {
     }
 
     @GameTest(template = "foundation_empty")
     public static void armoredResistancePlayerStillDiesAtExposureExhaustion(GameTestHelper helper) {
-        ServerPlayer player = (ServerPlayer) helper.makeMockPlayer(GameType.SURVIVAL);
+        ServerLevel level = helper.getLevel();
+        FakePlayer player = FakePlayerFactory.get(level, new GameProfile(FATAL_PLAYER_ID, "MadnessFatal"));
+        player.setHealth(player.getMaxHealth());
         player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.NETHERITE_HELMET));
         player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.NETHERITE_CHESTPLATE));
         player.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.NETHERITE_LEGGINGS));
@@ -54,7 +63,9 @@ public final class MadnessGameTests {
 
     @GameTest(template = "foundation_empty")
     public static void leavingShroudBeforeZeroRecoversAndClearsSprintPenalty(GameTestHelper helper) {
-        ServerPlayer player = (ServerPlayer) helper.makeMockPlayer(GameType.SURVIVAL);
+        ServerLevel level = helper.getLevel();
+        FakePlayer player = FakePlayerFactory.get(level, new GameProfile(RECOVERY_PLAYER_ID, "MadnessRecovery"));
+        player.setHealth(player.getMaxHealth());
         ExposureSnapshot critical = new ExposureSnapshot(
                 ExposureSchema.CURRENT_VERSION,
                 80,
