@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.terrain;
 
 import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
+import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -14,10 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MaterializationServiceRedTest {
     @Test
-    void serviceRequiresAuthorityAndExposesBoundedLoadedWorldRuntime() throws Exception {
+    void serviceRequiresAuthorityQueryAndExposesBoundedLoadedWorldRuntime() throws Exception {
         var constructor = ShroudMaterializationService.class.getDeclaredConstructor(
                 CorruptionRuleRegistry.class,
                 MutationAuthority.class,
+                ShroudQuery.class,
                 int.class
         );
         assertNotNull(constructor);
@@ -37,14 +39,16 @@ class MaterializationServiceRedTest {
     }
 
     @Test
-    void sourceKeepsMutationAuthorityAheadOfEveryWorldMutationSink() throws Exception {
+    void sourceKeepsLogicalShroudAndMutationAuthorityAheadOfEveryWorldMutationSink() throws Exception {
         String source = Files.readString(Path.of(
                 "src/main/java/com/gustavaopere/enshrouded/shroud/terrain/ShroudMaterializationService.java"
         ));
+        int shroudSample = source.indexOf("shroudQuery.sample(");
         int authorityCall = source.indexOf("canMutate(");
         int mutationSink = source.indexOf("setBlock(");
 
-        assertTrue(authorityCall >= 0, "materialization must consult MutationAuthority");
+        assertTrue(shroudSample >= 0, "materialization must revalidate canonical logical Shroud");
+        assertTrue(authorityCall > shroudSample, "materialization must consult MutationAuthority after logical Shroud revalidation");
         assertTrue(source.contains("MutationKind.CORRUPTION"), "materialization must use Foundation CORRUPTION kind");
         assertTrue(mutationSink > authorityCall, "MutationAuthority must be consulted before setBlock");
     }
