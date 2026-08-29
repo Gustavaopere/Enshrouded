@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.ecology.state;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.ecology.combat.CorruptedCombatRuntime;
+import com.gustavaopere.enshrouded.ecology.purification.EntityPurificationService;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import net.minecraft.server.level.ServerLevel;
@@ -67,7 +68,7 @@ public final class EntityCorruptionRuntime {
             return;
         }
         if (!CorruptionEligibility.isEligible(entity)) {
-            CorruptedCombatRuntime.clearIfActive(entity);
+            EntityPurificationService.purify(entity);
             return;
         }
 
@@ -86,10 +87,7 @@ public final class EntityCorruptionRuntime {
                 : existing;
         EntityCorruptionAttachment next = SERVICE.tick(current, sample, elapsedTicks);
         if (next.intensity() <= 0.0F) {
-            CorruptedCombatRuntime.clearIfActive(entity);
-            if (existing != null) {
-                entity.removeData(EntityCorruptionAttachment.ENTITY_CORRUPTION);
-            }
+            EntityPurificationService.purify(entity);
             return;
         }
         if (!next.equals(existing)) {
