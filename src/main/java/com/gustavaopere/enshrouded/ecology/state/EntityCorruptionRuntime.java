@@ -8,8 +8,11 @@ import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+
+import java.util.Objects;
 
 /**
  * Server-only, per-entity corruption driver. No world scan or replacement conversion is performed.
@@ -45,14 +48,21 @@ public final class EntityCorruptionRuntime {
                 || living.tickCount % SAMPLE_INTERVAL_TICKS != 0) {
             return;
         }
-        advance(living, SAMPLE_INTERVAL_TICKS);
+        advance(living, SAMPLE_INTERVAL_TICKS, null);
     }
 
     static void advanceNow(LivingEntity entity) {
-        advance(entity, SAMPLE_INTERVAL_TICKS);
+        advance(entity, SAMPLE_INTERVAL_TICKS, null);
     }
 
-    private static void advance(LivingEntity entity, int elapsedTicks) {
+    static void advanceNow(LivingEntity entity, Iterable<? extends Player> candidates) {
+        advance(entity, SAMPLE_INTERVAL_TICKS, Objects.requireNonNull(candidates, "candidates"));
+    }
+
+    private static void advance(
+            LivingEntity entity,
+            int elapsedTicks,
+            Iterable<? extends Player> candidateOverride) {
         if (!(entity.level() instanceof ServerLevel level)) {
             return;
         }
@@ -85,6 +95,10 @@ public final class EntityCorruptionRuntime {
         if (!next.equals(existing)) {
             entity.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION, next);
         }
-        CorruptedCombatRuntime.synchronize(entity, next.intensity());
+        if (candidateOverride == null) {
+            CorruptedCombatRuntime.synchronize(entity, next.intensity());
+        } else {
+            CorruptedCombatRuntime.synchronize(entity, next.intensity(), candidateOverride);
+        }
     }
 }
