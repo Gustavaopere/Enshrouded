@@ -9,11 +9,12 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Progression-aware implementation seam for Deadly Shroud passage. The first structural slice
- * intentionally preserves the old fail-closed barrier behavior; progression semantics are driven
- * by the next behavioral TDD slice.
+ * Progression-aware Deadly Shroud policy. Passage ownership is resolved exclusively through the
+ * Foundation progression boundaries; unavailable or inconsistent progression data fails closed.
  */
 public final class FlameGatedDeadlyExposurePolicy implements DeadlyExposurePolicy {
+    private static final int ALLOWED_DRAIN_TICKS_PER_TICK = 1;
+
     private final ProgressionOwnerResolver ownerResolver;
     private final FlamePassageQuery passageQuery;
     private final PassageRequirement requirement;
@@ -49,6 +50,23 @@ public final class FlameGatedDeadlyExposurePolicy implements DeadlyExposurePolic
             ShroudExposureAttachment state,
             int elapsedTicks,
             int maxReserveTicks) {
-        return fallback.evaluate(playerId, state, elapsedTicks, maxReserveTicks);
+        // The existing barrier owns validation and is also the deterministic fail-closed decision.
+        Decision failClosed = fallback.evaluate(playerId, state, elapsedTicks, maxReserveTicks);
+        if (playerId == null) {
+            return failClosed;
+        }
+
+        try {
+            var owner = ownerResolver.resolve(playerId);
+            if (owner == null || !requirement.isMetBy(passageQuery.passageLevel(owner))) {
+                return failClosed;
+            }
+        } catch (RuntimeException exception) {
+            return failClosed;
+        }
+
+        int current = Math.min(state.remainingTicks(), maxReserveTicks);
+        long candidate = (long) current - (long) ALLOWED_DRAIN_TICKS_PER_TICK * elapsedTicks;
+        return new Decision((int) Math.max(candidate, 0L), false);
     }
 }
