@@ -82,8 +82,9 @@ class MaterializationDomainRedTest {
         assertEquals(1, second.size());
         assertEquals(0, ((Number) size.invoke(queue)).intValue());
 
-        assertFalse((boolean) enqueue.invoke(queueType.getDeclaredConstructor(int.class).newInstance(1), c)
-                && (boolean) enqueue.invoke(queueType.getDeclaredConstructor(int.class).newInstance(1), c),
-                "capacity must be enforceable");
+        Object capacityOne = queueType.getDeclaredConstructor(int.class).newInstance(1);
+        assertTrue((boolean) enqueue.invoke(capacityOne, a));
+        assertFalse((boolean) enqueue.invoke(capacityOne, c), "capacity must reject overflow without dropping queued work");
+        assertEquals(1, ((Number) size.invoke(capacityOne)).intValue());
     }
 }
