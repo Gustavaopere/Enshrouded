@@ -4,6 +4,7 @@ import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreService;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
+import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudRegionState;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class EntityCorruptionGameTests {
     private static final BlockPos SPAWN = new BlockPos(0, 1, 0);
+    private static final BlockPos CLEAR_SENTINEL_POS = new BlockPos(-16384, 96, -16384);
     private static final UUID CANONICAL_CORE_ID = UUID.fromString("71111111-2222-3333-4444-555555555555");
     private static final UUID CANONICAL_REGION_ID = UUID.fromString("72222222-3333-4444-5555-666666666666");
     private static final UUID TAMED_CORE_ID = UUID.fromString("75555555-6666-7777-8888-999999999999");
@@ -87,10 +89,24 @@ public final class EntityCorruptionGameTests {
 
     @GameTest(template = "foundation_empty")
     public static void clearSpaceRegressesExistingCorruptionWithoutReplacement(GameTestHelper helper) {
-        Cow cow = helper.spawnWithNoFreeWill(EntityType.COW, SPAWN);
+        ServerLevel level = helper.getLevel();
+        level.getChunkAt(CLEAR_SENTINEL_POS);
+        Cow cow = EntityType.COW.create(level);
+        helper.assertTrue(cow != null, "clear-space cow must be constructible");
+        cow.moveTo(
+                CLEAR_SENTINEL_POS.getX() + 0.5D,
+                CLEAR_SENTINEL_POS.getY(),
+                CLEAR_SENTINEL_POS.getZ() + 0.5D
+        );
+        helper.assertTrue(level.addFreshEntity(cow), "clear-space cow must enter the test level");
         cow.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION.get(),
                 new EntityCorruptionAttachment(EntityCorruptionSchema.CURRENT_VERSION, 0.60F));
         EntityType<?> originalType = cow.getType();
+
+        var sample = DefaultShroudQuery.levelOne(ShroudGridGeometry.levelOne())
+                .sample(level, cow.blockPosition(), cow);
+        helper.assertTrue(sample.severity() == ShroudSeverity.CLEAR && sample.intensity() == 0.0F,
+                "clear-space fixture must explicitly sample canonical CLEAR Shroud state");
 
         EntityCorruptionRuntime.advanceNow(cow);
 
