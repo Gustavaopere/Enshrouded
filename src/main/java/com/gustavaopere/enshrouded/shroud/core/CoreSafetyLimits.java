@@ -9,6 +9,14 @@ public final class CoreSafetyLimits {
     public static final int DEFAULT_GROWTH_WORK_PER_TICK = 32;
     public static final int MAX_GROWTH_WORK_PER_TICK = 512;
 
+    public static final int MIN_REGRESSION_WORK_PER_TICK = 1;
+    public static final int DEFAULT_REGRESSION_WORK_PER_TICK = 32;
+    public static final int MAX_REGRESSION_WORK_PER_TICK = 512;
+
+    public static final int MIN_CLEANUP_WORK_PER_TICK = 1;
+    public static final int DEFAULT_CLEANUP_WORK_PER_TICK = 64;
+    public static final int MAX_CLEANUP_WORK_PER_TICK = 512;
+
     private CoreSafetyLimits() {
     }
 
@@ -18,6 +26,14 @@ public final class CoreSafetyLimits {
 
     public static int clampGrowthWorkPerTick(int requested) {
         return clamp(requested, MIN_GROWTH_WORK_PER_TICK, MAX_GROWTH_WORK_PER_TICK);
+    }
+
+    public static int clampRegressionWorkPerTick(int requested) {
+        return clamp(requested, MIN_REGRESSION_WORK_PER_TICK, MAX_REGRESSION_WORK_PER_TICK);
+    }
+
+    public static int clampCleanupWorkPerTick(int requested) {
+        return clamp(requested, MIN_CLEANUP_WORK_PER_TICK, MAX_CLEANUP_WORK_PER_TICK);
     }
 
     private static int clamp(int value, int minimum, int maximum) {

@@ -12,6 +12,8 @@ public final class EnshroudedConfig {
 
     private static final ModConfigSpec.IntValue CORE_MAX_INFLUENCE_RADIUS;
     private static final ModConfigSpec.IntValue CORE_GROWTH_WORK_PER_TICK;
+    private static final ModConfigSpec.IntValue CORE_REGRESSION_WORK_PER_TICK;
+    private static final ModConfigSpec.IntValue PURIFICATION_CLEANUP_WORK_PER_TICK;
     private static final ModConfigSpec.DoubleValue SHROUD_DEADLY_INTENSITY_THRESHOLD;
     private static final ModConfigSpec.EnumValue<MutationSafetyMode> TERRAIN_MUTATION_MODE;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_INDETERMINATE_PROTECTION;
@@ -35,6 +37,22 @@ public final class EnshroudedConfig {
                         CoreSafetyLimits.DEFAULT_GROWTH_WORK_PER_TICK,
                         CoreSafetyLimits.MIN_GROWTH_WORK_PER_TICK,
                         CoreSafetyLimits.MAX_GROWTH_WORK_PER_TICK
+                );
+        CORE_REGRESSION_WORK_PER_TICK = builder
+                .comment("Maximum logical Shroud regression work units processed per destroyed core each server tick.")
+                .defineInRange(
+                        "regressionWorkPerTick",
+                        CoreSafetyLimits.DEFAULT_REGRESSION_WORK_PER_TICK,
+                        CoreSafetyLimits.MIN_REGRESSION_WORK_PER_TICK,
+                        CoreSafetyLimits.MAX_REGRESSION_WORK_PER_TICK
+                );
+        PURIFICATION_CLEANUP_WORK_PER_TICK = builder
+                .comment("Maximum loaded-world visual cleanup attempts processed by Shroud purification each server tick.")
+                .defineInRange(
+                        "purificationCleanupWorkPerTick",
+                        CoreSafetyLimits.DEFAULT_CLEANUP_WORK_PER_TICK,
+                        CoreSafetyLimits.MIN_CLEANUP_WORK_PER_TICK,
+                        CoreSafetyLimits.MAX_CLEANUP_WORK_PER_TICK
                 );
         builder.pop();
 
@@ -73,6 +91,14 @@ public final class EnshroudedConfig {
 
     public static int coreGrowthWorkPerTick() {
         return CoreSafetyLimits.clampGrowthWorkPerTick(CORE_GROWTH_WORK_PER_TICK.getAsInt());
+    }
+
+    public static int coreRegressionWorkPerTick() {
+        return CoreSafetyLimits.clampRegressionWorkPerTick(CORE_REGRESSION_WORK_PER_TICK.getAsInt());
+    }
+
+    public static int purificationCleanupWorkPerTick() {
+        return CoreSafetyLimits.clampCleanupWorkPerTick(PURIFICATION_CLEANUP_WORK_PER_TICK.getAsInt());
     }
 
     public static float shroudDeadlyIntensityThreshold() {
