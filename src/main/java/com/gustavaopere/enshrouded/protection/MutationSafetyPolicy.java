@@ -45,12 +45,14 @@ final class MutationSafetyPolicy {
 
         return switch (kind) {
             case CORRUPTION -> safeTagged || (mode == MutationSafetyMode.AGGRESSIVE && aggressiveTagged);
-            case CORE_PLACEMENT -> replaceable;
+            case CORE_PLACEMENT, GROWTH_PLACEMENT -> replaceable;
             case PURIFICATION, RITUAL_STRUCTURE -> true;
         };
     }
 
     private static boolean isThreatIntroducing(MutationKind kind) {
-        return kind == MutationKind.CORRUPTION || kind == MutationKind.CORE_PLACEMENT;
+        return kind == MutationKind.CORRUPTION
+                || kind == MutationKind.CORE_PLACEMENT
+                || kind == MutationKind.GROWTH_PLACEMENT;
     }
 }

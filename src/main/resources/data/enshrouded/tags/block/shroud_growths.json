@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "enshrouded:shroud_growth",
+    "enshrouded:shroud_vein",
+    "enshrouded:withered_growth"
+  ]
+}
