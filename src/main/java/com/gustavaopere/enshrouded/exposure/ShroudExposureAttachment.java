@@ -35,7 +35,7 @@ public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
     public static final Supplier<AttachmentType<ShroudExposureAttachment>> PLAYER_EXPOSURE = ATTACHMENT_TYPES.register(
             "player_exposure",
             () -> AttachmentType.builder(() -> full(ExposureSchema.DEFAULT_MAX_RESERVE_TICKS))
-                    .serialize(MAP_CODEC)
+                    .serialize(CODEC)
                     .build()
     );
 
