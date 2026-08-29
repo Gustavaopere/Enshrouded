@@ -23,7 +23,7 @@ The former external Foundation blocker `ENSH-CI-ACTIONS-001` is closed: hosted r
 ## Initially open contracts
 
 - `ENSH-L1-LICH-REWARD-001`: first-manifestation death must produce exactly one Enshrouded skull even when an external boss provider supplies the entity.
-- `ENSH-L1-MAGIC-CLASSIFY-001`: core magic-resistance classification must work standalone and adapters may only enrich it.
+- `ENSH-L1-MAGIC-CLASSIFY-001`: Foundation defines the classification boundary. Stage 04 PR #28 (`feat/04-magic-resistance`) proves the standalone/core side: `DefaultMagicDamageClassifier` classifies canonical damage-type tags, `MagicResistanceService` is the only reducer, `UNKNOWN`/physical damage remains unchanged, and exact PR-head workflow `33280436245` / job `99174583880` completed GREEN before merge `2a7b83ef16645ed918d9e8d642471513a89d25a5`. Keep open only until Stage 08 proves Ars Nouveau and Iron's Spellbooks adapters enrich/compose evidence through the same `MagicDamageClassification` boundary without installing a second reducer.
 - `ENSH-L1-CLAIM-SAFETY-001`: Stage 02 PR #15 proved fail-closed tri-state authority behavior: `PROTECTED` and `INDETERMINATE` veto by default, absent optional adapters add no uncertainty, and query failure becomes bounded-diagnostic `INDETERMINATE`. Keep open only until Stage 08 real FTB Chunks/MineColonies adapters prove their side of the same `ProtectedAreaService` boundary.
 
 ## Closure rule

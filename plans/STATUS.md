@@ -9,7 +9,7 @@ Last structural update: 2026-08-29.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
 - [x] 03 Exposure — all 4 tasks verified and merged.
-- [ ] 04 Corrupted Ecology — Tasks 01–02 verified and merged; Tasks 03–04 pending.
+- [ ] 04 Corrupted Ecology — Tasks 01–03 verified and merged; Task 04 pending.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
 - [ ] 07 Client Experience — not implemented.
@@ -303,18 +303,38 @@ No new task-local pending contract was introduced. `ENSH-L1-MAGIC-CLASSIFY-001` 
 
 Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 44 GameTests, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 03 magic resistance
+
+- Branch: `feat/04-magic-resistance`
+- Structural RED: commit `8b43d4920aea75a3bf4de5c29936086eca5bad21`, workflow `33279346016` — compile failed because the planned classifier/service types did not yet exist.
+- Tag-bridge RED: commit `5fd3845d`, workflow `33279693655` — exactly one GameTest proved vanilla magic did not yet flow through the canonical Enshrouded tag.
+- Runtime behavioral RED: commit `92704438ca6dac089b3921660e4d574466df319b`, workflow `33279902600` — exactly the corrupted-magic reduction GameTest failed while ordinary melee already remained unchanged.
+- Final implementation HEAD: `e7c8d5bd784d3f74a2fc877fe68b33dcc1e62d87`
+- Push verification: workflow `33280150389`, job `99173834259` — GREEN
+- PR: #28 — `04 — Magic Resistance`
+- Final PR-head verification: workflow `33280436245`, job `99174583880` — GREEN
+- Merge SHA: `2a7b83ef16645ed918d9e8d642471513a89d25a5`
+- Completed file: `✅-03-magic-resistance.md`
+
+Corrupted eligible creatures now receive configurable magic resistance through the single Foundation-owned classification model. `enshrouded:magic` bridges `#neoforge:is_magic`; `enshrouded:magic_bypass` is an explicit empty extension point by default. `DefaultMagicDamageClassifier` fails `UNKNOWN` closed/non-magical, and `MagicResistanceService` is the only reducer. Runtime applies once in `LivingDamageEvent.Pre`, scales the default 35% resistance by corruption intensity and hard-caps configuration at 75%, preserving physical/melee counterplay and preventing immunity.
+
+Unit tests prove physical/magical classification, bounded one-pass resistance math, adapter-evidence convergence and fail-closed contradictory classification. GameTests prove vanilla tagged magic crosses the canonical tag boundary, a fully corrupted cow takes 2.6 damage from the same 4.0 magic hit that deals 4.0 to a clean cow, and ordinary melee remains identical. No optional magic mod is imported by the core.
+
+`ENSH-L1-MAGIC-CLASSIFY-001` remains intentionally open only for Stage 08: PR #28 proves the standalone/core side; Ars Nouveau and Iron's Spellbooks still must prove their adapter-evidence side through the same Foundation `MagicDamageClassification` boundary without installing a second reducer.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 47 GameTests, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/04-magic-resistance` from the latest `main` after this documentation checkpoint.
+Create `feat/04-ecology-visuals` from the latest `main` after this documentation checkpoint.
 
-Read `plans/04-corrupted-ecology/03-magic-resistance.md`, the merged entity-corruption and corruption-combat runtimes, Foundation magic classification contracts, current damage/event seams and `plans/PENDING.md`. Begin with observed RED coverage before production resistance code.
+Read `plans/04-corrupted-ecology/04-ecology-visuals.md`, the merged entity-corruption, hostility/buffs and magic-resistance runtimes, existing client/bootstrap seams, loot infrastructure and `plans/PENDING.md`. Begin with observed RED coverage before production visuals/loot/restoration code.
 
-Task 03 owns bounded magic resistance for corrupted entities through the canonical magic-classification boundary without hard-coding spell mods or creating a second damage taxonomy.
+Task 04 owns readable corrupted-entity cues, bounded at-most-once corruption loot and purification cleanup of only Enshrouded-owned ecology state. It must preserve unrelated potion effects, third-party data and native entity identity.
 
 Remaining canonical Stage 04 order is:
 
-1. `feat/04-magic-resistance`
-2. `feat/04-ecology-visuals`
+1. `feat/04-ecology-visuals`
 
 ## Level 1 release gate
 
