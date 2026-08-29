@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.config;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.exposure.ExposureSchema;
 import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import com.gustavaopere.enshrouded.shroud.core.CoreSafetyLimits;
 import com.gustavaopere.enshrouded.shroud.query.ShroudSeverityThresholds;
@@ -15,6 +16,8 @@ public final class EnshroudedConfig {
     private static final ModConfigSpec.IntValue CORE_REGRESSION_WORK_PER_TICK;
     private static final ModConfigSpec.IntValue PURIFICATION_CLEANUP_WORK_PER_TICK;
     private static final ModConfigSpec.DoubleValue SHROUD_DEADLY_INTENSITY_THRESHOLD;
+    private static final ModConfigSpec.IntValue EXPOSURE_MAX_RESERVE_TICKS;
+    private static final ModConfigSpec.IntValue EXPOSURE_EMERGENCY_WINDOW_TICKS;
     private static final ModConfigSpec.EnumValue<MutationSafetyMode> TERRAIN_MUTATION_MODE;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_INDETERMINATE_PROTECTION;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION;
@@ -67,6 +70,25 @@ public final class EnshroudedConfig {
                 );
         builder.pop();
 
+        builder.push("exposure");
+        EXPOSURE_MAX_RESERVE_TICKS = builder
+                .comment("Maximum ordinary Shroud survival reserve in server ticks. Default is 300 seconds.")
+                .defineInRange(
+                        "maxReserveTicks",
+                        ExposureSchema.DEFAULT_MAX_RESERVE_TICKS,
+                        20,
+                        30 * 60 * 20
+                );
+        EXPOSURE_EMERGENCY_WINDOW_TICKS = builder
+                .comment("Maximum survival window applied by the Level 1 Deadly Shroud barrier, in server ticks.")
+                .defineInRange(
+                        "emergencyWindowTicks",
+                        ExposureSchema.DEFAULT_EMERGENCY_WINDOW_TICKS,
+                        1,
+                        5 * 60 * 20
+                );
+        builder.pop();
+
         builder.push("terrainSafety");
         TERRAIN_MUTATION_MODE = builder
                 .comment("Terrain mutation policy. SAFE mutates only explicitly safe-tagged terrain; AGGRESSIVE additionally permits aggressive-tagged terrain.")
@@ -103,6 +125,14 @@ public final class EnshroudedConfig {
 
     public static float shroudDeadlyIntensityThreshold() {
         return SHROUD_DEADLY_INTENSITY_THRESHOLD.get().floatValue();
+    }
+
+    public static int exposureMaxReserveTicks() {
+        return EXPOSURE_MAX_RESERVE_TICKS.getAsInt();
+    }
+
+    public static int exposureEmergencyWindowTicks() {
+        return Math.min(EXPOSURE_EMERGENCY_WINDOW_TICKS.getAsInt(), exposureMaxReserveTicks());
     }
 
     public static MutationSafetyMode terrainMutationMode() {

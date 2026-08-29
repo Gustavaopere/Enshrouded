@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.registry;
 
+import com.gustavaopere.enshrouded.exposure.ShroudExposureAttachment;
 import com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreWorldgenRegistry;
 import net.neoforged.bus.api.IEventBus;
 
@@ -13,6 +14,7 @@ public final class ModRegistries {
         Objects.requireNonNull(modBus, "modBus");
         ModBlocks.BLOCKS.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
+        ShroudExposureAttachment.register(modBus);
         ShroudCoreWorldgenRegistry.register(modBus);
     }
 }
