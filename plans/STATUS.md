@@ -7,7 +7,7 @@ Last structural update: 2026-08-28.
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
-- [ ] 02 Terrain Corruption — not implemented; canonical order is safety-first.
+- [ ] 02 Terrain Corruption — in progress; terrain safety verified and merged, materialization is next.
 - [ ] 03 Exposure — not implemented.
 - [ ] 04 Corrupted Ecology — not implemented.
 - [ ] 05 Flame Progression — not implemented.
@@ -103,11 +103,27 @@ Worldgen threads do not mutate SavedData directly; ordinary loaded chunks do not
 
 **01 Shroud Field is complete.**
 
+## 02 Terrain Corruption — in progress
+
+### ✅ 04 terrain safety and protection
+
+- Branch: `feat/02-terrain-safety`
+- Final implementation HEAD: `230a89c7d6ce9def0ead75a635200418a0e6e7b9`
+- PR: #15 — `02 — Terrain Safety`
+- Push verification: workflow `33220960726`, job `99014693027` — GREEN
+- Final PR-head verification: workflow `33222433328`, job `99019124609` — GREEN
+- Merge SHA: `f398c13bac776f4f0c7b130153d69124e6970431`
+- Completed file: `✅-04-terrain-safety.md`
+
+The fail-closed `DefaultMutationAuthority` now exists before any Stage 02 block mutation sink. SAFE/AGGRESSIVE terrain tags, tri-state protection decisions, Foundation ward integration, block-entity safeguards and expert overrides are centralized behind this one authority.
+
+`ENSH-L1-FLAME-WARD-001` remains open for Stage 03/05 completion; the Stage 02 authority side is proven. `ENSH-L1-CLAIM-SAFETY-001` remains open only for Stage 08 real claim adapters; the Stage 02 tri-state authority side is proven.
+
 ## Immediate next step
 
-Create `feat/02-terrain-safety` from the latest `main`.
+Create `feat/02-materialization-rules` from the latest `main`.
 
-Read `plans/02-terrain-corruption/04-terrain-safety.md`, `plans/02-terrain-corruption/README.md`, the Foundation `MutationAuthority`/`MutationKind` contracts, merged Shroud query/ward semantics and core state. Begin with an observed RED before production terrain-safety code.
+Read `plans/02-terrain-corruption/01-materialization-rules.md`, `plans/02-terrain-corruption/README.md`, merged `DefaultMutationAuthority`, Foundation `MutationAuthority`/`MutationKind`, canonical Shroud query/ward semantics and core state. Begin with an observed RED before production materialization code. Every world block mutation must route through the already-merged authority.
 
 Canonical Stage 02 order is:
 

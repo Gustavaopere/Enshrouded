@@ -6,7 +6,7 @@
 
 The file numbering is historical; implementation order is causal and safety-first:
 
-1. [`04 terrain safety`](04-terrain-safety.md)
+1. [`✅ 04 terrain safety`](✅-04-terrain-safety.md)
 2. [`01 materialization rules`](01-materialization-rules.md)
 3. [`02 corruption growths`](02-corruption-growths.md)
 4. [`03 purification/regression`](03-purification-regression.md)
