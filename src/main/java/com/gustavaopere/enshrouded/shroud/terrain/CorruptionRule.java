@@ -1,5 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.terrain;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Objects;
@@ -12,6 +14,15 @@ public record CorruptionRule(
         ResourceLocation reversalBlock,
         float minIntensity,
         CorruptionSafetyClass safetyClass) {
+
+    public static final Codec<CorruptionRule> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ResourceLocation.CODEC.fieldOf("id").forGetter(CorruptionRule::id),
+            ResourceLocation.CODEC.fieldOf("source_tag").forGetter(CorruptionRule::sourceTag),
+            ResourceLocation.CODEC.fieldOf("result").forGetter(CorruptionRule::resultBlock),
+            ResourceLocation.CODEC.fieldOf("reversal").forGetter(CorruptionRule::reversalBlock),
+            Codec.floatRange(0.0F, 1.0F).fieldOf("min_intensity").forGetter(CorruptionRule::minIntensity),
+            CorruptionSafetyClass.CODEC.fieldOf("safety").forGetter(CorruptionRule::safetyClass)
+    ).apply(instance, CorruptionRule::new));
 
     public CorruptionRule {
         Objects.requireNonNull(id, "id");
