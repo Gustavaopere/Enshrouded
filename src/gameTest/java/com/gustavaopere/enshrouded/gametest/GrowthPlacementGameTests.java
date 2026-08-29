@@ -83,6 +83,24 @@ public final class GrowthPlacementGameTests {
                 "Denied target must remain free of the requested growth"
         );
 
+        int authorityCallsBeforeInvalidFace = authorityCalls.get();
+        helper.setBlock(deniedSupportRelative, Blocks.AIR);
+        helper.assertTrue(
+                !allowed.tryPlaceOnTop(
+                        level,
+                        deniedSupportPos,
+                        ModBlocks.SHROUD_GROWTH.get(),
+                        ShroudSeverity.SHROUD,
+                        1.0F,
+                        17L
+                ),
+                "Growth placement must reject a support without a sturdy exposed top face"
+        );
+        helper.assertTrue(
+                authorityCalls.get() == authorityCallsBeforeInvalidFace,
+                "Invalid surface geometry must be rejected before invoking mutation authority"
+        );
+
         BlockPos clearSupportRelative = new BlockPos(5, 0, 1);
         BlockPos clearSupportPos = helper.absolutePos(clearSupportRelative);
         helper.setBlock(clearSupportRelative, Blocks.STONE);
