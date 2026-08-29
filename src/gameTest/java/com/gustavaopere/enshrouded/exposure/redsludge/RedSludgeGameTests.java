@@ -20,7 +20,6 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
@@ -44,6 +43,7 @@ public final class RedSludgeGameTests {
     public static void levelOneContactTriggersDeadlyExposureImmediately(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         FakePlayer player = FakePlayerFactory.get(level, new GameProfile(CONTACT_PLAYER_ID, "RedSludgeContact"));
+        RedSludgeExposureHandler.forget(player.getUUID());
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
         player.setData(attachmentType, new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 1_000));
 
@@ -62,18 +62,29 @@ public final class RedSludgeGameTests {
     @GameTest(template = "foundation_empty")
     public static void secondaryContactDamageIsBoundedPerServerTick(GameTestHelper helper) {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        player.setGameMode(GameType.SURVIVAL);
-        player.setInvulnerable(false);
-        player.setHealth(player.getMaxHealth());
+        RedSludgeExposureHandler.forget(player.getUUID());
+        int[] damageCalls = {0};
+        float[] lastDamage = {0.0F};
 
-        RedSludgeExposureHandler.onContact(player, ignored -> { });
+        RedSludgeExposureHandler.onContact(
+                player,
+                ignored -> { },
+                (ignored, amount) -> {
+                    damageCalls[0]++;
+                    lastDamage[0] = amount;
+                }
+        );
 
-        float healthAfterFirstContact = player.getHealth();
-        helper.assertTrue(healthAfterFirstContact < player.getMaxHealth(),
-                "Red Sludge contact must apply bounded direct damage as a secondary hazard");
+        helper.assertValueEqual(damageCalls[0], 1, "Red Sludge secondary damage emission count");
+        helper.assertTrue(lastDamage[0] == 1.0F,
+                "Red Sludge contact must emit the bounded 1.0F secondary damage amount");
 
-        RedSludgeExposureHandler.onContact(player, ignored -> { });
-        helper.assertTrue(player.getHealth() == healthAfterFirstContact,
+        RedSludgeExposureHandler.onContact(
+                player,
+                ignored -> { },
+                (ignored, amount) -> damageCalls[0]++
+        );
+        helper.assertValueEqual(damageCalls[0], 1,
                 "multiple collision callbacks in the same server tick must not duplicate direct Red Sludge damage");
         helper.succeed();
     }
@@ -87,6 +98,7 @@ public final class RedSludgeGameTests {
         helper.assertBlockPresent(ModBlocks.RED_SLUDGE.get(), relative);
 
         FakePlayer player = FakePlayerFactory.get(level, new GameProfile(RELOCATED_PLAYER_ID, "RelocatedSludge"));
+        RedSludgeExposureHandler.forget(player.getUUID());
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
         player.setData(attachmentType, new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 1_000));
 
