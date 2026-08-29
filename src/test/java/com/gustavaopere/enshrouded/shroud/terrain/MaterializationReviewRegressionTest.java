@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.shroud.terrain;
 
 import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
+import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -17,6 +18,7 @@ class MaterializationReviewRegressionTest {
                 CorruptionRuleRegistry.class,
                 MutationAuthority.class,
                 ShroudQuery.class,
+                MutationSafetyMode.class,
                 int.class
         );
         assertNotNull(constructor);
@@ -36,13 +38,14 @@ class MaterializationReviewRegressionTest {
     }
 
     @Test
-    void ruleSafetyClassParticipatesInCentralSourceEligibility() throws Exception {
+    void aggressiveRulesRequireAggressiveMutationMode() throws Exception {
         String source = Files.readString(Path.of(
                 "src/main/java/com/gustavaopere/enshrouded/shroud/terrain/ShroudMaterializationService.java"
         ));
 
+        assertTrue(source.contains("MutationSafetyMode"), "materialization must receive the configured terrain safety mode");
         assertTrue(source.contains("rule.safetyClass()"), "materialization must enforce the rule safety classification");
-        assertTrue(source.contains("TerrainSafetyTags.CORRUPTIBLE_SAFE"), "SAFE rules must align with the central safe tag");
-        assertTrue(source.contains("TerrainSafetyTags.CORRUPTIBLE_AGGRESSIVE"), "AGGRESSIVE rules must align with the central aggressive tag");
+        assertTrue(source.contains("CorruptionSafetyClass.AGGRESSIVE"), "AGGRESSIVE rule classification must be explicit");
+        assertTrue(source.contains("MutationSafetyMode.AGGRESSIVE"), "AGGRESSIVE rules must require aggressive mutation mode");
     }
 }
