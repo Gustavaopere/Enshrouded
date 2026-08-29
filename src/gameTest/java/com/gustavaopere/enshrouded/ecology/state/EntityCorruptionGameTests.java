@@ -28,8 +28,10 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class EntityCorruptionGameTests {
     private static final BlockPos SPAWN = new BlockPos(0, 1, 0);
-    private static final UUID CORE_ID = UUID.fromString("71111111-2222-3333-4444-555555555555");
-    private static final UUID REGION_ID = UUID.fromString("72222222-3333-4444-5555-666666666666");
+    private static final UUID CANONICAL_CORE_ID = UUID.fromString("71111111-2222-3333-4444-555555555555");
+    private static final UUID CANONICAL_REGION_ID = UUID.fromString("72222222-3333-4444-5555-666666666666");
+    private static final UUID TAMED_CORE_ID = UUID.fromString("75555555-6666-7777-8888-999999999999");
+    private static final UUID TAMED_REGION_ID = UUID.fromString("76666666-7777-8888-9999-aaaaaaaaaaaa");
     private static final UUID OWNER_ID = UUID.fromString("73333333-4444-5555-6666-777777777777");
 
     private EntityCorruptionGameTests() {
@@ -38,7 +40,7 @@ public final class EntityCorruptionGameTests {
     @GameTest(template = "foundation_empty")
     public static void canonicalShroudCorruptsVanillaExamplesWithoutReplacingIdentity(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        seedEffectiveShroud(level, helper.absolutePos(SPAWN));
+        seedEffectiveShroud(level, helper.absolutePos(SPAWN), CANONICAL_CORE_ID, CANONICAL_REGION_ID);
 
         Cow cow = helper.spawnWithNoFreeWill(EntityType.COW, SPAWN);
         Wolf wolf = helper.spawnWithNoFreeWill(EntityType.WOLF, SPAWN.offset(1, 0, 0));
@@ -66,7 +68,7 @@ public final class EntityCorruptionGameTests {
     @GameTest(template = "foundation_empty")
     public static void tamedWolfPreservesOwnerAndTameState(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        seedEffectiveShroud(level, helper.absolutePos(SPAWN));
+        seedEffectiveShroud(level, helper.absolutePos(SPAWN), TAMED_CORE_ID, TAMED_REGION_ID);
 
         Wolf wolf = helper.spawnWithNoFreeWill(EntityType.WOLF, SPAWN);
         wolf.setOwnerUUID(OWNER_ID);
@@ -98,18 +100,22 @@ public final class EntityCorruptionGameTests {
         helper.succeed();
     }
 
-    private static void seedEffectiveShroud(ServerLevel level, BlockPos absolutePos) {
+    private static void seedEffectiveShroud(
+            ServerLevel level,
+            BlockPos absolutePos,
+            UUID coreId,
+            UUID regionId) {
         ShroudSavedData data = ShroudSavedData.get(level);
         ShroudWorldState state = ShroudCoreService.registerDormant(
-                data.state(), CORE_ID, REGION_ID, absolutePos, 1, 64, 0x041E17L
+                data.state(), coreId, regionId, absolutePos, 1, 64, 0x041E17L
         ).state();
-        state = ShroudCoreService.activate(state, CORE_ID).state();
+        state = ShroudCoreService.activate(state, coreId).state();
 
         ShroudCellPos cell = ShroudGridGeometry.levelOne().cellAt(absolutePos);
         LinkedHashMap<ShroudCellPos, ShroudCellState> cells = new LinkedHashMap<>();
         cells.put(cell, new ShroudCellState(cell, 1.0D, ShroudSeverity.SHROUD));
         LinkedHashMap<UUID, ShroudRegionState> regions = new LinkedHashMap<>(state.regions());
-        regions.put(REGION_ID, new ShroudRegionState(REGION_ID, CORE_ID, Map.copyOf(cells)));
+        regions.put(regionId, new ShroudRegionState(regionId, coreId, Map.copyOf(cells)));
         data.replace(new ShroudWorldState(state.schemaVersion(), state.cores(), regions));
     }
 }
