@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.gametest;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
 import com.gustavaopere.enshrouded.api.shroud.MutationKind;
 import com.gustavaopere.enshrouded.protection.DefaultMutationAuthority;
 import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
@@ -50,6 +51,38 @@ public final class PurificationGameTests {
     }
 
     @GameTest(template = "foundation_empty")
+    public static void ambiguousReverseMappingFailsClosed(GameTestHelper helper) {
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        BlockPos relative = new BlockPos(3, 0, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        helper.setBlock(relative, Blocks.DEEPSLATE);
+
+        AtomicInteger authorityCalls = new AtomicInteger();
+        CorruptionRule second = new CorruptionRule(
+                ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "purification_test_dirt"),
+                ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "corruptible_safe"),
+                ResourceLocation.withDefaultNamespace("deepslate"),
+                ResourceLocation.withDefaultNamespace("dirt"),
+                0.25F,
+                CorruptionSafetyClass.SAFE
+        );
+        TerrainRestorationService service = new TerrainRestorationService(
+                new CorruptionRuleRegistry(List.of(stoneToDeepslateRule(), second)),
+                (candidateLevel, pos, kind) -> {
+                    authorityCalls.incrementAndGet();
+                    return true;
+                },
+                ShroudGridGeometry.levelOne(),
+                64
+        );
+
+        helper.assertFalse(service.tryRestore(level, absolute), "Ambiguous reverse mapping must fail closed instead of guessing an original block");
+        helper.assertBlockPresent(Blocks.DEEPSLATE, relative);
+        helper.assertValueEqual(authorityCalls.get(), 0, "Ambiguity must be rejected before MutationAuthority");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_empty")
     public static void nativeGrowthCleanupRequiresPurificationAuthority(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos allowedRelative = new BlockPos(1, 0, 3);
@@ -64,7 +97,7 @@ public final class PurificationGameTests {
             return true;
         });
         helper.assertTrue(allowed.tryRestore(level, helper.absolutePos(allowedRelative)), "Authorized native growth must be removed after its logical cell clears");
-        helper.assertBlockPresent(Blocks.AIR, allowedRelative);
+        helper.assertTrue(level.getBlockState(helper.absolutePos(allowedRelative)).isAir(), "Authorized native growth must be replaced with air");
 
         TerrainRestorationService denied = service((candidateLevel, pos, kind) -> false);
         helper.assertFalse(denied.tryRestore(level, helper.absolutePos(deniedRelative)), "Denied purification must leave native growth intact");
@@ -102,7 +135,7 @@ public final class PurificationGameTests {
         helper.succeed();
     }
 
-    private static TerrainRestorationService service(com.gustavaopere.enshrouded.api.shroud.MutationAuthority authority) {
+    private static TerrainRestorationService service(MutationAuthority authority) {
         return new TerrainRestorationService(
                 new CorruptionRuleRegistry(List.of(stoneToDeepslateRule())),
                 authority,
