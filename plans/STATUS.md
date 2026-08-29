@@ -9,7 +9,7 @@ Last structural update: 2026-08-29.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
 - [x] 03 Exposure — all 4 tasks verified and merged.
-- [ ] 04 Corrupted Ecology — Task 01 entity corruption verified and merged; Tasks 02–04 pending.
+- [ ] 04 Corrupted Ecology — Tasks 01–02 verified and merged; Tasks 03–04 pending.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
 - [ ] 07 Client Experience — not implemented.
@@ -285,19 +285,36 @@ No new task-local pending contract was introduced. `ENSH-L1-MAGIC-CLASSIFY-001` 
 
 Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server, Shroud SavedData/entity-corruption two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 02 hostility and attribute buffs
+
+- Branch: `feat/04-hostility-buffs`
+- Final implementation HEAD: `724ef6be4f2d79f1cb92646ed37e97b15fa9ee49`
+- Push verification: workflow `33278518895`, job `99169481921` — GREEN
+- PR: #27 — `feat: add reversible corruption hostility and buffs`
+- Final PR-head verification: workflow `33278705200`, job `99170029199` — GREEN
+- Merge SHA: `44f6ce548812dfef0c007d5da646f1eedeac6389`
+- Completed file: `✅-02-hostility-buffs.md`
+
+Corrupted passive/neutral mobs now receive reversible server-side player-target aggression without replacing native/external targets, while hostile mobs retain their native combat behavior. Corruption intensity drives transient max-health, attack-damage, movement-speed and knockback-resistance modifiers through stable IDs and Level-1 hard caps. Repeated synchronization is operationally idempotent, and purification removes only Enshrouded-owned targets/modifiers. Runtime wiring reuses the canonical 20-tick `EntityCorruptionRuntime` sample path, introducing no second world scan or parallel tick loop.
+
+GameTests prove a clean passive remains non-hostile, a corrupted passive acquires an eligible survival-player target, purification releases only the Enshrouded-owned target, and a hostile mob preserves its native target while gaining bounded stats. The final runtime GameTest uses an explicit candidate seam solely because NeoForge's registered mock server-player helper reports creative/spectator eligibility inconsistently; production still discovers candidates from `ServerLevel.players()` and rejects creative, spectator and allied players.
+
+No new task-local pending contract was introduced. `ENSH-L1-MAGIC-CLASSIFY-001` remains open for Stage 04 Task 03 under the existing Foundation magic-classification boundary.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 44 GameTests, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/04-hostility-buffs` from the latest `main` after this documentation checkpoint.
+Create `feat/04-magic-resistance` from the latest `main` after this documentation checkpoint.
 
-Read `plans/04-corrupted-ecology/02-hostility-buffs.md`, the merged entity-corruption state/runtime, NeoForge 1.21.1 targeting and attribute APIs, and `plans/PENDING.md`. Begin with observed RED coverage before production AI/combat code.
+Read `plans/04-corrupted-ecology/03-magic-resistance.md`, the merged entity-corruption and corruption-combat runtimes, Foundation magic classification contracts, current damage/event seams and `plans/PENDING.md`. Begin with observed RED coverage before production resistance code.
 
-Task 02 owns reversible aggression for corrupted passive/neutral mobs and idempotent, capped attribute buffs for corrupted entities while preserving native hostile combat behavior.
+Task 03 owns bounded magic resistance for corrupted entities through the canonical magic-classification boundary without hard-coding spell mods or creating a second damage taxonomy.
 
 Remaining canonical Stage 04 order is:
 
-1. `feat/04-hostility-buffs`
-2. `feat/04-magic-resistance`
-3. `feat/04-ecology-visuals`
+1. `feat/04-magic-resistance`
+2. `feat/04-ecology-visuals`
 
 ## Level 1 release gate
 
