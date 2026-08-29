@@ -31,7 +31,6 @@ public final class ModBlocks {
                             .noCollission()
                             .replaceable()
                             .strength(100.0F)
-                            .noLootTable()
                             .pushReaction(PushReaction.DESTROY)
             )
     );

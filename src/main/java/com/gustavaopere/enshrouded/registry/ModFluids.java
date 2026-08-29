@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.registry;
 
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.content.fluid.RedSludgeFluid;
+import com.gustavaopere.enshrouded.content.fluid.RedSludgeFluidType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FlowingFluid;
@@ -21,7 +22,7 @@ public final class ModFluids {
 
     public static final DeferredHolder<FluidType, FluidType> RED_SLUDGE_TYPE = FLUID_TYPES.register(
             "red_sludge",
-            () -> new FluidType(FluidType.Properties.create()
+            () -> new RedSludgeFluidType(FluidType.Properties.create()
                     .density(1800)
                     .viscosity(2400)
                     .canSwim(false)

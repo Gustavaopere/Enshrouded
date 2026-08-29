@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "enshrouded:block/red_sludge"
+      }
+    }
+  ]
+}
