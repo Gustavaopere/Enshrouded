@@ -31,7 +31,7 @@ public final class MadnessRuntime {
             int remainingTicks,
             int maxReserveTicks) {
         Objects.requireNonNull(player, "player");
-        MadnessStage stage = MadnessService.stageFor(remainingTicks, maxReserveTicks);
+        MadnessStage stage = MadnessService.levelOne().stage(remainingTicks, maxReserveTicks);
         applyStage(player, stage, false);
         return stage;
     }
