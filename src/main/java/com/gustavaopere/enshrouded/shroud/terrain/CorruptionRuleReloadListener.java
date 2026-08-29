@@ -14,7 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-/** Reloads immutable corruption rules from data/*/shroud_corruption/*.json. */
+/** Reloads immutable corruption rules from the shroud_corruption datapack directory. */
 public final class CorruptionRuleReloadListener extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().create();
     private static volatile CorruptionRuleRegistry currentRegistry = new CorruptionRuleRegistry(List.of());
