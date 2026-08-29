@@ -74,12 +74,21 @@ public final class CorruptedAttributeModifiers {
         }
 
         double bounded = Math.min(desiredAmount, cap);
-        if (instance.hasModifier(id)) {
-            instance.removeModifier(id);
+        AttributeModifier existing = instance.getModifier(id);
+        if (bounded <= 0.0D) {
+            if (existing != null) {
+                instance.removeModifier(id);
+            }
+            return;
         }
-        if (bounded > 0.0D) {
-            instance.addTransientModifier(new AttributeModifier(id, bounded, operation));
+
+        if (existing != null
+                && Double.compare(existing.amount(), bounded) == 0
+                && existing.operation() == operation) {
+            return;
         }
+
+        instance.addOrUpdateTransientModifier(new AttributeModifier(id, bounded, operation));
     }
 
     private static void reconcileIfPresent(
