@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -82,6 +83,7 @@ public final class TerrainRestorationService {
         int minY = Math.multiplyExact(cell.y(), size);
         int minZ = Math.multiplyExact(cell.z(), size);
         int scheduled = 0;
+        CorruptionRuleRegistry registry = currentRules();
 
         for (int dx = 0; dx < size && queue.size() < queueCapacity; dx++) {
             for (int dy = 0; dy < size && queue.size() < queueCapacity; dy++) {
@@ -91,7 +93,7 @@ public final class TerrainRestorationService {
                 }
                 for (int dz = 0; dz < size && queue.size() < queueCapacity; dz++) {
                     BlockPos pos = new BlockPos(minX + dx, y, minZ + dz);
-                    if (!level.hasChunkAt(pos) || !isCleanupCandidate(level.getBlockState(pos))) {
+                    if (!level.hasChunkAt(pos) || !isCleanupCandidate(level.getBlockState(pos), registry)) {
                         continue;
                     }
                     BlockPos immutable = pos.immutable();
@@ -145,7 +147,8 @@ public final class TerrainRestorationService {
 
     /**
      * Restores one exact known corrupted block or removes one native Shroud growth. Unknown current
-     * states fail closed, which preserves player edits made after corruption.
+     * states and ambiguous reverse mappings fail closed, which preserves player edits and avoids
+     * guessing which original material existed before corruption.
      */
     public boolean tryRestore(ServerLevel level, BlockPos pos) {
         Objects.requireNonNull(level, "level");
@@ -163,29 +166,31 @@ public final class TerrainRestorationService {
         }
 
         ResourceLocation currentBlockId = BuiltInRegistries.BLOCK.getKey(current.getBlock());
-        for (CorruptionRule rule : currentRules().all()) {
-            if (!rule.resultBlock().equals(currentBlockId)) {
-                continue;
-            }
-
-            Block reversal = BuiltInRegistries.BLOCK.get(rule.reversalBlock());
-            if (!BuiltInRegistries.BLOCK.getKey(reversal).equals(rule.reversalBlock())) {
-                return false;
-            }
-            if (!mutationAuthority.canMutate(level, pos, MutationKind.PURIFICATION)) {
-                return false;
-            }
-            return level.setBlock(pos, reversal.defaultBlockState(), Block.UPDATE_ALL);
+        List<CorruptionRule> matches = currentRules().all().stream()
+                .filter(rule -> rule.resultBlock().equals(currentBlockId))
+                .toList();
+        if (matches.size() != 1) {
+            return false;
         }
-        return false;
+
+        CorruptionRule rule = matches.getFirst();
+        Block reversal = BuiltInRegistries.BLOCK.get(rule.reversalBlock());
+        if (!BuiltInRegistries.BLOCK.getKey(reversal).equals(rule.reversalBlock())) {
+            return false;
+        }
+        if (!mutationAuthority.canMutate(level, pos, MutationKind.PURIFICATION)) {
+            return false;
+        }
+        return level.setBlock(pos, reversal.defaultBlockState(), Block.UPDATE_ALL);
     }
 
-    private boolean isCleanupCandidate(BlockState state) {
+    private static boolean isCleanupCandidate(BlockState state, CorruptionRuleRegistry registry) {
         if (state.is(SHROUD_GROWTHS)) {
             return true;
         }
         ResourceLocation currentBlockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        return currentRules().all().stream().anyMatch(rule -> rule.resultBlock().equals(currentBlockId));
+        long matches = registry.all().stream().filter(rule -> rule.resultBlock().equals(currentBlockId)).count();
+        return matches == 1L;
     }
 
     private CorruptionRuleRegistry currentRules() {
