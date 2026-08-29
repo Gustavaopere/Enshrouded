@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.exposure;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
+import com.gustavaopere.enshrouded.exposure.madness.MadnessRuntime;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,6 +37,17 @@ public final class ExposureRuntime {
     static void onPlayerTickPost(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
+        }
+
+        var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
+        int maxReserveTicks = EnshroudedConfig.exposureMaxReserveTicks();
+        if (player.hasData(attachmentType)) {
+            ShroudExposureAttachment persisted = player.getData(attachmentType);
+            MadnessRuntime.enforcePenalty(
+                    player,
+                    Math.min(persisted.remainingTicks(), maxReserveTicks),
+                    maxReserveTicks
+            );
         }
 
         long serverTick = player.serverLevel().getServer().getTickCount();
@@ -88,6 +100,7 @@ public final class ExposureRuntime {
 
         SYNC_TRACKER.update(player.getUUID(), snapshot)
                 .ifPresent(payload -> PacketDistributor.sendToPlayer(player, payload));
+        MadnessRuntime.apply(player, snapshot);
         return snapshot;
     }
 
