@@ -6,6 +6,7 @@ import com.gustavaopere.enshrouded.network.ModNetworking;
 import com.gustavaopere.enshrouded.network.ShroudSyncRuntime;
 import com.gustavaopere.enshrouded.registry.ModRegistries;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreRegistrationQueue;
+import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRuleReloadRuntime;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -27,6 +28,7 @@ public final class Enshrouded {
         ShroudCoreRegistrationQueue.registerRuntime();
         ShroudCoreCommand.registerRuntime();
         ShroudSyncRuntime.register();
+        CorruptionRuleReloadRuntime.register();
         LOGGER.info("Enshrouded bootstrap complete");
     }
 }
