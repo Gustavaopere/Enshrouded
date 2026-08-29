@@ -8,7 +8,7 @@ import java.util.UUID;
  */
 @FunctionalInterface
 public interface DeadlyExposurePolicy {
-    int DEFAULT_EMERGENCY_WINDOW_TICKS = 15 * 20;
+    int DEFAULT_EMERGENCY_WINDOW_TICKS = ExposureSchema.DEFAULT_EMERGENCY_WINDOW_TICKS;
     int DEFAULT_RAPID_DRAIN_TICKS_PER_TICK = 20;
 
     Decision evaluate(
