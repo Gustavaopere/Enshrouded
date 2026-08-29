@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.config;
 
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.exposure.ExposureSchema;
+import com.gustavaopere.enshrouded.exposure.deadly.PassageRequirement;
 import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import com.gustavaopere.enshrouded.shroud.core.CoreSafetyLimits;
 import com.gustavaopere.enshrouded.shroud.query.ShroudSeverityThresholds;
@@ -18,6 +19,7 @@ public final class EnshroudedConfig {
     private static final ModConfigSpec.DoubleValue SHROUD_DEADLY_INTENSITY_THRESHOLD;
     private static final ModConfigSpec.IntValue EXPOSURE_MAX_RESERVE_TICKS;
     private static final ModConfigSpec.IntValue EXPOSURE_EMERGENCY_WINDOW_TICKS;
+    private static final ModConfigSpec.IntValue DEADLY_REQUIRED_PASSAGE_LEVEL;
     private static final ModConfigSpec.BooleanValue MADNESS_PREVENT_SPRINTING_AT_CRITICAL;
     private static final ModConfigSpec.EnumValue<MutationSafetyMode> TERRAIN_MUTATION_MODE;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_INDETERMINATE_PROTECTION;
@@ -88,6 +90,14 @@ public final class EnshroudedConfig {
                         1,
                         5 * 60 * 20
                 );
+        DEADLY_REQUIRED_PASSAGE_LEVEL = builder
+                .comment("Minimum Flame passage level required to traverse DEADLY Shroud without the emergency barrier.")
+                .defineInRange(
+                        "requiredDeadlyPassageLevel",
+                        PassageRequirement.DEFAULT_REQUIRED_LEVEL,
+                        PassageRequirement.MIN_REQUIRED_LEVEL,
+                        PassageRequirement.MAX_REQUIRED_LEVEL
+                );
         builder.pop();
 
         builder.push("madness");
@@ -140,6 +150,10 @@ public final class EnshroudedConfig {
 
     public static int exposureEmergencyWindowTicks() {
         return Math.min(EXPOSURE_EMERGENCY_WINDOW_TICKS.getAsInt(), exposureMaxReserveTicks());
+    }
+
+    public static int deadlyRequiredPassageLevel() {
+        return DEADLY_REQUIRED_PASSAGE_LEVEL.getAsInt();
     }
 
     public static boolean madnessPreventSprintingAtCritical() {

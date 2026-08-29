@@ -1,8 +1,12 @@
 package com.gustavaopere.enshrouded.exposure;
 
+import com.gustavaopere.enshrouded.api.progression.FlamePassageQuery;
+import com.gustavaopere.enshrouded.api.progression.ProgressionOwnerResolver;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
+import com.gustavaopere.enshrouded.exposure.deadly.FlameGatedDeadlyExposurePolicy;
+import com.gustavaopere.enshrouded.exposure.deadly.PassageRequirement;
 import com.gustavaopere.enshrouded.exposure.madness.MadnessRuntime;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
@@ -25,6 +29,8 @@ public final class ExposureRuntime {
     private static final ShroudQuery QUERY = DefaultShroudQuery.levelOne(ShroudGridGeometry.levelOne());
     private static final ExposureSamplingCadence CADENCE = new ExposureSamplingCadence(SAMPLE_INTERVAL_TICKS);
     private static final ExposurePlayerSyncTracker SYNC_TRACKER = new ExposurePlayerSyncTracker();
+    private static final ProgressionOwnerResolver PROGRESSION_OWNER_RESOLVER = ProgressionOwnerResolver.standalone();
+    private static final FlamePassageQuery FLAME_PASSAGE_QUERY = FlamePassageQuery.levelOneFallback();
 
     private ExposureRuntime() {
     }
@@ -87,7 +93,10 @@ public final class ExposureRuntime {
                 1,
                 1,
                 MAX_ELAPSED_TICKS,
-                DeadlyExposurePolicy.levelOneBarrier(
+                new FlameGatedDeadlyExposurePolicy(
+                        PROGRESSION_OWNER_RESOLVER,
+                        FLAME_PASSAGE_QUERY,
+                        new PassageRequirement(EnshroudedConfig.deadlyRequiredPassageLevel()),
                         EnshroudedConfig.exposureEmergencyWindowTicks(),
                         DeadlyExposurePolicy.DEFAULT_RAPID_DRAIN_TICKS_PER_TICK
                 )
