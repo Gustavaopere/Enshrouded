@@ -11,6 +11,7 @@ import java.util.UUID;
 
 /** Server-authoritative contact seam for the Red Sludge hazard. */
 public final class RedSludgeExposureHandler {
+    private static final float SECONDARY_CONTACT_DAMAGE = 1.0F;
     private static final Map<UUID, Long> LAST_CONTACT_TICK = new HashMap<>();
 
     private RedSludgeExposureHandler() {
@@ -29,6 +30,9 @@ public final class RedSludgeExposureHandler {
         }
 
         ExposureRuntime.processForcedDeadlyContact(player);
+        if (player.isAlive()) {
+            player.hurt(player.damageSources().generic(), SECONDARY_CONTACT_DAMAGE);
+        }
     }
 
     public static void forget(UUID playerId) {
