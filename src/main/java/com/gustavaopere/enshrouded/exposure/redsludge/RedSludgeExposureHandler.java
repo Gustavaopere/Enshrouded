@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /** Server-authoritative contact seam for the Red Sludge hazard. */
 public final class RedSludgeExposureHandler {
@@ -19,9 +20,14 @@ public final class RedSludgeExposureHandler {
 
     public static void onContact(Entity entity) {
         Objects.requireNonNull(entity, "entity");
-        if (!(entity instanceof ServerPlayer player)) {
-            return;
+        if (entity instanceof ServerPlayer player) {
+            onContact(player, candidate -> ExposureRuntime.processForcedDeadlyContact(candidate));
         }
+    }
+
+    static void onContact(ServerPlayer player, Consumer<ServerPlayer> exposureProcessor) {
+        Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(exposureProcessor, "exposureProcessor");
 
         long serverTick = player.serverLevel().getServer().getTickCount();
         Long previous = LAST_CONTACT_TICK.put(player.getUUID(), serverTick);
@@ -29,7 +35,7 @@ public final class RedSludgeExposureHandler {
             return;
         }
 
-        ExposureRuntime.processForcedDeadlyContact(player);
+        exposureProcessor.accept(player);
         if (player.isAlive()) {
             player.hurt(player.damageSources().generic(), SECONDARY_CONTACT_DAMAGE);
         }
