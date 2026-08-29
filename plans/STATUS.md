@@ -1,14 +1,14 @@
 # Project Status
 
-Last structural update: 2026-08-28.
+Last structural update: 2026-08-29.
 
 ## Current checkpoint
 
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
-- [ ] 02 Terrain Corruption — in progress; terrain safety, materialization and corruption growths verified and merged; purification/regression is next.
-- [ ] 03 Exposure — not implemented.
+- [x] 02 Terrain Corruption — all 4 tasks verified and merged.
+- [ ] 03 Exposure — in progress; player exposure state is next.
 - [ ] 04 Corrupted Ecology — not implemented.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
@@ -50,7 +50,7 @@ Foundation-owned contracts now frozen include Shroud query/severity/sample bound
 - Merge SHA: `4eac58f685592e518a6d36c24591bc498003b361`
 - Completed file: `✅-02-core-lifecycle.md`
 
-Stage 02 remains responsible for the runtime `DESTROYED -> PURIFIED` trigger; Stage 01 only defines/enforces the legal lifecycle.
+Stage 02 owns the runtime `DESTROYED -> PURIFIED` trigger; Stage 01 only defines/enforces the legal lifecycle.
 
 ### ✅ 03 bounded frontier expansion
 
@@ -103,7 +103,7 @@ Worldgen threads do not mutate SavedData directly; ordinary loaded chunks do not
 
 **01 Shroud Field is complete.**
 
-## 02 Terrain Corruption — in progress
+## 02 Terrain Corruption — complete
 
 ### ✅ 04 terrain safety and protection
 
@@ -131,7 +131,7 @@ The fail-closed `DefaultMutationAuthority` now exists before any Stage 02 block 
 
 Materialization is data-driven, reversible, bounded globally/per chunk and loaded-chunk-only. Every world mutation is authorized through the merged `MutationAuthority`; queued jobs re-sample canonical `ShroudQuery` immediately before mutation; stale/unloaded/unknown/protected work fails closed; aggressive rules require `MutationSafetyMode.AGGRESSIVE`.
 
-`ENSH-L1-CORE-TO-TERRAIN-001` is now satisfied by executable Stage 01 + Stage 02 evidence: terrain materialization consumes the canonical Shroud field and does not own independent spread state.
+`ENSH-L1-CORE-TO-TERRAIN-001` is satisfied by executable Stage 01 + Stage 02 evidence: terrain materialization consumes the canonical Shroud field and does not own independent spread state.
 
 ### ✅ 02 corruption growths
 
@@ -148,24 +148,48 @@ Growth placement is deterministic, intensity-scaled, loaded-chunk-only and bound
 
 Exact PR-head gates passed: unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR sanity, growth-specific GameTests, Shroud SavedData plus growth-block two-boot reload and dedicated-server two-boot save/reload smoke.
 
-No new task-local pending contract was introduced. Automated growth removal remains intentionally owned by the immediately following purification/regression task, where every cleanup mutation must use the same authority.
+### ✅ 03 purification and regression
+
+- Branch: `feat/02-purification-regression`
+- Observed TDD RED: commit `a123cf900c15e9d87835a88786fb9dae31f98504`, workflow `33229924692` — Unit tests failed before production regression existed.
+- Final implementation HEAD: `e7190fc2ad7aaaaa77abb0ef9cd0bf2e04b48d54`
+- Push verification: workflow `33230760825`, job `99043064368` — GREEN
+- PR: #18 — `02 — Purification and Regression`
+- Final PR-head verification: workflow `33230950508`, job `99043572562` — GREEN
+- Merge SHA: `a3b598f9f40e4ad7e0445fb61feea639cba2533b`
+- Completed file: `✅-03-purification-regression.md`
+
+Logical regression is deterministic, bounded and frontier-to-center. Stage 02 is the sole runtime owner of the one-way `DESTROYED -> PURIFIED` transition. Visual cleanup is separately budgeted, loaded-world-only and fail-closed: unknown states, ambiguous reverse mappings, protected blocks and later player edits are never overwritten. Every restoration/removal mutation routes through `MutationAuthority(PURIFICATION)`, and visual leftovers cannot resurrect logical Shroud or keep a core out of terminal `PURIFIED`.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
+
+No new task-local pending contract was introduced. Existing Flame Ward and claim-adapter pendings remain explicitly cross-stage.
+
+## Stage 02 acceptance
+
+- [x] Terrain mutation safety is centralized and fail-closed.
+- [x] Logical Shroud materializes through bounded, data-driven, reversible rules.
+- [x] Native corruption growths are deterministic, bounded and authority-gated.
+- [x] Destroyed-core regions regress deterministically to terminal `PURIFIED` independently of best-effort visual cleanup.
+- [x] Visual restoration/removal cannot overwrite protected or later player-edited state.
+- [x] All four Stage 02 task PRs received exact-head GREEN runtime CI before merge.
+
+**02 Terrain Corruption is complete.**
 
 ## Immediate next step
 
-Create `feat/02-purification-regression` from the latest `main`.
+Create `feat/03-player-exposure-state` from the latest `main`.
 
-Read `plans/02-terrain-corruption/03-purification-regression.md`, `plans/02-terrain-corruption/README.md`, the merged core lifecycle/frontier state, materialization/growth runtime, `DefaultMutationAuthority`, canonical Shroud query/ward semantics and persistence contracts. Begin with an observed RED before production regression/cleanup code.
+Read `plans/03-exposure/README.md`, `plans/03-exposure/01-player-exposure-state.md`, the canonical `ShroudQuery`/`ShroudSample` contracts, Sanctuary overlay semantics, NeoForge 1.21.1 attachment/network lifecycle and current persistence/smoke-test infrastructure. Begin with an observed RED before production exposure code.
 
-The task owns the runtime `CoreLifecycleState.DESTROYED -> PURIFIED` transition, bounded deterministic logical regression, safe reverse materialization and gradual authorized growth cleanup. `PURIFIED` is a logical terminal state and must not be blocked forever by safely skipped visual restoration.
+Task 01 owns the versioned player exposure state, deterministic server-authoritative drain/recovery, changed-snapshot synchronization and the stable `DeadlyExposurePolicy` seam. The initial `levelOneBarrier()` implementation must fail closed until Task 03 installs Flame-gated Deadly Shroud passage through the same interface.
 
-Canonical Stage 02 order is:
+Canonical Stage 03 order is:
 
-1. `feat/02-terrain-safety`
-2. `feat/02-materialization-rules`
-3. `feat/02-corruption-growths`
-4. `feat/02-purification-regression`
-
-No branch may introduce a world block mutation sink before `DefaultMutationAuthority`/`ProtectedAreaService` is merged.
+1. `feat/03-player-exposure-state`
+2. `feat/03-madness`
+3. `feat/03-deadly-shroud`
+4. `feat/03-red-sludge`
 
 ## Level 1 release gate
 
