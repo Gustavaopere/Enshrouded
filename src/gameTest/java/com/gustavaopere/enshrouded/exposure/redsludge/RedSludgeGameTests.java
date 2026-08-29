@@ -13,36 +13,29 @@ import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRule;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRuleRegistry;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionSafetyClass;
 import com.gustavaopere.enshrouded.shroud.terrain.ShroudMaterializationService;
-import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RedSludgeGameTests {
-    private static final UUID CONTACT_PLAYER_ID = UUID.fromString("ae48d882-6aac-43d4-94f0-92737e73b21d");
-    private static final UUID RELOCATED_PLAYER_ID = UUID.fromString("3075c9a7-fe66-4f22-9c6e-e72a07ebd74f");
-
     private RedSludgeGameTests() {
     }
 
     @GameTest(template = "foundation_empty")
     public static void levelOneContactTriggersDeadlyExposureImmediately(GameTestHelper helper) {
-        ServerLevel level = helper.getLevel();
-        FakePlayer player = FakePlayerFactory.get(level, new GameProfile(CONTACT_PLAYER_ID, "RedSludgeContact"));
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
         player.setGameMode(GameType.SURVIVAL);
         player.setInvulnerable(false);
         player.setHealth(player.getMaxHealth());
@@ -72,7 +65,7 @@ public final class RedSludgeGameTests {
         helper.setBlock(relative, ModBlocks.RED_SLUDGE.get());
         helper.assertBlockPresent(ModBlocks.RED_SLUDGE.get(), relative);
 
-        FakePlayer player = FakePlayerFactory.get(level, new GameProfile(RELOCATED_PLAYER_ID, "RelocatedSludge"));
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
         player.setGameMode(GameType.SURVIVAL);
         player.setInvulnerable(false);
         player.setHealth(player.getMaxHealth());
