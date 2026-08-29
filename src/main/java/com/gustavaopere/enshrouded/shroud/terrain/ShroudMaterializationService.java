@@ -4,7 +4,7 @@ import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
 import com.gustavaopere.enshrouded.api.shroud.MutationKind;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
-import com.gustavaopere.enshrouded.protection.TerrainSafetyTags;
+import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -23,21 +23,24 @@ public final class ShroudMaterializationService {
     private final CorruptionRuleRegistry rules;
     private final MutationAuthority mutationAuthority;
     private final ShroudQuery shroudQuery;
+    private final MutationSafetyMode safetyMode;
     private final MaterializationWorkQueue queue;
 
     public ShroudMaterializationService(
             CorruptionRuleRegistry rules,
             MutationAuthority mutationAuthority,
             ShroudQuery shroudQuery,
+            MutationSafetyMode safetyMode,
             int queueCapacity) {
         this.rules = Objects.requireNonNull(rules, "rules");
         this.mutationAuthority = Objects.requireNonNull(mutationAuthority, "mutationAuthority");
         this.shroudQuery = Objects.requireNonNull(shroudQuery, "shroudQuery");
+        this.safetyMode = Objects.requireNonNull(safetyMode, "safetyMode");
         this.queue = new MaterializationWorkQueue(queueCapacity);
     }
 
     /**
-     * Samples one already-loaded world position and queues the first matching rule.
+     * Samples one already-loaded world position and queues the first matching enabled rule.
      * The method never forces a chunk load and never mutates the world directly.
      */
     public boolean schedule(ServerLevel level, BlockPos pos, ShroudSample sample) {
@@ -53,11 +56,11 @@ public final class ShroudMaterializationService {
         BlockState sourceState = level.getBlockState(immutablePos);
         ResourceLocation sourceBlockId = BuiltInRegistries.BLOCK.getKey(sourceState.getBlock());
         for (CorruptionRule rule : rules.all()) {
-            if (sample.intensity() < rule.minIntensity()) {
+            if (!ruleEnabled(rule) || sample.intensity() < rule.minIntensity()) {
                 continue;
             }
             TagKey<Block> sourceTag = TagKey.create(Registries.BLOCK, rule.sourceTag());
-            if (!sourceState.is(sourceTag) || !matchesSafetyClass(rule, sourceState)) {
+            if (!sourceState.is(sourceTag)) {
                 continue;
             }
             return queue.enqueue(new ShroudMutationJob(immutablePos, rule.id(), sourceBlockId));
@@ -97,7 +100,7 @@ public final class ShroudMaterializationService {
         }
 
         CorruptionRule rule = rules.rule(job.ruleId()).orElse(null);
-        if (rule == null) {
+        if (rule == null || !ruleEnabled(rule)) {
             return false;
         }
 
@@ -122,9 +125,6 @@ public final class ShroudMaterializationService {
         if (!sourceState.is(TagKey.create(Registries.BLOCK, rule.sourceTag()))) {
             return false;
         }
-        if (!matchesSafetyClass(rule, sourceState)) {
-            return false;
-        }
 
         if (!mutationAuthority.canMutate(level, pos, MutationKind.CORRUPTION)) {
             return false;
@@ -140,10 +140,8 @@ public final class ShroudMaterializationService {
         return level.setBlock(pos, resultBlock.defaultBlockState(), Block.UPDATE_ALL);
     }
 
-    private static boolean matchesSafetyClass(CorruptionRule rule, BlockState sourceState) {
-        return switch (rule.safetyClass()) {
-            case SAFE -> sourceState.is(TerrainSafetyTags.CORRUPTIBLE_SAFE);
-            case AGGRESSIVE -> sourceState.is(TerrainSafetyTags.CORRUPTIBLE_AGGRESSIVE);
-        };
+    private boolean ruleEnabled(CorruptionRule rule) {
+        return rule.safetyClass() != CorruptionSafetyClass.AGGRESSIVE
+                || safetyMode == MutationSafetyMode.AGGRESSIVE;
     }
 }
