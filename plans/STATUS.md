@@ -7,7 +7,7 @@ Last structural update: 2026-08-28.
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
-- [ ] 02 Terrain Corruption — in progress; terrain safety verified and merged, materialization is next.
+- [ ] 02 Terrain Corruption — in progress; terrain safety and materialization verified and merged, corruption growths is next.
 - [ ] 03 Exposure — not implemented.
 - [ ] 04 Corrupted Ecology — not implemented.
 - [ ] 05 Flame Progression — not implemented.
@@ -119,11 +119,25 @@ The fail-closed `DefaultMutationAuthority` now exists before any Stage 02 block 
 
 `ENSH-L1-FLAME-WARD-001` remains open for Stage 03/05 completion; the Stage 02 authority side is proven. `ENSH-L1-CLAIM-SAFETY-001` remains open only for Stage 08 real claim adapters; the Stage 02 tri-state authority side is proven.
 
+### ✅ 01 materialization rules
+
+- Branch: `feat/02-materialization-rules`
+- RED workflow: `33226668706` — exactly 2 regression failures for missing canonical Shroud revalidation and inert safety-class behavior.
+- Final implementation HEAD: `12402efaad39d01d2a1b9c729f45c4f630015287`
+- PR: #16 — `02 — Materialization Rules`
+- Final PR-head verification: workflow `33227119616`, job `99032887579` — GREEN
+- Merge SHA: `3a0ea59cb548d373b4b181f2c4bd2e77bd9ff925`
+- Completed file: `✅-01-materialization-rules.md`
+
+Materialization is data-driven, reversible, bounded globally/per chunk and loaded-chunk-only. Every world mutation is authorized through the merged `MutationAuthority`; queued jobs re-sample canonical `ShroudQuery` immediately before mutation; stale/unloaded/unknown/protected work fails closed; aggressive rules require `MutationSafetyMode.AGGRESSIVE`.
+
+`ENSH-L1-CORE-TO-TERRAIN-001` is now satisfied by executable Stage 01 + Stage 02 evidence: terrain materialization consumes the canonical Shroud field and does not own independent spread state.
+
 ## Immediate next step
 
-Create `feat/02-materialization-rules` from the latest `main`.
+Create `feat/02-corruption-growths` from the latest `main`.
 
-Read `plans/02-terrain-corruption/01-materialization-rules.md`, `plans/02-terrain-corruption/README.md`, merged `DefaultMutationAuthority`, Foundation `MutationAuthority`/`MutationKind`, canonical Shroud query/ward semantics and core state. Begin with an observed RED before production materialization code. Every world block mutation must route through the already-merged authority.
+Read `plans/02-terrain-corruption/02-corruption-growths.md`, `plans/02-terrain-corruption/README.md`, merged materialization runtime, `DefaultMutationAuthority`, Foundation `MutationAuthority`/`MutationKind`, canonical Shroud query/ward semantics and core state. Begin with an observed RED before production growth placement code. Every growth placement/removal world mutation must route through the already-merged authority and must not create independent spread state.
 
 Canonical Stage 02 order is:
 
