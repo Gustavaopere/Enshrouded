@@ -8,7 +8,7 @@ Last structural update: 2026-08-29.
 - [x] 00 Foundation — verified and merged.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
-- [ ] 03 Exposure — in progress; player exposure state merged, Madness is next.
+- [ ] 03 Exposure — in progress; player exposure state and Madness verified/merged, Deadly Shroud Passage is next.
 - [ ] 04 Corrupted Ecology — not implemented.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
@@ -195,19 +195,38 @@ Player exposure is a versioned NeoForge player attachment with configurable 300-
 
 Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server including zone-boundary/persistence coverage, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 02 madness
+
+- Branch: `feat/03-madness`
+- Structural RED: commit `86127f1eaa47b8568cd4dce4c7c54175749500c5`, workflow `33262797262`.
+- Threshold/presentation RED: commit `daf4df4c59bc32e7c9b189bba93ab66d1974f2a7`, workflow `33263055822`.
+- Runtime-surface RED: commit `f051b6b69b612c38d7e0223b2b56677529c1c2e5`, workflow `33263292918`.
+- Valid behavioral RED: commit `e08b713c97d9f08c25a47681de22742e3525d6c6`, workflow `33263628901` — unit/build/JAR GREEN; exactly the fatal-outcome and critical-sprint GameTests failed against the no-op runtime. The preceding `makeMockPlayer` cast failure was a fixture defect and was not counted as behavioral evidence.
+- Final implementation HEAD: `c1e4ef5e00d6d9c616cf69890556563ccb6296a8`
+- Push verification: workflow `33264034907`, job `99130770574` — GREEN
+- PR: #23 — `03 — Madness`
+- Final PR-head verification: workflow `33264262862`, job `99131401210` — GREEN
+- Merge SHA: `1ac4ae537786603df87ddb252753c4402713776c`
+- Completed file: `✅-02-madness.md`
+
+Madness is a pure threshold projection of the one authoritative exposure reserve: `STABLE -> UNEASY -> DISTORTED -> CRITICAL -> FATAL`. It adds no second timer or separately persisted progression. Presentation flags are authored by the server and remain clientbound-only. `CRITICAL` applies a configurable, reversible sprint restraint without potion/attribute residue; zero reserve applies `enshrouded:madness`, bypassing ordinary armor/resistance/enchantment/cooldown mitigation with a direct server death fallback for deterministic fatal semantics if a generic damage hook absorbs the lethal hit.
+
+GameTests prove a netherite-armored Resistance V player still dies at exhaustion and that leaving the Shroud before zero recovers the same reserve and clears the escalating sprint penalty. No new task-local cross-stage pending contract was introduced; existing Flame Ward/progression/provider boundaries remain open under their canonical owners.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 30/30 GameTests, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/03-madness` from the latest `main`.
+Create `feat/03-deadly-shroud` from the latest `main`.
 
-Read `plans/03-exposure/README.md`, `plans/03-exposure/02-madness.md`, the merged exposure attachment/runtime/payload contracts and the current NeoForge damage-type registration/data conventions. Begin with an observed RED before production Madness code.
+Read `plans/03-exposure/README.md`, `plans/03-exposure/03-deadly-shroud.md`, the merged `DeadlyExposurePolicy`/`ExposureService` contracts, and Foundation `ProgressionOwnerResolver` + `FlamePassageQuery`. Begin with an observed RED before production Deadly Shroud passage code.
 
-Task 02 owns `MadnessStage`, `MadnessService` and `ModDamageTypes`. Madness stages are threshold bands over the existing exposure reserve — no second competing timer. Zero reserve must produce an authoritative fatal Madness outcome, while pre-zero server penalties remain restrained/configurable and presentation hallucination flags stay client-neutral.
+Task 03 owns `FlameGatedDeadlyExposurePolicy` and `PassageRequirement`. It must replace the Task 01 fail-closed fallback through the existing `DeadlyExposurePolicy` seam, use only Foundation owner/passage interfaces, fail closed when progression resolution is uncertain, collapse underleveled entry to a configurable emergency window without an edge-dancing reset exploit, and allow an injected passage level 2 policy to permit the same `DEADLY` cell data without schema changes. It must not import Stage 05 implementation classes or scan altar blocks.
 
 Remaining canonical Stage 03 order is:
 
-1. `feat/03-madness`
-2. `feat/03-deadly-shroud`
-3. `feat/03-red-sludge`
+1. `feat/03-deadly-shroud`
+2. `feat/03-red-sludge`
 
 ## Level 1 release gate
 
