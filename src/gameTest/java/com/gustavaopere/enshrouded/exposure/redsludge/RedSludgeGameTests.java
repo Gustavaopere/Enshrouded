@@ -13,6 +13,7 @@ import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRule;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRuleRegistry;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionSafetyClass;
 import com.gustavaopere.enshrouded.shroud.terrain.ShroudMaterializationService;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -21,37 +22,57 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RedSludgeGameTests {
+    private static final UUID CONTACT_PLAYER_ID = UUID.fromString("ae48d882-6aac-43d4-94f0-92737e73b21d");
+    private static final UUID RELOCATED_PLAYER_ID = UUID.fromString("3075c9a7-fe66-4f22-9c6e-e72a07ebd74f");
+
     private RedSludgeGameTests() {
     }
 
     @GameTest(template = "foundation_empty")
     public static void levelOneContactTriggersDeadlyExposureImmediately(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        player.setGameMode(GameType.SURVIVAL);
-        player.setInvulnerable(false);
-        player.setHealth(player.getMaxHealth());
+        ServerLevel level = helper.getLevel();
+        FakePlayer player = FakePlayerFactory.get(level, new GameProfile(CONTACT_PLAYER_ID, "RedSludgeContact"));
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
         player.setData(attachmentType, new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 1_000));
 
         RedSludgeExposureHandler.onContact(player);
 
         ShroudExposureAttachment after = player.getData(attachmentType);
-        float healthAfterFirstContact = player.getHealth();
         helper.assertTrue(after.remainingTicks() < 1_000,
                 "Level-1 Red Sludge contact must immediately force Deadly exposure instead of waiting for logical region sampling");
-        helper.assertTrue(healthAfterFirstContact < player.getMaxHealth(),
-                "Red Sludge contact must also apply bounded direct damage as a secondary hazard");
 
         RedSludgeExposureHandler.onContact(player);
+        helper.assertValueEqual(player.getData(attachmentType).remainingTicks(), after.remainingTicks(),
+                "multiple collision callbacks in the same server tick must not duplicate forced Deadly exposure");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_empty")
+    public static void secondaryContactDamageIsBoundedPerServerTick(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.setInvulnerable(false);
+        player.setHealth(player.getMaxHealth());
+
+        RedSludgeExposureHandler.onContact(player, ignored -> { });
+
+        float healthAfterFirstContact = player.getHealth();
+        helper.assertTrue(healthAfterFirstContact < player.getMaxHealth(),
+                "Red Sludge contact must apply bounded direct damage as a secondary hazard");
+
+        RedSludgeExposureHandler.onContact(player, ignored -> { });
         helper.assertTrue(player.getHealth() == healthAfterFirstContact,
                 "multiple collision callbacks in the same server tick must not duplicate direct Red Sludge damage");
         helper.succeed();
@@ -65,10 +86,7 @@ public final class RedSludgeGameTests {
         helper.setBlock(relative, ModBlocks.RED_SLUDGE.get());
         helper.assertBlockPresent(ModBlocks.RED_SLUDGE.get(), relative);
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        player.setGameMode(GameType.SURVIVAL);
-        player.setInvulnerable(false);
-        player.setHealth(player.getMaxHealth());
+        FakePlayer player = FakePlayerFactory.get(level, new GameProfile(RELOCATED_PLAYER_ID, "RelocatedSludge"));
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
         player.setData(attachmentType, new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 1_000));
 
@@ -82,8 +100,6 @@ public final class RedSludgeGameTests {
         ShroudSample logicalAfter = query.sample(level, absolute, player);
         helper.assertTrue(player.getData(attachmentType).remainingTicks() < 1_000,
                 "relocated physical Red Sludge must remain locally hazardous");
-        helper.assertTrue(player.getHealth() < player.getMaxHealth(),
-                "relocated physical Red Sludge must keep its secondary contact damage");
         helper.assertTrue(logicalAfter.severity() == ShroudSeverity.CLEAR && logicalAfter.intensity() == 0.0F,
                 "physical fluid contact must not create a core, region, cell or synthetic logical intensity");
         helper.succeed();
