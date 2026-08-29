@@ -29,8 +29,10 @@ class ExposureAttachmentConfigRedTest {
                     "src/main/java/com/gustavaopere/enshrouded/exposure/ShroudExposureAttachment.java"));
             assertTrue(source.contains("NeoForgeRegistries.ATTACHMENT_TYPES"),
                     "player exposure must use the NeoForge attachment registry");
-            assertTrue(source.contains(".serialize(MAP_CODEC)"),
-                    "attachment persistence must use the validated versioned map codec");
+            assertTrue(source.contains(".serialize(CODEC)"),
+                    "attachment persistence must use the validated versioned codec derived from MAP_CODEC");
+            assertTrue(source.contains("CODEC = MAP_CODEC.codec()"),
+                    "the persisted codec must remain derived from the validated versioned map codec");
             assertFalse(source.contains(".copyOnDeath("),
                     "exposure reserve must not copy arbitrary pre-death state onto respawn");
         } catch (NoSuchFieldException | NoSuchMethodException exception) {
