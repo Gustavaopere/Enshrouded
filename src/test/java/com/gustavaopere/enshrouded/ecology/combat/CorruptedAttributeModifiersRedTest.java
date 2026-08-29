@@ -1,8 +1,9 @@
 package com.gustavaopere.enshrouded.ecology.combat;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,7 +15,10 @@ class CorruptedAttributeModifiersRedTest {
 
     @Test
     void repeatedReconcileIsIdempotentAndHardCapped() {
-        AttributeInstance health = new AttributeInstance(Attributes.MAX_HEALTH, ignored -> { });
+        AttributeInstance health = new AttributeInstance(
+                Holder.direct(new RangedAttribute("attribute.enshrouded.test_health", 20.0D, 1.0D, 1024.0D)),
+                ignored -> { }
+        );
         double baseValue = health.getValue();
 
         CorruptedAttributeModifiers.reconcile(
