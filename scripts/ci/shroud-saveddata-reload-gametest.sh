@@ -51,12 +51,24 @@ grep -Fq 'ENSHROUDED_GROWTH_BLOCK_CREATED' "$FIRST_LOG" || {
   echo 'First GameTest boot did not create the Shroud growth block sentinel' >&2
   exit 1
 }
+grep -Fq 'ENSHROUDED_PURIFICATION_MID_CREATED' "$FIRST_LOG" || {
+  echo 'First GameTest boot did not create the mid-purification sentinel' >&2
+  exit 1
+}
+grep -Fq 'ENSHROUDED_PURIFIED_LEFTOVER_CREATED' "$FIRST_LOG" || {
+  echo 'First GameTest boot did not create the PURIFIED visual-leftover sentinel' >&2
+  exit 1
+}
 if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$FIRST_LOG"; then
   echo 'First GameTest boot unexpectedly loaded pre-existing Shroud SavedData' >&2
   exit 1
 fi
 if grep -Fq 'ENSHROUDED_GROWTH_BLOCK_RELOADED' "$FIRST_LOG"; then
   echo 'First GameTest boot unexpectedly reported a reloaded Shroud growth block' >&2
+  exit 1
+fi
+if grep -Fq 'ENSHROUDED_PURIFICATION_MID_RELOADED' "$FIRST_LOG"; then
+  echo 'First GameTest boot unexpectedly reported reloaded mid-purification state' >&2
   exit 1
 fi
 
@@ -76,6 +88,14 @@ grep -Fq 'ENSHROUDED_GROWTH_BLOCK_RELOADED' "$RELOAD_LOG" || {
   echo 'Second GameTest boot did not reload the persisted Shroud growth block sentinel' >&2
   exit 1
 }
+grep -Fq 'ENSHROUDED_PURIFICATION_MID_RELOADED' "$RELOAD_LOG" || {
+  echo 'Second GameTest boot did not resume persisted mid-purification state' >&2
+  exit 1
+}
+grep -Fq 'ENSHROUDED_PURIFIED_LEFTOVER_RELOADED' "$RELOAD_LOG" || {
+  echo 'Second GameTest boot did not preserve PURIFIED terminal state with visual leftovers' >&2
+  exit 1
+}
 if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_CREATED' "$RELOAD_LOG"; then
   echo 'Second GameTest boot recreated Shroud SavedData instead of loading it' >&2
   exit 1
@@ -84,5 +104,9 @@ if grep -Fq 'ENSHROUDED_GROWTH_BLOCK_CREATED' "$RELOAD_LOG"; then
   echo 'Second GameTest boot recreated the Shroud growth block instead of loading it' >&2
   exit 1
 fi
+if grep -Fq 'ENSHROUDED_PURIFICATION_MID_CREATED' "$RELOAD_LOG"; then
+  echo 'Second GameTest boot recreated mid-purification state instead of loading it' >&2
+  exit 1
+fi
 
-echo "Shroud SavedData and growth block two-boot reload GameTest: PASS (${SHROUD_DATA_FILES[0]})"
+echo "Shroud SavedData, growth block and purification two-boot reload GameTest: PASS (${SHROUD_DATA_FILES[0]})"
