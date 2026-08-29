@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -34,8 +35,11 @@ public final class EntityCorruptionCombatRuntimeGameTests {
         helper.assertTrue(level.addFreshEntity(cow), "cow fixture must enter the test level");
 
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
         helper.assertTrue(level.players().contains(player),
                 "runtime targeting fixture must be discoverable through ServerLevel.players()");
+        helper.assertTrue(!player.isCreative() && !player.isSpectator(),
+                "runtime targeting fixture must be an eligible survival player");
         player.setPos(cow.getX() + 2.0D, cow.getY(), cow.getZ());
 
         var sample = DefaultShroudQuery.levelOne(ShroudGridGeometry.levelOne())
