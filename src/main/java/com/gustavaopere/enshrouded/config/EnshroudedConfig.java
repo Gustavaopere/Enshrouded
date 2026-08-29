@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.config;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.combat.magic.MagicResistanceService;
 import com.gustavaopere.enshrouded.exposure.ExposureSchema;
 import com.gustavaopere.enshrouded.exposure.deadly.PassageRequirement;
 import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
@@ -27,6 +28,7 @@ public final class EnshroudedConfig {
     private static final ModConfigSpec.DoubleValue CORRUPTION_ATTACK_DAMAGE_CAP;
     private static final ModConfigSpec.DoubleValue CORRUPTION_MOVEMENT_SPEED_CAP;
     private static final ModConfigSpec.DoubleValue CORRUPTION_KNOCKBACK_RESISTANCE_CAP;
+    private static final ModConfigSpec.DoubleValue CORRUPTION_MAGIC_RESISTANCE_CAP;
     private static final ModConfigSpec.EnumValue<MutationSafetyMode> TERRAIN_MUTATION_MODE;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_INDETERMINATE_PROTECTION;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION;
@@ -131,6 +133,9 @@ public final class EnshroudedConfig {
         CORRUPTION_KNOCKBACK_RESISTANCE_CAP = builder
                 .comment("Maximum additive knockback-resistance bonus from corruption. Hard-capped at the Level-1 safety limit.")
                 .defineInRange("knockbackResistanceCap", 0.25D, 0.0D, 0.25D);
+        CORRUPTION_MAGIC_RESISTANCE_CAP = builder
+                .comment("Maximum fraction of positively classified magic damage resisted at full corruption. Default is 35%; hard-capped below immunity.")
+                .defineInRange("magicResistanceCap", 0.35D, 0.0D, MagicResistanceService.HARD_MAX_RESISTANCE);
         builder.pop();
 
         builder.push("terrainSafety");
@@ -209,6 +214,10 @@ public final class EnshroudedConfig {
 
     public static double corruptionKnockbackResistanceCap() {
         return CORRUPTION_KNOCKBACK_RESISTANCE_CAP.getAsDouble();
+    }
+
+    public static double corruptionMagicResistanceCap() {
+        return CORRUPTION_MAGIC_RESISTANCE_CAP.getAsDouble();
     }
 
     public static MutationSafetyMode terrainMutationMode() {
