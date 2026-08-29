@@ -17,6 +17,8 @@ import java.util.List;
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class CorruptedHostilityGameTests {
+    private static final double EPSILON = 1.0E-9D;
+
     private CorruptedHostilityGameTests() {
     }
 
@@ -45,7 +47,7 @@ public final class CorruptedHostilityGameTests {
     }
 
     @GameTest(template = "foundation_empty")
-    public static void hostileRetainsNativeTargetWhileCorruptionChangesStats(GameTestHelper helper) {
+    public static void hostileRetainsNativeTargetWhileCorruptionChangesStatsIdempotently(GameTestHelper helper) {
         CorruptionCombatPolicy policy = CorruptionCombatPolicy.levelOne();
         var hostile = helper.spawn(EntityType.ZOMBIE, 2, 2, 6);
         var nativeTarget = helper.spawn(EntityType.COW, 5, 2, 6);
@@ -54,11 +56,22 @@ public final class CorruptedHostilityGameTests {
 
         CorruptedTargetingService.synchronize(hostile, policy, 1.0D, List.of());
         CorruptedAttributeModifiers.synchronize(hostile, policy.attributeProfile(1.0D));
+        double once = hostile.getAttributeValue(Attributes.MAX_HEALTH);
+        CorruptedAttributeModifiers.synchronize(hostile, policy.attributeProfile(1.0D));
+        double twice = hostile.getAttributeValue(Attributes.MAX_HEALTH);
 
         helper.assertTrue(hostile.getTarget() == nativeTarget,
                 "Native hostile targeting must remain untouched by Enshrouded corruption AI");
-        helper.assertTrue(hostile.getAttributeValue(Attributes.MAX_HEALTH) > baseMaxHealth,
+        helper.assertTrue(once > baseMaxHealth,
                 "Corrupted hostile must receive stronger bounded stats without replacement AI");
+        helper.assertTrue(Math.abs(once - twice) <= EPSILON,
+                "Repeated corruption synchronization must remain idempotent and never stack duplicate modifiers");
+        helper.assertTrue(once <= baseMaxHealth * (1.0D + CorruptionCombatPolicy.MAX_HEALTH_CAP) + EPSILON,
+                "Corrupted max health must remain inside the Level-1 hard cap");
+
+        CorruptedAttributeModifiers.synchronize(hostile, policy.attributeProfile(0.0D));
+        helper.assertTrue(Math.abs(hostile.getAttributeValue(Attributes.MAX_HEALTH) - baseMaxHealth) <= EPSILON,
+                "Purification must remove Enshrouded-owned attribute modifiers cleanly");
         helper.succeed();
     }
 }
