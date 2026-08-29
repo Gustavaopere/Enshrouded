@@ -42,6 +42,7 @@ public final class RedSludgeGameTests {
     public static void levelOneContactTriggersDeadlyExposureImmediately(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         FakePlayer player = FakePlayerFactory.get(level, new GameProfile(CONTACT_PLAYER_ID, "RedSludgeContact"));
+        player.setInvulnerable(false);
         player.setHealth(player.getMaxHealth());
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
         player.setData(attachmentType, new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 1_000));
@@ -70,6 +71,7 @@ public final class RedSludgeGameTests {
         helper.assertBlockPresent(ModBlocks.RED_SLUDGE.get(), relative);
 
         FakePlayer player = FakePlayerFactory.get(level, new GameProfile(RELOCATED_PLAYER_ID, "RelocatedSludge"));
+        player.setInvulnerable(false);
         player.setHealth(player.getMaxHealth());
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
         player.setData(attachmentType, new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 1_000));
