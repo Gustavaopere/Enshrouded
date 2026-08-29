@@ -9,7 +9,7 @@ Last structural update: 2026-08-29.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
 - [x] 03 Exposure — all 4 tasks verified and merged.
-- [ ] 04 Corrupted Ecology — not implemented.
+- [ ] 04 Corrupted Ecology — Task 01 entity corruption verified and merged; Tasks 02–04 pending.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
 - [ ] 07 Client Experience — not implemented.
@@ -36,7 +36,7 @@ Foundation-owned contracts now frozen include Shroud query/severity/sample bound
 - RED checkpoints: `9e3f1a4a5295a9d749ca7edf8a0610ec98de72f0`, `e4b6b61e7bee713ba5deeb7596d620a47f403b67`
 - Final implementation HEAD: `6b8a4fbd550721b74bccc7f1b705d99c62ff054d`
 - PR: #8
-- Final PR-head verification: workflow `33169285643`, job `98842192376` — GREEN
+- Final verification: workflow `33169285643`, job `98842192376` — GREEN
 - Merge SHA: `46250e44e119c4a7e7adb4d7c23ecf5afe5a5434`
 - Completed file: `✅-01-shroud-state-persistence.md`
 
@@ -117,7 +117,7 @@ Worldgen threads do not mutate SavedData directly; ordinary loaded chunks do not
 
 The fail-closed `DefaultMutationAuthority` now exists before any Stage 02 block mutation sink. SAFE/AGGRESSIVE terrain tags, tri-state protection decisions, Foundation ward integration, block-entity safeguards and expert overrides are centralized behind this one authority.
 
-`ENSH-L1-FLAME-WARD-001` remains open for Stage 03/05 completion; the Stage 02 authority side is proven. `ENSH-L1-CLAIM-SAFETY-001` remains open only for Stage 08 real claim adapters; the Stage 02 tri-state authority side is proven.
+`ENSH-L1-FLAME-WARD-001` remains open for Stage 03/05 completion; the Stage 02 authority side is proven. `ENSH-L1-CLAIM-SAFETY-001` remains open only until Stage 08 real FTB Chunks/MineColonies adapters prove their side of the same `ProtectedAreaService` boundary.
 
 ### ✅ 01 materialization rules
 
@@ -267,20 +267,37 @@ Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff 
 
 **03 Exposure is complete.**
 
+## 04 Corrupted Ecology — in progress
+
+### ✅ 01 entity corruption
+
+- Branch: `feat/04-entity-corruption`
+- Final implementation HEAD: `a56898c32f646611a13fc296e94047438d801ac1`
+- Push verification: workflow `33273816223`, job `99156933489` — GREEN
+- PR: #26 — `04 — Entity Corruption State`
+- Final PR-head verification: workflow `33274927748`, job `99159870992` — GREEN
+- Merge SHA: `169915a6c0d16a7e4b2fe219fc109dbb8e3f6d18`
+- Completed file: `✅-01-entity-corruption.md`
+
+Entity corruption is a version-aware persistent NeoForge attachment on eligible non-player living entities. It samples the canonical `DefaultShroudQuery`, accumulates only in effective Shroud, regresses in CLEAR/Sanctuary and removes clean state without replacing the entity. Eligibility is fail-closed through `corruptible`, `immune` and `boss_excluded` tags; players remain on the Exposure system. Cow/wolf/zombie GameTests preserve original entity type, and the tamed-wolf fixture preserves owner UUID, tame and sitting state. A real two-boot server fixture proves corruption intensity/stage persist across save/restart.
+
+No new task-local pending contract was introduced. `ENSH-L1-MAGIC-CLASSIFY-001` remains open for Stage 04 Task 03 under the existing Foundation classification boundary; Flame and claim pendings remain under their canonical later-stage owners.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server, Shroud SavedData/entity-corruption two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/04-entity-corruption` from the latest `main`.
+Create `feat/04-hostility-buffs` from the latest `main` after this documentation checkpoint.
 
-Read `plans/04-corrupted-ecology/README.md`, `plans/04-corrupted-ecology/01-entity-corruption.md`, the canonical Shroud query/exposure contracts, current entity attachment patterns and `plans/PENDING.md`. Begin with observed RED coverage before production entity-corruption code.
+Read `plans/04-corrupted-ecology/02-hostility-buffs.md`, the merged entity-corruption state/runtime, NeoForge 1.21.1 targeting and attribute APIs, and `plans/PENDING.md`. Begin with observed RED coverage before production AI/combat code.
 
-Task 01 owns version-aware persistent corruption metadata for eligible living entities. Players remain on the Exposure system; immune/external-boss entities fail closed; corruption must never replace entity type, owner UUID, tame state, inventory or genetics data.
+Task 02 owns reversible aggression for corrupted passive/neutral mobs and idempotent, capped attribute buffs for corrupted entities while preserving native hostile combat behavior.
 
 Remaining canonical Stage 04 order is:
 
-1. `feat/04-entity-corruption`
-2. `feat/04-hostility-buffs`
-3. `feat/04-magic-resistance`
-4. `feat/04-ecology-visuals`
+1. `feat/04-hostility-buffs`
+2. `feat/04-magic-resistance`
+3. `feat/04-ecology-visuals`
 
 ## Level 1 release gate
 

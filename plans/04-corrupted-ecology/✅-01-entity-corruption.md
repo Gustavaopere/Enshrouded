@@ -27,18 +27,18 @@
 
 ## TDD / verification
 
-- [ ] Unit-test schema version round-trip plus unknown-future-schema diagnostic behavior.
-- [ ] Unit-test accumulation/regression and tag eligibility.
-- [ ] GameTest cow/wolf/zombie examples gain persistent corruption without changing entity type.
-- [ ] GameTest tame/owned entity preserves owner and inventory/state fields.
-- [ ] Save/reload preserves corruption stage.
+- [x] Unit-test schema version round-trip plus unknown-future-schema diagnostic behavior.
+- [x] Unit-test accumulation/regression and tag eligibility.
+- [x] GameTest cow/wolf/zombie examples gain persistent corruption without changing entity type.
+- [x] GameTest tame/owned entity preserves owner and inventory/state fields.
+- [x] Save/reload preserves corruption stage.
 
 ## Merge gate
 
-- [ ] All task-specific tests are GREEN on the final branch HEAD.
-- [ ] `./gradlew test` is GREEN.
-- [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
-- [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
-- [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
+- [x] All task-specific tests are GREEN on the final branch HEAD.
+- [x] `./gradlew test` is GREEN.
+- [x] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
+- [x] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
+- [x] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
 
 **Acceptance:** Existing creatures can become and remain corrupted through a version-aware attachment without destructive entity replacement.
