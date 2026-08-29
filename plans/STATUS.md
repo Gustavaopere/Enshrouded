@@ -8,7 +8,7 @@ Last structural update: 2026-08-29.
 - [x] 00 Foundation — verified and merged.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
-- [ ] 03 Exposure — in progress; player exposure state, Madness and Deadly Shroud Passage verified/merged; Red Sludge is next.
+- [x] 03 Exposure — all 4 tasks verified and merged.
 - [ ] 04 Corrupted Ecology — not implemented.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
@@ -176,7 +176,7 @@ No new task-local pending contract was introduced. Existing Flame Ward and claim
 
 **02 Terrain Corruption is complete.**
 
-## 03 Exposure — in progress
+## 03 Exposure — complete
 
 ### ✅ 01 player exposure state
 
@@ -235,17 +235,52 @@ GameTests prove Level-1 Deadly exposure reaches zero reserve rapidly, fake passa
 
 Exact final PR-head gates passed: 148 unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 04 red sludge
+
+- Branch: `feat/03-red-sludge`
+- Contact RED: `bd2cca9492fc9a431888592ed66007500830e613`, workflow `33267826053`.
+- DEADLY-only materialization RED: `4c16ca581c6ac51da49b5292dd71736fda1092ca`, workflow `33268123277`.
+- Resource/data RED: `386382fd1b32a9004467c14e08be8d44c750c72e`, workflow `33268785863`.
+- Valid damage-sink seam RED: `589bb5daeff991a4858a51fa04dbd43b6abd219c`, workflow/job `33270632993` / `99148356894` — `compileGameTestJava` failed only because the explicit bounded-damage seam did not exist yet.
+- Final implementation HEAD: `fc0ef4ba3c838165c44ed60fe67a001073719503`
+- Push verification: workflow/job `33270727369` / `99148609949` — GREEN
+- PR: #25 — `03 — Red Sludge`
+- Final PR-head verification: workflow/job `33270929411` / `99149151268` — GREEN
+- Merge SHA: `6c4f54a91a8bb65657bc8a720065b8f14ce2c32c`
+- Completed file: `✅-04-red-sludge.md`
+
+Red Sludge is a physical projection of canonical `DEADLY` Shroud, never an independent logical authority. The Level-1 data rule is severity-gated and explicitly reversible through the unique `red_sand -> red_sludge -> red_sand` mapping. Moving or flowing physical sludge outside a logical region remains locally hazardous but does not write cores, regions, cells or synthetic intensity. Contact routes through the existing forced-DEADLY exposure path and emits bounded secondary vanilla-generic damage (`1.0F`, once per player/server tick). No bucket is registered in this Level-1 slice, preventing accidental remote logical semantics through transport.
+
+GameTests prove immediate DEADLY exposure, relocated physical sludge remaining hazardous while canonical query stays CLEAR, ordinary SHROUD materialization never emitting sludge, and duplicate same-tick callbacks emitting secondary damage only once. Fixture diagnostics involving NeoForge mock-player health/network negotiation were isolated without weakening production networking or damage behavior.
+
+No new task-local pending contract was introduced. `ENSH-L1-FLAME-PASSAGE-001` and `ENSH-L1-FLAME-WARD-001` remain open under Stage 05/08 ownership exactly as recorded in `plans/PENDING.md`.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 37 GameTests, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
+
+## Stage 03 acceptance
+
+- [x] Player exposure is versioned, persistent and server-authoritative over the canonical Shroud query.
+- [x] Madness is derived from the single exposure reserve and adds no second progression timer.
+- [x] Deadly Shroud passage is fail-closed and consumes the Foundation progression boundary without Stage 05 implementation coupling.
+- [x] Red Sludge is DEADLY-only physical terrain, locally hazardous but non-authoritative over logical Shroud state.
+- [x] All four Stage 03 task PRs received exact-head GREEN runtime CI before merge.
+
+**03 Exposure is complete.**
+
 ## Immediate next step
 
-Create `feat/03-red-sludge` from the latest `main`.
+Create `feat/04-entity-corruption` from the latest `main`.
 
-Read `plans/03-exposure/README.md`, `plans/03-exposure/04-red-sludge.md`, the merged Deadly passage policy/runtime, Stage 02 materialization rules and current NeoForge 1.21.1 fluid registration conventions. Begin with observed RED coverage before production Red Sludge code.
+Read `plans/04-corrupted-ecology/README.md`, `plans/04-corrupted-ecology/01-entity-corruption.md`, the canonical Shroud query/exposure contracts, current entity attachment patterns and `plans/PENDING.md`. Begin with observed RED coverage before production entity-corruption code.
 
-Task 04 owns `RedSludgeFluid`, `RedSludgeBlock` and `RedSludgeExposureHandler`. Red Sludge must force local Deadly exposure semantics on contact without becoming authoritative logical Shroud state, must never materialize in ordinary SHROUD profiles, and moving/transporting it must not create remote cores or permanent logical Shroud regions. Sanctuary/safe cleanup remains server-authoritative.
+Task 01 owns version-aware persistent corruption metadata for eligible living entities. Players remain on the Exposure system; immune/external-boss entities fail closed; corruption must never replace entity type, owner UUID, tame state, inventory or genetics data.
 
-Remaining canonical Stage 03 order is:
+Remaining canonical Stage 04 order is:
 
-1. `feat/03-red-sludge`
+1. `feat/04-entity-corruption`
+2. `feat/04-hostility-buffs`
+3. `feat/04-magic-resistance`
+4. `feat/04-ecology-visuals`
 
 ## Level 1 release gate
 
