@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.gametest;
 
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
@@ -15,6 +16,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -28,6 +30,7 @@ public final class ShroudSavedDataGameTests {
     private static final UUID CORE_ID = UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e");
     private static final UUID REGION_ID = UUID.fromString("7c9e6679-7425-40de-944b-e07fc1f90ae7");
     private static final ShroudCellPos CELL_POS = new ShroudCellPos(3, 1, -2);
+    private static final BlockPos GROWTH_RELOAD_SENTINEL_POS = new BlockPos(320, 96, 320);
 
     private ShroudSavedDataGameTests() {
     }
@@ -38,14 +41,31 @@ public final class ShroudSavedDataGameTests {
         ShroudSavedData data = ShroudSavedData.get(level);
         helper.assertTrue(data == ShroudSavedData.get(level), "Same ServerLevel must return the same SavedData instance");
 
+        // The external two-boot harness deliberately reuses the same GameTest world. Keep the
+        // growth sentinel outside test-structure cleanup so the second boot proves real block persistence.
+        level.getChunkAt(GROWTH_RELOAD_SENTINEL_POS);
         if (!data.state().cores().containsKey(CORE_ID)) {
             data.replace(withSentinel(data.state()));
             helper.assertTrue(data.isDirty(), "Installing the Shroud reload sentinel must mark SavedData dirty");
+            helper.assertTrue(
+                    level.setBlock(
+                            GROWTH_RELOAD_SENTINEL_POS,
+                            ModBlocks.SHROUD_GROWTH.get().defaultBlockState(),
+                            Block.UPDATE_ALL
+                    ),
+                    "First boot must place the Shroud growth persistence sentinel"
+            );
             GameTestBootstrap.forceSaveForReload(helper);
             System.out.println("ENSHROUDED_SHROUD_SAVEDDATA_CREATED");
+            System.out.println("ENSHROUDED_GROWTH_BLOCK_CREATED");
         } else {
             assertSentinelPreserved(helper, data.state());
+            helper.assertTrue(
+                    level.getBlockState(GROWTH_RELOAD_SENTINEL_POS).is(ModBlocks.SHROUD_GROWTH.get()),
+                    "Second boot must reload the persisted Shroud growth block"
+            );
             System.out.println("ENSHROUDED_SHROUD_SAVEDDATA_RELOADED");
+            System.out.println("ENSHROUDED_GROWTH_BLOCK_RELOADED");
         }
 
         helper.succeed();
