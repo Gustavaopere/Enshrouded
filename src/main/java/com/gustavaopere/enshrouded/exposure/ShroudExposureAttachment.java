@@ -18,9 +18,6 @@ import java.util.function.Supplier;
  * versioned reserve; effective zone data is sampled from the canonical Shroud query.
  */
 public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
-    private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
-            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Enshrouded.MOD_ID);
-
     private static final MapCodec<SerializedExposure> RAW_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.INT.fieldOf("schema_version").forGetter(SerializedExposure::schemaVersion),
             Codec.INT.fieldOf("remaining_ticks").forGetter(SerializedExposure::remainingTicks)
@@ -32,12 +29,12 @@ public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
     );
     public static final Codec<ShroudExposureAttachment> CODEC = MAP_CODEC.codec();
 
-    public static final Supplier<AttachmentType<ShroudExposureAttachment>> PLAYER_EXPOSURE = ATTACHMENT_TYPES.register(
-            "player_exposure",
-            () -> AttachmentType.builder(() -> full(ExposureSchema.DEFAULT_MAX_RESERVE_TICKS))
-                    .serialize(CODEC)
-                    .build()
-    );
+    /**
+     * Lazy facade so pure codec/reducer unit tests do not initialize NeoForge registries.
+     * The nested holder is initialized only by mod bootstrap or actual runtime data access.
+     */
+    public static final Supplier<AttachmentType<ShroudExposureAttachment>> PLAYER_EXPOSURE =
+            () -> RegistryHolder.PLAYER_EXPOSURE.get();
 
     public ShroudExposureAttachment {
         if (schemaVersion != ExposureSchema.CURRENT_VERSION) {
@@ -49,7 +46,7 @@ public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
     }
 
     public static void register(IEventBus modBus) {
-        ATTACHMENT_TYPES.register(Objects.requireNonNull(modBus, "modBus"));
+        RegistryHolder.ATTACHMENT_TYPES.register(Objects.requireNonNull(modBus, "modBus"));
     }
 
     public static ShroudExposureAttachment full(int maxReserveTicks) {
@@ -71,5 +68,20 @@ public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
     }
 
     private record SerializedExposure(int schemaVersion, int remainingTicks) {
+    }
+
+    private static final class RegistryHolder {
+        private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
+                DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Enshrouded.MOD_ID);
+
+        private static final Supplier<AttachmentType<ShroudExposureAttachment>> PLAYER_EXPOSURE = ATTACHMENT_TYPES.register(
+                "player_exposure",
+                () -> AttachmentType.builder(() -> full(ExposureSchema.DEFAULT_MAX_RESERVE_TICKS))
+                        .serialize(CODEC)
+                        .build()
+        );
+
+        private RegistryHolder() {
+        }
     }
 }
