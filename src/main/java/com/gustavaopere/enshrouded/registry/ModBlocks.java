@@ -4,6 +4,7 @@ import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.content.block.ShroudGrowthBlock;
 import com.gustavaopere.enshrouded.content.block.ShroudVeinBlock;
 import com.gustavaopere.enshrouded.content.block.WitheredGrowthBlock;
+import com.gustavaopere.enshrouded.content.fluid.RedSludgeBlock;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.PushReaction;
@@ -19,6 +20,19 @@ public final class ModBlocks {
                     BlockBehaviour.Properties.of()
                             .strength(5.0F, 1200.0F)
                             .pushReaction(PushReaction.BLOCK)
+            )
+    );
+
+    public static final DeferredBlock<RedSludgeBlock> RED_SLUDGE = BLOCKS.register(
+            "red_sludge",
+            () -> new RedSludgeBlock(
+                    ModFluids.RED_SLUDGE.get(),
+                    BlockBehaviour.Properties.of()
+                            .noCollission()
+                            .replaceable()
+                            .strength(100.0F)
+                            .noLootTable()
+                            .pushReaction(PushReaction.DESTROY)
             )
     );
 
