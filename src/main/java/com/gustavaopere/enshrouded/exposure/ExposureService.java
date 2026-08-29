@@ -4,10 +4,12 @@ import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
- * Pure server-side exposure reducer. World/query ownership stays outside this class so the
- * same deterministic math can be exercised by unit tests and server runtime code.
+ * Server-side exposure reducer. World/query ownership stays outside this class so ordinary
+ * drain/recovery math remains deterministic, while Deadly behavior is fully delegated through
+ * the stable DeadlyExposurePolicy extension point.
  */
 public final class ExposureService {
     private final int maxReserveTicks;
@@ -45,6 +47,14 @@ public final class ExposureService {
             ShroudExposureAttachment state,
             ShroudSample sample,
             int elapsedTicks) {
+        return tick(null, state, sample, elapsedTicks);
+    }
+
+    public ExposureSnapshot tick(
+            UUID playerId,
+            ShroudExposureAttachment state,
+            ShroudSample sample,
+            int elapsedTicks) {
         Objects.requireNonNull(state, "state");
         Objects.requireNonNull(sample, "sample");
         if (elapsedTicks < 0) {
@@ -61,11 +71,15 @@ public final class ExposureService {
         } else if (sample.severity() == ShroudSeverity.SHROUD) {
             next = saturatingSubtract(current, ordinaryDrainTicksPerTick, delta);
         } else {
-            // Task 03's dedicated RED/implementation cycle replaces this temporary fail-closed
-            // branch with the stable injected DeadlyExposurePolicy decision contract.
-            deadlyPolicy.apply();
-            next = 0;
-            deadlyBarrierActive = true;
+            DeadlyExposurePolicy.Decision decision = deadlyPolicy.evaluate(
+                    playerId,
+                    new ShroudExposureAttachment(state.schemaVersion(), current),
+                    delta,
+                    maxReserveTicks
+            );
+            Objects.requireNonNull(decision, "deadly policy decision");
+            next = Math.min(decision.remainingTicks(), maxReserveTicks);
+            deadlyBarrierActive = decision.barrierActive();
         }
 
         return new ExposureSnapshot(
