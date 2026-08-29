@@ -7,7 +7,7 @@ Last structural update: 2026-08-28.
 - [x] Master planning baseline — Level 1 architecture, task decomposition, integration inventory and completion rules defined.
 - [x] 00 Foundation — verified and merged.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
-- [ ] 02 Terrain Corruption — in progress; terrain safety and materialization verified and merged, corruption growths is next.
+- [ ] 02 Terrain Corruption — in progress; terrain safety, materialization and corruption growths verified and merged; purification/regression is next.
 - [ ] 03 Exposure — not implemented.
 - [ ] 04 Corrupted Ecology — not implemented.
 - [ ] 05 Flame Progression — not implemented.
@@ -133,11 +133,30 @@ Materialization is data-driven, reversible, bounded globally/per chunk and loade
 
 `ENSH-L1-CORE-TO-TERRAIN-001` is now satisfied by executable Stage 01 + Stage 02 evidence: terrain materialization consumes the canonical Shroud field and does not own independent spread state.
 
+### ✅ 02 corruption growths
+
+- Branch: `feat/02-corruption-growths`
+- RED contract commit: `f778a876d0e59b6f32e95e481cda236aa317b501`
+- RED workflow: `33229310986` — Unit tests failed before bounded growth ownership was implemented in `ShroudMaterializationService`.
+- Final implementation HEAD: `f77a921edffda3066b55c692918ae862d5e5a3b0`
+- PR: #17 — `02 — Corruption Growths`
+- Final PR-head verification: workflow `33229543824`, job `99039757162` — GREEN
+- Merge SHA: `211c557f69b03bdffdfecac5f6ebaaa345f64066`
+- Completed file: `✅-02-corruption-growths.md`
+
+Growth placement is deterministic, intensity-scaled, loaded-chunk-only and bounded globally/per chunk. `GrowthPlacementService` re-samples canonical `ShroudQuery`, validates exposed support/replaceable target geometry and routes production placement through `MutationAuthority`; no independent growth-spread state exists. Common Shroud and Deadly/Red visual families, semantic tags, explicit loot behavior and original assets are present.
+
+Exact PR-head gates passed: unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR sanity, growth-specific GameTests, Shroud SavedData plus growth-block two-boot reload and dedicated-server two-boot save/reload smoke.
+
+No new task-local pending contract was introduced. Automated growth removal remains intentionally owned by the immediately following purification/regression task, where every cleanup mutation must use the same authority.
+
 ## Immediate next step
 
-Create `feat/02-corruption-growths` from the latest `main`.
+Create `feat/02-purification-regression` from the latest `main`.
 
-Read `plans/02-terrain-corruption/02-corruption-growths.md`, `plans/02-terrain-corruption/README.md`, merged materialization runtime, `DefaultMutationAuthority`, Foundation `MutationAuthority`/`MutationKind`, canonical Shroud query/ward semantics and core state. Begin with an observed RED before production growth placement code. Every growth placement/removal world mutation must route through the already-merged authority and must not create independent spread state.
+Read `plans/02-terrain-corruption/03-purification-regression.md`, `plans/02-terrain-corruption/README.md`, the merged core lifecycle/frontier state, materialization/growth runtime, `DefaultMutationAuthority`, canonical Shroud query/ward semantics and persistence contracts. Begin with an observed RED before production regression/cleanup code.
+
+The task owns the runtime `CoreLifecycleState.DESTROYED -> PURIFIED` transition, bounded deterministic logical regression, safe reverse materialization and gradual authorized growth cleanup. `PURIFIED` is a logical terminal state and must not be blocked forever by safely skipped visual restoration.
 
 Canonical Stage 02 order is:
 
