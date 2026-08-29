@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.Wolf;
@@ -28,7 +29,8 @@ import java.util.UUID;
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EntityCorruptionGameTests {
-    private static final BlockPos SPAWN = new BlockPos(0, 1, 0);
+    private static final BlockPos CANONICAL_REMOTE_POS = new BlockPos(16384, 96, 16384);
+    private static final BlockPos TAMED_REMOTE_POS = new BlockPos(18432, 96, 18432);
     private static final BlockPos CLEAR_SENTINEL_POS = new BlockPos(-16384, 96, -16384);
     private static final UUID CANONICAL_CORE_ID = UUID.fromString("71111111-2222-3333-4444-555555555555");
     private static final UUID CANONICAL_REGION_ID = UUID.fromString("72222222-3333-4444-5555-666666666666");
@@ -42,11 +44,12 @@ public final class EntityCorruptionGameTests {
     @GameTest(template = "foundation_empty")
     public static void canonicalShroudCorruptsVanillaExamplesWithoutReplacingIdentity(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        seedEffectiveShroud(level, helper.absolutePos(SPAWN), CANONICAL_CORE_ID, CANONICAL_REGION_ID);
+        level.getChunkAt(CANONICAL_REMOTE_POS);
+        seedEffectiveShroud(level, CANONICAL_REMOTE_POS, CANONICAL_CORE_ID, CANONICAL_REGION_ID);
 
-        Cow cow = helper.spawnWithNoFreeWill(EntityType.COW, SPAWN);
-        Wolf wolf = helper.spawnWithNoFreeWill(EntityType.WOLF, SPAWN.offset(1, 0, 0));
-        Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, SPAWN.offset(0, 0, 1));
+        Cow cow = spawnAt(helper, EntityType.COW, CANONICAL_REMOTE_POS);
+        Wolf wolf = spawnAt(helper, EntityType.WOLF, CANONICAL_REMOTE_POS.offset(1, 0, 0));
+        Zombie zombie = spawnAt(helper, EntityType.ZOMBIE, CANONICAL_REMOTE_POS.offset(0, 0, 1));
 
         EntityType<?> cowType = cow.getType();
         EntityType<?> wolfType = wolf.getType();
@@ -64,15 +67,19 @@ public final class EntityCorruptionGameTests {
                 "zombie in canonical Shroud must gain corruption");
         helper.assertTrue(cow.getType() == cowType && wolf.getType() == wolfType && zombie.getType() == zombieType,
                 "entity corruption must preserve original entity types");
+        cow.discard();
+        wolf.discard();
+        zombie.discard();
         helper.succeed();
     }
 
     @GameTest(template = "foundation_empty")
     public static void tamedWolfPreservesOwnerAndTameState(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        seedEffectiveShroud(level, helper.absolutePos(SPAWN), TAMED_CORE_ID, TAMED_REGION_ID);
+        level.getChunkAt(TAMED_REMOTE_POS);
+        seedEffectiveShroud(level, TAMED_REMOTE_POS, TAMED_CORE_ID, TAMED_REGION_ID);
 
-        Wolf wolf = helper.spawnWithNoFreeWill(EntityType.WOLF, SPAWN);
+        Wolf wolf = spawnAt(helper, EntityType.WOLF, TAMED_REMOTE_POS);
         wolf.setOwnerUUID(OWNER_ID);
         wolf.setTame(true, false);
         wolf.setInSittingPose(true);
@@ -84,6 +91,7 @@ public final class EntityCorruptionGameTests {
         helper.assertTrue(OWNER_ID.equals(wolf.getOwnerUUID()), "corruption must preserve owner UUID");
         helper.assertTrue(wolf.isTame(), "corruption must preserve tame state");
         helper.assertTrue(wolf.isInSittingPose(), "corruption must preserve unrelated entity state");
+        wolf.discard();
         helper.succeed();
     }
 
@@ -91,14 +99,7 @@ public final class EntityCorruptionGameTests {
     public static void clearSpaceRegressesExistingCorruptionWithoutReplacement(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         level.getChunkAt(CLEAR_SENTINEL_POS);
-        Cow cow = EntityType.COW.create(level);
-        helper.assertTrue(cow != null, "clear-space cow must be constructible");
-        cow.moveTo(
-                CLEAR_SENTINEL_POS.getX() + 0.5D,
-                CLEAR_SENTINEL_POS.getY(),
-                CLEAR_SENTINEL_POS.getZ() + 0.5D
-        );
-        helper.assertTrue(level.addFreshEntity(cow), "clear-space cow must enter the test level");
+        Cow cow = spawnAt(helper, EntityType.COW, CLEAR_SENTINEL_POS);
         cow.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION.get(),
                 new EntityCorruptionAttachment(EntityCorruptionSchema.CURRENT_VERSION, 0.60F));
         EntityType<?> originalType = cow.getType();
@@ -113,7 +114,17 @@ public final class EntityCorruptionGameTests {
         helper.assertTrue(cow.getData(EntityCorruptionAttachment.ENTITY_CORRUPTION.get()).intensity() < 0.60F,
                 "clear space must regress existing corruption");
         helper.assertTrue(cow.getType() == originalType, "regression must never replace entity identity");
+        cow.discard();
         helper.succeed();
+    }
+
+    private static <T extends Entity> T spawnAt(GameTestHelper helper, EntityType<T> type, BlockPos absolutePos) {
+        ServerLevel level = helper.getLevel();
+        T entity = type.create(level);
+        helper.assertTrue(entity != null, "entity fixture must be constructible: " + type);
+        entity.moveTo(absolutePos.getX() + 0.5D, absolutePos.getY(), absolutePos.getZ() + 0.5D);
+        helper.assertTrue(level.addFreshEntity(entity), "entity fixture must enter the test level: " + type);
+        return entity;
     }
 
     private static void seedEffectiveShroud(
