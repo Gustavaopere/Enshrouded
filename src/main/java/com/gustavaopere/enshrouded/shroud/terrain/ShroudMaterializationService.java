@@ -61,14 +61,14 @@ public final class ShroudMaterializationService {
         Objects.requireNonNull(sample, "sample");
 
         BlockPos immutablePos = pos.immutable();
-        if (sample.sanctuarySuppressed() || sample.intensity() <= 0.0F || !level.hasChunkAt(immutablePos)) {
+        if (!level.hasChunkAt(immutablePos)) {
             return false;
         }
 
         BlockState sourceState = level.getBlockState(immutablePos);
         ResourceLocation sourceBlockId = BuiltInRegistries.BLOCK.getKey(sourceState.getBlock());
         for (CorruptionRule rule : rules.all()) {
-            if (!ruleEnabled(rule) || sample.intensity() < rule.minIntensity()) {
+            if (!ruleEnabled(rule) || !rule.appliesTo(sample)) {
                 continue;
             }
             TagKey<Block> sourceTag = TagKey.create(Registries.BLOCK, rule.sourceTag());
@@ -210,10 +210,7 @@ public final class ShroudMaterializationService {
         } catch (RuntimeException failure) {
             return false;
         }
-        if (currentSample == null
-                || currentSample.sanctuarySuppressed()
-                || currentSample.intensity() <= 0.0F
-                || currentSample.intensity() < rule.minIntensity()) {
+        if (currentSample == null || !rule.appliesTo(currentSample)) {
             return false;
         }
 
