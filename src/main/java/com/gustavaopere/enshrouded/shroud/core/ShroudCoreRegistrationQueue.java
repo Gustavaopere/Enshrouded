@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.core;
 
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudExpansionRuntime;
+import com.gustavaopere.enshrouded.shroud.purification.ShroudPurificationRuntime;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
 import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
@@ -149,6 +150,7 @@ public final class ShroudCoreRegistrationQueue {
     private static void onServerTickPost(ServerTickEvent.Post event) {
         for (ServerLevel level : event.getServer().getAllLevels()) {
             ShroudExpansionRuntime.advance(level);
+            ShroudPurificationRuntime.advance(level);
             drain(level);
         }
     }
@@ -156,6 +158,7 @@ public final class ShroudCoreRegistrationQueue {
     private static void onServerStopping(ServerStoppingEvent event) {
         clear();
         ShroudExpansionRuntime.clear();
+        ShroudPurificationRuntime.clear();
     }
 
     private record RegistrationRequest(
