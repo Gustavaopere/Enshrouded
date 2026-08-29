@@ -1,15 +1,26 @@
 package com.gustavaopere.enshrouded.exposure;
 
+import com.gustavaopere.enshrouded.Enshrouded;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+
+import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Minimal persistent player exposure state. The authoritative runtime stores only the
  * versioned reserve; effective zone data is sampled from the canonical Shroud query.
  */
 public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
+    private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
+            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Enshrouded.MOD_ID);
+
     private static final MapCodec<SerializedExposure> RAW_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.INT.fieldOf("schema_version").forGetter(SerializedExposure::schemaVersion),
             Codec.INT.fieldOf("remaining_ticks").forGetter(SerializedExposure::remainingTicks)
@@ -21,6 +32,13 @@ public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
     );
     public static final Codec<ShroudExposureAttachment> CODEC = MAP_CODEC.codec();
 
+    public static final Supplier<AttachmentType<ShroudExposureAttachment>> PLAYER_EXPOSURE = ATTACHMENT_TYPES.register(
+            "player_exposure",
+            () -> AttachmentType.builder(() -> full(ExposureSchema.DEFAULT_MAX_RESERVE_TICKS))
+                    .serialize(MAP_CODEC)
+                    .build()
+    );
+
     public ShroudExposureAttachment {
         if (schemaVersion != ExposureSchema.CURRENT_VERSION) {
             throw new IllegalArgumentException("unsupported exposure schema version: " + schemaVersion);
@@ -28,6 +46,10 @@ public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
         if (remainingTicks < 0) {
             throw new IllegalArgumentException("remainingTicks must be >= 0");
         }
+    }
+
+    public static void register(IEventBus modBus) {
+        ATTACHMENT_TYPES.register(Objects.requireNonNull(modBus, "modBus"));
     }
 
     public static ShroudExposureAttachment full(int maxReserveTicks) {
