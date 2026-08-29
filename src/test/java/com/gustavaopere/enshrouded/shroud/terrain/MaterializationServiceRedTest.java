@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.shroud.terrain;
 import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
+import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import org.junit.jupiter.api.Test;
@@ -15,11 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MaterializationServiceRedTest {
     @Test
-    void serviceRequiresAuthorityQueryAndExposesBoundedLoadedWorldRuntime() throws Exception {
+    void serviceRequiresAuthorityQueryModeAndExposesBoundedLoadedWorldRuntime() throws Exception {
         var constructor = ShroudMaterializationService.class.getDeclaredConstructor(
                 CorruptionRuleRegistry.class,
                 MutationAuthority.class,
                 ShroudQuery.class,
+                MutationSafetyMode.class,
                 int.class
         );
         assertNotNull(constructor);
