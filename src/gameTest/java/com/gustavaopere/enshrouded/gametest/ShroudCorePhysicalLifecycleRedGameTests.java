@@ -1,13 +1,19 @@
 package com.gustavaopere.enshrouded.gametest;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import com.gustavaopere.enshrouded.shroud.core.CoreMutationResult;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlockEntity;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreService;
+import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
+import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
+import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
+import com.gustavaopere.enshrouded.shroud.state.ShroudRegionState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
+import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -16,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 @GameTestHolder(Enshrouded.MOD_ID)
@@ -100,7 +107,15 @@ public final class ShroudCorePhysicalLifecycleRedGameTests {
             coreId[0] = core.id();
 
             CoreMutationResult activation = ShroudCoreService.activate(data.state(), core.id());
-            data.replace(activation.state());
+            ShroudWorldState active = activation.state();
+            ShroudRegionState region = active.regions().get(core.regionId());
+            ShroudCellPos cellPos = ShroudGridGeometry.levelOne().cellAt(absolute);
+            ShroudCellState cell = new ShroudCellState(cellPos, 1.0D, ShroudSeverity.SHROUD);
+            LinkedHashMap<ShroudCellPos, ShroudCellState> cells = new LinkedHashMap<>(region.cells());
+            cells.put(cellPos, cell);
+            LinkedHashMap<UUID, ShroudRegionState> regions = new LinkedHashMap<>(active.regions());
+            regions.put(region.id(), new ShroudRegionState(region.id(), region.coreId(), cells));
+            data.replace(new ShroudWorldState(active.schemaVersion(), active.cores(), regions));
             helper.destroyBlock(relative);
         });
 
@@ -109,7 +124,7 @@ public final class ShroudCorePhysicalLifecycleRedGameTests {
             ShroudCoreState persisted = ShroudSavedData.get(level).state().cores().get(coreId[0]);
             helper.assertTrue(persisted != null, "Destroying the physical core must not delete its persistent identity");
             helper.assertTrue(persisted.lifecycleState() == CoreLifecycleState.DESTROYED,
-                    "Destroying an ACTIVE physical core must transition its persistent lifecycle to DESTROYED");
+                    "Destroying an ACTIVE physical core with effective logical Shroud must first persist DESTROYED before later purification");
             helper.assertBlockNotPresent(ModBlocks.SHROUD_CORE.get(), relative);
             helper.succeed();
         });
