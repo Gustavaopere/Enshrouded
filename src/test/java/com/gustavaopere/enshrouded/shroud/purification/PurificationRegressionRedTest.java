@@ -7,6 +7,7 @@ import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudRegionState;
+import com.gustavaopere.enshrouded.shroud.state.ShroudStateCodec;
 import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PurificationRegressionRedTest {
     private static final UUID CORE_ID = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
@@ -49,6 +51,35 @@ class PurificationRegressionRedTest {
         assertEquals(0, current.regions().get(REGION_ID).cells().size());
         assertEquals(CoreLifecycleState.PURIFIED, current.cores().get(CORE_ID).lifecycleState(),
                 "Logical convergence must transition DESTROYED to PURIFIED without waiting for visual cleanup");
+
+        ShroudRegressionScheduler.TickResult terminal = scheduler.tick(current, 8, 8);
+        assertEquals(current, terminal.state(), "PURIFIED core must never re-enter regression work");
+        assertTrue(terminal.regressedCells().isEmpty(), "PURIFIED core must emit no new regression work");
+    }
+
+    @Test
+    void midPurificationCodecRoundTripResumesTheSameDeterministicWork() {
+        ShroudCellPos frontier = new ShroudCellPos(2, 0, 0);
+        ShroudWorldState destroyed = destroyedStateWithCells(List.of(frontier));
+        ShroudRegressionScheduler scheduler = new ShroudRegressionScheduler(
+                ShroudGridGeometry.levelOne(), new PurificationPolicy(0.25D)
+        );
+
+        ShroudWorldState partial = scheduler.tick(destroyed, 1, 1).state();
+        assertEquals(CoreLifecycleState.DESTROYED, partial.cores().get(CORE_ID).lifecycleState());
+        assertEquals(0.50D, partial.regions().get(REGION_ID).cells().get(frontier).intensity(), 1.0E-9);
+
+        ShroudWorldState reloaded = ShroudStateCodec.decode(ShroudStateCodec.encode(partial));
+        assertEquals(partial, reloaded, "Mid-regression SavedData codec round-trip must preserve the exact logical checkpoint");
+        assertEquals(
+                scheduler.tick(partial, 1, 1),
+                scheduler.tick(reloaded, 1, 1),
+                "Reloaded mid-regression state must choose the same next deterministic work"
+        );
+
+        ShroudWorldState finished = scheduler.tick(scheduler.tick(reloaded, 1, 1).state(), 1, 1).state();
+        assertEquals(CoreLifecycleState.PURIFIED, finished.cores().get(CORE_ID).lifecycleState());
+        assertTrue(finished.regions().get(REGION_ID).cells().isEmpty());
     }
 
     private static ShroudWorldState destroyedStateWithCells(List<ShroudCellPos> positions) {
