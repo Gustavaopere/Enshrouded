@@ -19,6 +19,8 @@ import java.util.UUID;
 public final class EntityCorruptionReloadGameTests {
     private static final UUID SENTINEL_ID = UUID.fromString("74444444-5555-6666-7777-888888888888");
     private static final BlockPos SENTINEL_POS = new BlockPos(448, 96, 448);
+    private static final int SENTINEL_CHUNK_X = SENTINEL_POS.getX() >> 4;
+    private static final int SENTINEL_CHUNK_Z = SENTINEL_POS.getZ() >> 4;
     private static final float SENTINEL_INTENSITY = 0.75F;
     private static final long ENTITY_LOAD_SETTLE_TICKS = 20L;
 
@@ -28,6 +30,7 @@ public final class EntityCorruptionReloadGameTests {
     @GameTest(template = "foundation_empty")
     public static void entityCorruptionAttachmentSurvivesRealServerRestart(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        level.setChunkForced(SENTINEL_CHUNK_X, SENTINEL_CHUNK_Z, true);
         level.getChunkAt(SENTINEL_POS);
         helper.runAfterDelay(ENTITY_LOAD_SETTLE_TICKS, () -> verifyReloadOrCreate(helper, level));
     }
@@ -44,7 +47,7 @@ public final class EntityCorruptionReloadGameTests {
             cow.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION.get(),
                     new EntityCorruptionAttachment(EntityCorruptionSchema.CURRENT_VERSION, SENTINEL_INTENSITY));
             helper.assertTrue(level.addFreshEntity(cow),
-                    "sentinel cow must enter the test level; duplicate UUID means persisted entity loading was not observed");
+                    "sentinel cow must enter the forced chunk; duplicate UUID means persisted entity loading was not observed");
             GameTestBootstrap.forceSaveForReload(helper);
             System.out.println("ENSHROUDED_ENTITY_CORRUPTION_CREATED");
             helper.succeed();
@@ -59,6 +62,7 @@ public final class EntityCorruptionReloadGameTests {
                 "real restart must preserve entity corruption intensity");
         helper.assertTrue(loaded.stage() == CorruptionStage.CORRUPTED,
                 "real restart must preserve derived corruption stage");
+        level.setChunkForced(SENTINEL_CHUNK_X, SENTINEL_CHUNK_Z, false);
         System.out.println("ENSHROUDED_ENTITY_CORRUPTION_RELOADED");
         helper.succeed();
     }
