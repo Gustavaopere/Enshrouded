@@ -190,9 +190,12 @@ public final class GrowthPlacementGameTests {
                 8
         );
 
+        // Keep all support positions in the exact same chunk regardless of the randomized
+        // absolute GameTest template origin. Varying X here made this test flaky whenever
+        // the template landed near a chunk boundary.
         BlockPos firstRelative = new BlockPos(1, 0, 5);
-        BlockPos secondRelative = new BlockPos(3, 0, 5);
-        BlockPos thirdRelative = new BlockPos(5, 0, 5);
+        BlockPos secondRelative = new BlockPos(1, 2, 5);
+        BlockPos thirdRelative = new BlockPos(1, 4, 5);
         for (BlockPos relative : List.of(firstRelative, secondRelative, thirdRelative)) {
             helper.setBlock(relative, Blocks.STONE);
             helper.setBlock(relative.above(), Blocks.AIR);
