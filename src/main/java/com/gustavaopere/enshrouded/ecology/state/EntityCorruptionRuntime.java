@@ -2,13 +2,17 @@ package com.gustavaopere.enshrouded.ecology.state;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.ecology.combat.CorruptedCombatRuntime;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+
+import java.util.Objects;
 
 /**
  * Server-only, per-entity corruption driver. No world scan or replacement conversion is performed.
@@ -44,15 +48,26 @@ public final class EntityCorruptionRuntime {
                 || living.tickCount % SAMPLE_INTERVAL_TICKS != 0) {
             return;
         }
-        advance(living, SAMPLE_INTERVAL_TICKS);
+        advance(living, SAMPLE_INTERVAL_TICKS, null);
     }
 
     static void advanceNow(LivingEntity entity) {
-        advance(entity, SAMPLE_INTERVAL_TICKS);
+        advance(entity, SAMPLE_INTERVAL_TICKS, null);
     }
 
-    private static void advance(LivingEntity entity, int elapsedTicks) {
-        if (!(entity.level() instanceof ServerLevel level) || !CorruptionEligibility.isEligible(entity)) {
+    static void advanceNow(LivingEntity entity, Iterable<? extends Player> candidates) {
+        advance(entity, SAMPLE_INTERVAL_TICKS, Objects.requireNonNull(candidates, "candidates"));
+    }
+
+    private static void advance(
+            LivingEntity entity,
+            int elapsedTicks,
+            Iterable<? extends Player> candidateOverride) {
+        if (!(entity.level() instanceof ServerLevel level)) {
+            return;
+        }
+        if (!CorruptionEligibility.isEligible(entity)) {
+            CorruptedCombatRuntime.clearIfActive(entity);
             return;
         }
 
@@ -62,6 +77,7 @@ public final class EntityCorruptionRuntime {
                 && sample.severity() != ShroudSeverity.CLEAR
                 && sample.intensity() > 0.0F;
         if (existing == null && !effectiveUnsafe) {
+            CorruptedCombatRuntime.clearIfActive(entity);
             return;
         }
 
@@ -70,6 +86,7 @@ public final class EntityCorruptionRuntime {
                 : existing;
         EntityCorruptionAttachment next = SERVICE.tick(current, sample, elapsedTicks);
         if (next.intensity() <= 0.0F) {
+            CorruptedCombatRuntime.clearIfActive(entity);
             if (existing != null) {
                 entity.removeData(EntityCorruptionAttachment.ENTITY_CORRUPTION);
             }
@@ -77,6 +94,11 @@ public final class EntityCorruptionRuntime {
         }
         if (!next.equals(existing)) {
             entity.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION, next);
+        }
+        if (candidateOverride == null) {
+            CorruptedCombatRuntime.synchronize(entity, next.intensity());
+        } else {
+            CorruptedCombatRuntime.synchronize(entity, next.intensity(), candidateOverride);
         }
     }
 }

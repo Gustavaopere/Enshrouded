@@ -21,6 +21,12 @@ public final class EnshroudedConfig {
     private static final ModConfigSpec.IntValue EXPOSURE_EMERGENCY_WINDOW_TICKS;
     private static final ModConfigSpec.IntValue DEADLY_REQUIRED_PASSAGE_LEVEL;
     private static final ModConfigSpec.BooleanValue MADNESS_PREVENT_SPRINTING_AT_CRITICAL;
+    private static final ModConfigSpec.DoubleValue CORRUPTION_TARGET_THRESHOLD;
+    private static final ModConfigSpec.DoubleValue CORRUPTION_TARGET_RANGE;
+    private static final ModConfigSpec.DoubleValue CORRUPTION_MAX_HEALTH_CAP;
+    private static final ModConfigSpec.DoubleValue CORRUPTION_ATTACK_DAMAGE_CAP;
+    private static final ModConfigSpec.DoubleValue CORRUPTION_MOVEMENT_SPEED_CAP;
+    private static final ModConfigSpec.DoubleValue CORRUPTION_KNOCKBACK_RESISTANCE_CAP;
     private static final ModConfigSpec.EnumValue<MutationSafetyMode> TERRAIN_MUTATION_MODE;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_INDETERMINATE_PROTECTION;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION;
@@ -106,6 +112,27 @@ public final class EnshroudedConfig {
                 .define("preventSprintingAtCritical", true);
         builder.pop();
 
+        builder.push("corruptedEcology");
+        CORRUPTION_TARGET_THRESHOLD = builder
+                .comment("Corruption intensity at or above which passive/neutral mobs may acquire a nearby survival player target.")
+                .defineInRange("targetThreshold", 0.50D, 0.0D, 1.0D);
+        CORRUPTION_TARGET_RANGE = builder
+                .comment("Maximum player-target acquisition range for corrupted passive/neutral mobs, in blocks.")
+                .defineInRange("targetRange", 16.0D, 1.0D, 64.0D);
+        CORRUPTION_MAX_HEALTH_CAP = builder
+                .comment("Maximum multiplicative-base max-health bonus from corruption. Hard-capped at the Level-1 safety limit.")
+                .defineInRange("maxHealthMultiplierCap", 0.50D, 0.0D, 0.50D);
+        CORRUPTION_ATTACK_DAMAGE_CAP = builder
+                .comment("Maximum multiplicative-base attack-damage bonus from corruption. Hard-capped at the Level-1 safety limit.")
+                .defineInRange("attackDamageMultiplierCap", 0.35D, 0.0D, 0.35D);
+        CORRUPTION_MOVEMENT_SPEED_CAP = builder
+                .comment("Maximum multiplicative-base movement-speed bonus from corruption. Hard-capped at the Level-1 safety limit.")
+                .defineInRange("movementSpeedMultiplierCap", 0.20D, 0.0D, 0.20D);
+        CORRUPTION_KNOCKBACK_RESISTANCE_CAP = builder
+                .comment("Maximum additive knockback-resistance bonus from corruption. Hard-capped at the Level-1 safety limit.")
+                .defineInRange("knockbackResistanceCap", 0.25D, 0.0D, 0.25D);
+        builder.pop();
+
         builder.push("terrainSafety");
         TERRAIN_MUTATION_MODE = builder
                 .comment("Terrain mutation policy. SAFE mutates only explicitly safe-tagged terrain; AGGRESSIVE additionally permits aggressive-tagged terrain.")
@@ -160,15 +187,39 @@ public final class EnshroudedConfig {
         return MADNESS_PREVENT_SPRINTING_AT_CRITICAL.getAsBoolean();
     }
 
+    public static double corruptionTargetThreshold() {
+        return CORRUPTION_TARGET_THRESHOLD.getAsDouble();
+    }
+
+    public static double corruptionTargetRange() {
+        return CORRUPTION_TARGET_RANGE.getAsDouble();
+    }
+
+    public static double corruptionMaxHealthCap() {
+        return CORRUPTION_MAX_HEALTH_CAP.getAsDouble();
+    }
+
+    public static double corruptionAttackDamageCap() {
+        return CORRUPTION_ATTACK_DAMAGE_CAP.getAsDouble();
+    }
+
+    public static double corruptionMovementSpeedCap() {
+        return CORRUPTION_MOVEMENT_SPEED_CAP.getAsDouble();
+    }
+
+    public static double corruptionKnockbackResistanceCap() {
+        return CORRUPTION_KNOCKBACK_RESISTANCE_CAP.getAsDouble();
+    }
+
     public static MutationSafetyMode terrainMutationMode() {
         return TERRAIN_MUTATION_MODE.get();
     }
 
     public static boolean terrainAllowIndeterminateProtection() {
-        return TERRAIN_ALLOW_INDETERMINATE_PROTECTION.get();
+        return TERRAIN_ALLOW_INDETERMINATE_PROTECTION.getAsBoolean();
     }
 
     public static boolean terrainAllowBlockEntityMutation() {
-        return TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION.get();
+        return TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION.getAsBoolean();
     }
 }
