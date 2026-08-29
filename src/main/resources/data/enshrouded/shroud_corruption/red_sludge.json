@@ -1,0 +1,9 @@
+{
+  "id": "enshrouded:red_sludge",
+  "source_tag": "enshrouded:red_sludge_sources",
+  "result": "enshrouded:red_sludge",
+  "reversal": "minecraft:red_sand",
+  "min_intensity": 0.0,
+  "min_severity": "deadly",
+  "safety": "safe"
+}

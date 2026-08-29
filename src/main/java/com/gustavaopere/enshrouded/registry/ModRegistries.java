@@ -12,6 +12,7 @@ public final class ModRegistries {
 
     public static void register(IEventBus modBus) {
         Objects.requireNonNull(modBus, "modBus");
+        ModFluids.register(modBus);
         ModBlocks.BLOCKS.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
         ShroudExposureAttachment.register(modBus);

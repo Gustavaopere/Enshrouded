@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "enshrouded:block/red_sludge_still"
+  }
+}

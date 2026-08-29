@@ -47,6 +47,18 @@ public final class ExposureSamplingCadence {
         return OptionalInt.of((int) Math.min(elapsed, Integer.MAX_VALUE));
     }
 
+    /**
+     * Aligns the ordinary sampler after an immediate local hazard already consumed this server
+     * tick, preventing the next post-tick sample from charging the same elapsed interval twice.
+     */
+    public void align(UUID playerId, long serverTick) {
+        Objects.requireNonNull(playerId, "playerId");
+        if (serverTick < 0L) {
+            throw new IllegalArgumentException("serverTick must be >= 0");
+        }
+        lastProcessedTick.put(playerId, serverTick);
+    }
+
     public void forget(UUID playerId) {
         lastProcessedTick.remove(Objects.requireNonNull(playerId, "playerId"));
     }
