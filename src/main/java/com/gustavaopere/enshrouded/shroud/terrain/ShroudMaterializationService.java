@@ -2,7 +2,9 @@ package com.gustavaopere.enshrouded.shroud.terrain;
 
 import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
 import com.gustavaopere.enshrouded.api.shroud.MutationKind;
+import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
+import com.gustavaopere.enshrouded.protection.TerrainSafetyTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -20,14 +22,17 @@ import java.util.Objects;
 public final class ShroudMaterializationService {
     private final CorruptionRuleRegistry rules;
     private final MutationAuthority mutationAuthority;
+    private final ShroudQuery shroudQuery;
     private final MaterializationWorkQueue queue;
 
     public ShroudMaterializationService(
             CorruptionRuleRegistry rules,
             MutationAuthority mutationAuthority,
+            ShroudQuery shroudQuery,
             int queueCapacity) {
         this.rules = Objects.requireNonNull(rules, "rules");
         this.mutationAuthority = Objects.requireNonNull(mutationAuthority, "mutationAuthority");
+        this.shroudQuery = Objects.requireNonNull(shroudQuery, "shroudQuery");
         this.queue = new MaterializationWorkQueue(queueCapacity);
     }
 
@@ -52,7 +57,7 @@ public final class ShroudMaterializationService {
                 continue;
             }
             TagKey<Block> sourceTag = TagKey.create(Registries.BLOCK, rule.sourceTag());
-            if (!sourceState.is(sourceTag)) {
+            if (!sourceState.is(sourceTag) || !matchesSafetyClass(rule, sourceState)) {
                 continue;
             }
             return queue.enqueue(new ShroudMutationJob(immutablePos, rule.id(), sourceBlockId));
@@ -96,12 +101,28 @@ public final class ShroudMaterializationService {
             return false;
         }
 
+        ShroudSample currentSample;
+        try {
+            currentSample = shroudQuery.sample(level, pos, null);
+        } catch (RuntimeException failure) {
+            return false;
+        }
+        if (currentSample == null
+                || currentSample.sanctuarySuppressed()
+                || currentSample.intensity() <= 0.0F
+                || currentSample.intensity() < rule.minIntensity()) {
+            return false;
+        }
+
         BlockState sourceState = level.getBlockState(pos);
         ResourceLocation currentBlockId = BuiltInRegistries.BLOCK.getKey(sourceState.getBlock());
         if (!currentBlockId.equals(job.expectedSourceBlock())) {
             return false;
         }
         if (!sourceState.is(TagKey.create(Registries.BLOCK, rule.sourceTag()))) {
+            return false;
+        }
+        if (!matchesSafetyClass(rule, sourceState)) {
             return false;
         }
 
@@ -117,5 +138,12 @@ public final class ShroudMaterializationService {
             return false;
         }
         return level.setBlock(pos, resultBlock.defaultBlockState(), Block.UPDATE_ALL);
+    }
+
+    private static boolean matchesSafetyClass(CorruptionRule rule, BlockState sourceState) {
+        return switch (rule.safetyClass()) {
+            case SAFE -> sourceState.is(TerrainSafetyTags.CORRUPTIBLE_SAFE);
+            case AGGRESSIVE -> sourceState.is(TerrainSafetyTags.CORRUPTIBLE_AGGRESSIVE);
+        };
     }
 }
