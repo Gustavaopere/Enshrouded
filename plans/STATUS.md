@@ -8,7 +8,7 @@ Last structural update: 2026-08-29.
 - [x] 00 Foundation — verified and merged.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
-- [ ] 03 Exposure — in progress; player exposure state is next.
+- [ ] 03 Exposure — in progress; player exposure state merged, Madness is next.
 - [ ] 04 Corrupted Ecology — not implemented.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
@@ -176,20 +176,38 @@ No new task-local pending contract was introduced. Existing Flame Ward and claim
 
 **02 Terrain Corruption is complete.**
 
+## 03 Exposure — in progress
+
+### ✅ 01 player exposure state
+
+- Branch: `feat/03-player-exposure-state`
+- Observed RED evidence: workflows `33244211798`, `33244734634`, `33244853207`, `33244989474` and reconnect regression workflow `33246349587`.
+- Final implementation HEAD: `99cb4174e047fe0c85e351a4758a869a1d812af0`
+- Push verification: workflow `33246472651` — GREEN
+- PR: #22 — `03 — Player Exposure State`
+- Final PR-head verification: workflow `33246650603`, job `99085167187` — GREEN
+- Merge SHA: `73396291680aebe9d45e7f6d6347579d04010dd1`
+- Completed file: `✅-01-player-exposure-state.md`
+
+Player exposure is a versioned NeoForge player attachment with configurable 300-second Level-1 reserve, deterministic server-authoritative CLEAR recovery / SHROUD drain, bounded lag delta and a stable injected `DeadlyExposurePolicy`. The Level-1 Deadly fallback fails closed through a bounded emergency window. Sanctuary suppression is effective-safe without erasing latent logical severity/intensity. Respawn receives a safe baseline; reconnect/save-reload preserves unsafe reserve; sync is changed-snapshot-only and clientbound-only. Logical-client logout resets the presentation sequence epoch so reconnect cannot reject fresh authoritative packets as stale.
+
+`ENSH-L1-CORE-TO-EXPOSURE-001` is closed: Stage 03 consumes the same canonical `DefaultShroudQuery`/`ShroudSample` field established by Stage 01 and owns no independent severity state. The Stage 03 exposure side of `ENSH-L1-FLAME-WARD-001` is proven; that contract remains open only for the Stage 05 real Sanctuary provider.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server including zone-boundary/persistence coverage, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/03-player-exposure-state` from the latest `main`.
+Create `feat/03-madness` from the latest `main`.
 
-Read `plans/03-exposure/README.md`, `plans/03-exposure/01-player-exposure-state.md`, the canonical `ShroudQuery`/`ShroudSample` contracts, Sanctuary overlay semantics, NeoForge 1.21.1 attachment/network lifecycle and current persistence/smoke-test infrastructure. Begin with an observed RED before production exposure code.
+Read `plans/03-exposure/README.md`, `plans/03-exposure/02-madness.md`, the merged exposure attachment/runtime/payload contracts and the current NeoForge damage-type registration/data conventions. Begin with an observed RED before production Madness code.
 
-Task 01 owns the versioned player exposure state, deterministic server-authoritative drain/recovery, changed-snapshot synchronization and the stable `DeadlyExposurePolicy` seam. The initial `levelOneBarrier()` implementation must fail closed until Task 03 installs Flame-gated Deadly Shroud passage through the same interface.
+Task 02 owns `MadnessStage`, `MadnessService` and `ModDamageTypes`. Madness stages are threshold bands over the existing exposure reserve — no second competing timer. Zero reserve must produce an authoritative fatal Madness outcome, while pre-zero server penalties remain restrained/configurable and presentation hallucination flags stay client-neutral.
 
-Canonical Stage 03 order is:
+Remaining canonical Stage 03 order is:
 
-1. `feat/03-player-exposure-state`
-2. `feat/03-madness`
-3. `feat/03-deadly-shroud`
-4. `feat/03-red-sludge`
+1. `feat/03-madness`
+2. `feat/03-deadly-shroud`
+3. `feat/03-red-sludge`
 
 ## Level 1 release gate
 
