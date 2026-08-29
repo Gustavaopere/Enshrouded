@@ -4,10 +4,12 @@ import com.gustavaopere.enshrouded.api.progression.FlamePassageQuery;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwnerResolver;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
+import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.exposure.deadly.FlameGatedDeadlyExposurePolicy;
 import com.gustavaopere.enshrouded.exposure.deadly.PassageRequirement;
 import com.gustavaopere.enshrouded.exposure.madness.MadnessRuntime;
+import com.gustavaopere.enshrouded.exposure.redsludge.RedSludgeExposureHandler;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,6 +19,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Authoritative Level-1 player exposure runtime. Persistent state lives only in the player
@@ -31,6 +34,12 @@ public final class ExposureRuntime {
     private static final ExposurePlayerSyncTracker SYNC_TRACKER = new ExposurePlayerSyncTracker();
     private static final ProgressionOwnerResolver PROGRESSION_OWNER_RESOLVER = ProgressionOwnerResolver.standalone();
     private static final FlamePassageQuery FLAME_PASSAGE_QUERY = FlamePassageQuery.levelOneFallback();
+    private static final ShroudSample FORCED_DEADLY_CONTACT = new ShroudSample(
+            1.0F,
+            ShroudSeverity.DEADLY,
+            Optional.empty(),
+            false
+    );
 
     private ExposureRuntime() {
     }
@@ -69,6 +78,25 @@ public final class ExposureRuntime {
 
     static ExposureSnapshot process(ServerPlayer player, int elapsedTicks) {
         Objects.requireNonNull(player, "player");
+        ShroudSample sample = QUERY.sample(player.serverLevel(), player.blockPosition(), player);
+        return processSample(player, sample, elapsedTicks);
+    }
+
+    /**
+     * Applies one immediate local Deadly hazard tick while preserving the ordinary attachment,
+     * progression gate, sync and Madness pipeline. The ordinary cadence is aligned to this server
+     * tick so local contact cannot double-charge the same elapsed interval.
+     */
+    public static ExposureSnapshot processForcedDeadlyContact(ServerPlayer player) {
+        Objects.requireNonNull(player, "player");
+        long serverTick = player.serverLevel().getServer().getTickCount();
+        CADENCE.align(player.getUUID(), serverTick);
+        return processSample(player, FORCED_DEADLY_CONTACT, 1);
+    }
+
+    private static ExposureSnapshot processSample(ServerPlayer player, ShroudSample sample, int elapsedTicks) {
+        Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(sample, "sample");
         if (elapsedTicks < 0) {
             throw new IllegalArgumentException("elapsedTicks must be >= 0");
         }
@@ -87,7 +115,6 @@ public final class ExposureRuntime {
             player.setData(attachmentType, state);
         }
 
-        ShroudSample sample = QUERY.sample(player.serverLevel(), player.blockPosition(), player);
         ExposureService service = new ExposureService(
                 maxReserveTicks,
                 1,
@@ -117,5 +144,6 @@ public final class ExposureRuntime {
         Objects.requireNonNull(player, "player");
         CADENCE.forget(player.getUUID());
         SYNC_TRACKER.forget(player.getUUID());
+        RedSludgeExposureHandler.forget(player.getUUID());
     }
 }
