@@ -78,7 +78,10 @@ public final class GrowthPlacementGameTests {
                 ),
                 "MutationAuthority denial must veto growth placement"
         );
-        helper.assertBlockNotPresent(ModBlocks.SHROUD_GROWTH.get(), deniedSupportRelative.above());
+        helper.assertTrue(
+                !level.getBlockState(helper.absolutePos(deniedSupportRelative.above())).is(ModBlocks.SHROUD_GROWTH.get()),
+                "Denied target must remain free of the requested growth"
+        );
 
         BlockPos clearSupportRelative = new BlockPos(5, 0, 1);
         BlockPos clearSupportPos = helper.absolutePos(clearSupportRelative);
@@ -99,7 +102,10 @@ public final class GrowthPlacementGameTests {
                 ),
                 "A world position outside the logical Shroud must never gain a growth"
         );
-        helper.assertBlockNotPresent(ModBlocks.SHROUD_GROWTH.get(), clearSupportRelative.above());
+        helper.assertTrue(
+                !level.getBlockState(helper.absolutePos(clearSupportRelative.above())).is(ModBlocks.SHROUD_GROWTH.get()),
+                "Clear logical cells must remain free of Shroud growths"
+        );
         helper.assertTrue(level.getBlockState(targetPos).is(ModBlocks.SHROUD_GROWTH.get()), "Placed growth must remain in-world for the test duration");
         helper.succeed();
     }
@@ -127,7 +133,10 @@ public final class GrowthPlacementGameTests {
                 ),
                 "Deadly/Red growth must not materialize in ordinary Shroud severity"
         );
-        helper.assertBlockNotPresent(ModBlocks.WITHERED_GROWTH.get(), ordinaryRelative.above());
+        helper.assertTrue(
+                !level.getBlockState(helper.absolutePos(ordinaryRelative.above())).is(ModBlocks.WITHERED_GROWTH.get()),
+                "Ordinary Shroud must remain free of the deadly visual family"
+        );
 
         BlockPos deadlyRelative = new BlockPos(3, 0, 3);
         BlockPos deadlyPos = helper.absolutePos(deadlyRelative);
