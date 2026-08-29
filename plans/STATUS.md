@@ -8,7 +8,7 @@ Last structural update: 2026-08-29.
 - [x] 00 Foundation — verified and merged.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
-- [ ] 03 Exposure — in progress; player exposure state and Madness verified/merged, Deadly Shroud Passage is next.
+- [ ] 03 Exposure — in progress; player exposure state, Madness and Deadly Shroud Passage verified/merged; Red Sludge is next.
 - [ ] 04 Corrupted Ecology — not implemented.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
@@ -215,18 +215,37 @@ GameTests prove a netherite-armored Resistance V player still dies at exhaustion
 
 Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 30/30 GameTests, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 03 deadly shroud passage
+
+- Branch: `feat/03-deadly-shroud`
+- Structural RED: commit `76b10f9d1a45f1bbe4502228aa4c1a2cf153c22b`, workflow/job `33264854956` / `99133012859` — exactly one missing-type failure for `PassageRequirement`.
+- Structural GREEN surface: commit `42828a3dbf35bdf8a316c753ad7c0728dc70872d`, workflow/job `33264949921` / `99133260628` — GREEN.
+- Behavioral RED: commit `9fca15d5f87f87eed3ef843efceb1bccbd2618ba`, workflow/job `33265752520` / `99135405525` — exactly one failure proving passage level 2 was still blocked.
+- Runtime/config RED: commit `097f620e70377faa3a328901244f1e9b8ed299a2`, workflow/job `33265915887` / `99135868595` — exactly two expected failures for missing required-passage config and old runtime barrier wiring.
+- Final implementation HEAD: `22bcbb859ee4fa97b12a55988b9b4c4378dd763f`
+- Push verification: workflow `33266195145`, job `99136603220` — GREEN
+- PR: #24 — `03 — Deadly Shroud`
+- Final PR-head verification: workflow `33266387083`, job `99137076697` — GREEN
+- Merge SHA: `036664ea35747ae3bb16f556f1cd1dc0b1d89669`
+- Completed file: `✅-03-deadly-shroud.md`
+
+Deadly Shroud now uses the existing `DeadlyExposurePolicy` seam through `FlameGatedDeadlyExposurePolicy`. The required passage tier defaults to 2; standalone Level 1 resolves ownership through `ProgressionOwnerResolver.standalone()` and passage through `FlamePassageQuery.levelOneFallback()`, so passage remains blocked at Flame 1. Underleveled or uncertain progression fails closed into the existing configurable emergency window/rapid drain. Injected passage level 2 removes only the barrier and retains the same canonical `DEADLY` sample while using the existing exposure reserve; no second timer/schema or Stage 05 implementation dependency exists.
+
+GameTests prove Level-1 Deadly exposure reaches zero reserve rapidly, fake passage level 2 permits the same zone data, and brief edge-dancing cannot reset the emergency window. `ENSH-L1-FLAME-PASSAGE-001` remains open for Stage 05's persistence-backed provider and Stage 08 ownership/membership semantics; the Stage 03 consumer side is now executable and verified.
+
+Exact final PR-head gates passed: 148 unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/03-deadly-shroud` from the latest `main`.
+Create `feat/03-red-sludge` from the latest `main`.
 
-Read `plans/03-exposure/README.md`, `plans/03-exposure/03-deadly-shroud.md`, the merged `DeadlyExposurePolicy`/`ExposureService` contracts, and Foundation `ProgressionOwnerResolver` + `FlamePassageQuery`. Begin with an observed RED before production Deadly Shroud passage code.
+Read `plans/03-exposure/README.md`, `plans/03-exposure/04-red-sludge.md`, the merged Deadly passage policy/runtime, Stage 02 materialization rules and current NeoForge 1.21.1 fluid registration conventions. Begin with observed RED coverage before production Red Sludge code.
 
-Task 03 owns `FlameGatedDeadlyExposurePolicy` and `PassageRequirement`. It must replace the Task 01 fail-closed fallback through the existing `DeadlyExposurePolicy` seam, use only Foundation owner/passage interfaces, fail closed when progression resolution is uncertain, collapse underleveled entry to a configurable emergency window without an edge-dancing reset exploit, and allow an injected passage level 2 policy to permit the same `DEADLY` cell data without schema changes. It must not import Stage 05 implementation classes or scan altar blocks.
+Task 04 owns `RedSludgeFluid`, `RedSludgeBlock` and `RedSludgeExposureHandler`. Red Sludge must force local Deadly exposure semantics on contact without becoming authoritative logical Shroud state, must never materialize in ordinary SHROUD profiles, and moving/transporting it must not create remote cores or permanent logical Shroud regions. Sanctuary/safe cleanup remains server-authoritative.
 
 Remaining canonical Stage 03 order is:
 
-1. `feat/03-deadly-shroud`
-2. `feat/03-red-sludge`
+1. `feat/03-red-sludge`
 
 ## Level 1 release gate
 

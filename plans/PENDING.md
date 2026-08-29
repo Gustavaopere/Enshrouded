@@ -8,9 +8,9 @@ The former external Foundation blocker `ENSH-CI-ACTIONS-001` is closed: hosted r
 
 `ENSH-L1-CORE-TO-EXPOSURE-001` is closed by Stage 01 + Stage 03 executable evidence. PR #22 (`feat/03-player-exposure-state`) merged as `73396291680aebe9d45e7f6d6347579d04010dd1` after exact PR-head workflow `33246650603` / job `99085167187` completed GREEN. Player exposure samples the same canonical `DefaultShroudQuery`/`ShroudSample` field used by terrain/client state, preserves Sanctuary suppression as an effective overlay and owns no independent Shroud severity state.
 
-## Foundation-owned progression boundary — Foundation side complete, cross-stage closure open
+## Foundation-owned progression boundary — Foundation and Stage 03 consumer sides complete; provider closure open
 
-- `ENSH-L1-FLAME-PASSAGE-001`: Foundation owns `ProgressionOwnerResolver` and `FlamePassageQuery`. Keep open until Stage 03 consumes only these interfaces, Stage 05 proves its persistence-backed implementation through the same boundary, and Stage 08 optional FTB Teams substitution preserves future-operation-only ownership semantics. No Stage 05-owned stub is allowed.
+- `ENSH-L1-FLAME-PASSAGE-001`: Foundation owns `ProgressionOwnerResolver` and `FlamePassageQuery`. Stage 03 PR #24 (`feat/03-deadly-shroud`) proves `FlameGatedDeadlyExposurePolicy` consumes only those interfaces: standalone Level 1 resolves player ownership through the Foundation resolver, uses the Foundation level-1 passage fallback, fails closed on uncertain resolution and permits an injected passage level 2 without changing DEADLY cell/schema data. Exact PR-head workflow `33266387083` / job `99137076697` completed GREEN before merge `036664ea35747ae3bb16f556f1cd1dc0b1d89669`. Keep open until Stage 05 proves its persistence-backed implementation through the same boundary and Stage 08 optional FTB Teams substitution preserves future-operation-only ownership semantics. No Stage 05-owned stub is allowed.
 
 ## Foundation-owned ward boundary — Foundation, Stage 02 and Stage 03 exposure sides complete; provider closure open
 
