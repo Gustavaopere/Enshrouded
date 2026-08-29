@@ -55,7 +55,7 @@ public final class ShroudMaterializationService {
             if (!sourceState.is(sourceTag)) {
                 continue;
             }
-            return queue.offer(new ShroudMutationJob(immutablePos, rule.id(), sourceBlockId));
+            return queue.enqueue(new ShroudMutationJob(immutablePos, rule.id(), sourceBlockId));
         }
         return false;
     }
