@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.ecology.state;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.ecology.combat.CorruptedCombatRuntime;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import net.minecraft.server.level.ServerLevel;
@@ -52,7 +53,11 @@ public final class EntityCorruptionRuntime {
     }
 
     private static void advance(LivingEntity entity, int elapsedTicks) {
-        if (!(entity.level() instanceof ServerLevel level) || !CorruptionEligibility.isEligible(entity)) {
+        if (!(entity.level() instanceof ServerLevel level)) {
+            return;
+        }
+        if (!CorruptionEligibility.isEligible(entity)) {
+            CorruptedCombatRuntime.clearIfActive(entity);
             return;
         }
 
@@ -62,6 +67,7 @@ public final class EntityCorruptionRuntime {
                 && sample.severity() != ShroudSeverity.CLEAR
                 && sample.intensity() > 0.0F;
         if (existing == null && !effectiveUnsafe) {
+            CorruptedCombatRuntime.clearIfActive(entity);
             return;
         }
 
@@ -70,6 +76,7 @@ public final class EntityCorruptionRuntime {
                 : existing;
         EntityCorruptionAttachment next = SERVICE.tick(current, sample, elapsedTicks);
         if (next.intensity() <= 0.0F) {
+            CorruptedCombatRuntime.clearIfActive(entity);
             if (existing != null) {
                 entity.removeData(EntityCorruptionAttachment.ENTITY_CORRUPTION);
             }
@@ -78,5 +85,6 @@ public final class EntityCorruptionRuntime {
         if (!next.equals(existing)) {
             entity.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION, next);
         }
+        CorruptedCombatRuntime.synchronize(entity, next.intensity());
     }
 }

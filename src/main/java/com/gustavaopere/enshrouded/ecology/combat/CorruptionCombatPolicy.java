@@ -63,7 +63,8 @@ public final class CorruptionCombatPolicy {
     }
 
     public boolean shouldAcquirePlayerTarget(double intensity) {
-        return normalizeIntensity(intensity) >= targetThreshold;
+        double normalized = normalizeIntensity(intensity);
+        return normalized > 0.0D && normalized >= targetThreshold;
     }
 
     public CorruptionAttributeProfile attributeProfile(double intensity) {
