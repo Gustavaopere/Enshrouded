@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.registry;
 
+import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionAttachment;
 import com.gustavaopere.enshrouded.exposure.ShroudExposureAttachment;
 import com.gustavaopere.enshrouded.shroud.worldgen.ShroudCoreWorldgenRegistry;
 import net.neoforged.bus.api.IEventBus;
@@ -16,6 +17,7 @@ public final class ModRegistries {
         ModBlocks.BLOCKS.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
         ShroudExposureAttachment.register(modBus);
+        EntityCorruptionAttachment.register(modBus);
         ShroudCoreWorldgenRegistry.register(modBus);
     }
 }
