@@ -2,7 +2,8 @@ package com.gustavaopere.enshrouded.flame.state;
 
 /** Stable persistence-format bounds for owner-scoped Flame progression. */
 public final class FlameProgressionSchema {
-    public static final int CURRENT_VERSION = 1;
+    public static final int FIRST_VERSION = 1;
+    public static final int CURRENT_VERSION = 2;
     public static final int MIN_LEVEL = 1;
 
     /**

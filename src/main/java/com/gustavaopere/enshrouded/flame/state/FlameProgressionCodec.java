@@ -32,7 +32,8 @@ public final class FlameProgressionCodec {
 
     public static FlameProgressionState decode(CompoundTag root) {
         int schemaVersion = root.getInt("schema_version");
-        if (schemaVersion != FlameProgressionSchema.CURRENT_VERSION) {
+        if (schemaVersion < FlameProgressionSchema.FIRST_VERSION
+                || schemaVersion > FlameProgressionSchema.CURRENT_VERSION) {
             throw new UnsupportedFlameProgressionSchemaException(schemaVersion);
         }
 
@@ -43,16 +44,19 @@ public final class FlameProgressionCodec {
             String ownerKey = tag.getString("owner");
             ProgressionOwner owner = ProgressionOwner.parse(ownerKey)
                     .orElseThrow(() -> new IllegalArgumentException("invalid progression owner: " + ownerKey));
+            boolean nextLevelReady = schemaVersion >= 2 && tag.getBoolean("next_level_ready");
             FlameProgressionState.OwnerProgression progression = new FlameProgressionState.OwnerProgression(
                     tag.getInt("flame_level"),
                     tag.getInt("passage_level"),
+                    nextLevelReady,
                     decodeRituals(tag.getList("completed_rituals", CompoundTag.TAG_STRING))
             );
             if (owners.put(owner, progression) != null) {
                 throw new IllegalArgumentException("duplicate progression owner: " + owner.stableKey());
             }
         }
-        return new FlameProgressionState(schemaVersion, owners);
+        // Supported legacy schemas are migrated eagerly to the current in-memory representation.
+        return new FlameProgressionState(FlameProgressionSchema.CURRENT_VERSION, owners);
     }
 
     private static CompoundTag encodeOwner(Map.Entry<ProgressionOwner, FlameProgressionState.OwnerProgression> entry) {
@@ -60,6 +64,7 @@ public final class FlameProgressionCodec {
         tag.putString("owner", entry.getKey().stableKey());
         tag.putInt("flame_level", entry.getValue().flameLevel());
         tag.putInt("passage_level", entry.getValue().passageLevel());
+        tag.putBoolean("next_level_ready", entry.getValue().nextLevelReady());
 
         ListTag rituals = new ListTag();
         entry.getValue().completedRituals().stream()

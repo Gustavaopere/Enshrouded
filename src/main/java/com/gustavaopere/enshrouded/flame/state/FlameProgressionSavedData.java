@@ -49,21 +49,31 @@ public final class FlameProgressionSavedData extends SavedData {
         return get(level.getServer());
     }
 
-    public FlameProgressionState state() {
+    public synchronized FlameProgressionState state() {
         return state;
     }
 
-    public FlameProgressionState.OwnerProgression progression(ProgressionOwner owner) {
+    public synchronized FlameProgressionState.OwnerProgression progression(ProgressionOwner owner) {
         return state.progression(owner);
     }
 
-    /** Applies one ritual checkpoint atomically; duplicate IDs leave state and dirty flag unchanged. */
-    public boolean applyRitualCheckpoint(
+    /** Backward-compatible checkpoint API for callers that do not change story readiness. */
+    public synchronized boolean applyRitualCheckpoint(
             ProgressionOwner owner,
             ResourceLocation ritualId,
             int flameLevel,
             int passageLevel) {
-        var next = state.applyRitualCheckpoint(owner, ritualId, flameLevel, passageLevel);
+        return applyRitualCheckpoint(owner, ritualId, flameLevel, passageLevel, false);
+    }
+
+    /** Applies one ritual checkpoint atomically; duplicate IDs leave state and dirty flag unchanged. */
+    public synchronized boolean applyRitualCheckpoint(
+            ProgressionOwner owner,
+            ResourceLocation ritualId,
+            int flameLevel,
+            int passageLevel,
+            boolean nextLevelReady) {
+        var next = state.applyRitualCheckpoint(owner, ritualId, flameLevel, passageLevel, nextLevelReady);
         if (next.isEmpty()) {
             return false;
         }
@@ -72,7 +82,7 @@ public final class FlameProgressionSavedData extends SavedData {
         return true;
     }
 
-    public void replace(FlameProgressionState newState) {
+    public synchronized void replace(FlameProgressionState newState) {
         Objects.requireNonNull(newState, "newState");
         if (!state.equals(newState)) {
             state = newState;
@@ -81,7 +91,7 @@ public final class FlameProgressionSavedData extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+    public synchronized CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         Objects.requireNonNull(tag, "tag");
         Objects.requireNonNull(registries, "registries");
         tag.merge(FlameProgressionCodec.encode(state));
