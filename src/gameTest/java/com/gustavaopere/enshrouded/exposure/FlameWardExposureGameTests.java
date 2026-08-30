@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.exposure;
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.gametest.GameTestBootstrap;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
@@ -18,7 +19,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -68,8 +68,7 @@ public final class FlameWardExposureGameTests {
     }
 
     @GameTest(template = "foundation_empty")
-    @SuppressWarnings("removal")
-    public static void playerStandingInLogicalShroudInsideWardRecoversExposure(GameTestHelper helper) {
+    public static void logicalShroudInsideWardRecoversExposureReserve(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos altarRelative = new BlockPos(2, 1, 2);
         BlockPos altarPos = helper.absolutePos(altarRelative);
@@ -79,27 +78,35 @@ public final class FlameWardExposureGameTests {
         data.replace(withLogicalCell(original, playerPos, UUID.randomUUID()));
         helper.setBlock(altarRelative, ModBlocks.FLAME_ALTAR.get());
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        helper.assertTrue(player != null, "Sanctuary GameTest requires a server-side mock player");
-        player.setPos(playerPos.getX() + 0.5D, playerPos.getY(), playerPos.getZ() + 0.5D);
-        int maxReserve = com.gustavaopere.enshrouded.config.EnshroudedConfig.exposureMaxReserveTicks();
+        ShroudSample sample = DefaultShroudQuery.levelOne(GEOMETRY).sample(level, playerPos, null);
+        helper.assertTrue(sample.sanctuarySuppressed(),
+                "Exposure input must observe the physical Flame Altar Sanctuary");
+        helper.assertTrue(sample.severity() != ShroudSeverity.CLEAR,
+                "Sanctuary must retain latent logical Shroud severity in the sample consumed by exposure");
+
+        int maxReserve = EnshroudedConfig.exposureMaxReserveTicks();
         int startingReserve = Math.max(1, maxReserve - 100);
-        player.setData(
-                ShroudExposureAttachment.PLAYER_EXPOSURE.get(),
-                new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, startingReserve)
+        ExposureService service = new ExposureService(
+                maxReserve,
+                1,
+                1,
+                ExposureRuntime.MAX_ELAPSED_TICKS,
+                DeadlyExposurePolicy.levelOneBarrier()
+        );
+        ExposureSnapshot snapshot = service.tick(
+                UUID.randomUUID(),
+                new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, startingReserve),
+                sample,
+                ExposureRuntime.SAMPLE_INTERVAL_TICKS
         );
 
-        ExposureSnapshot snapshot = ExposureRuntime.process(player, ExposureRuntime.SAMPLE_INTERVAL_TICKS);
-
-        helper.assertTrue(snapshot.sanctuarySuppressed(), "Exposure runtime must observe the physical altar Sanctuary");
-        helper.assertTrue(snapshot.severity() != ShroudSeverity.CLEAR,
-                "Sanctuary must retain the latent logical Shroud severity in the authoritative sample");
+        helper.assertTrue(snapshot.sanctuarySuppressed(),
+                "Exposure reducer must preserve Sanctuary suppression in its authoritative snapshot");
         helper.assertTrue(snapshot.remainingTicks() > startingReserve,
-                "Player standing in logical Shroud inside Sanctuary must recover exposure reserve");
+                "Logical Shroud inside Sanctuary must recover exposure reserve instead of draining it");
 
         helper.destroyBlock(altarRelative);
         data.replace(original);
-        ExposureRuntime.forget(player);
         helper.succeed();
     }
 
