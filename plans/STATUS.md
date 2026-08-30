@@ -11,7 +11,7 @@ Last structural update: 2026-08-30.
 - [x] 03 Exposure — all 4 tasks verified and merged.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
-- [ ] 06 Lich & Story — 2/4 tasks verified and merged; 06.01 Story State and 06.02 Boss Provider complete; 06.03 First Manifestation is next.
+- [ ] 06 Lich & Story — 3/4 tasks verified and merged; 06.01 Story State, 06.02 Boss Provider and 06.03 First Manifestation complete; 06.04 Lich Skull + Flame binding is next.
 - [ ] 07 Client Experience — not implemented.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
@@ -146,7 +146,7 @@ Materialization is data-driven, reversible, bounded globally/per chunk and loade
 
 Growth placement is deterministic, intensity-scaled, loaded-chunk-only and bounded globally/per chunk. `GrowthPlacementService` re-samples canonical `ShroudQuery`, validates exposed support/replaceable target geometry and routes production placement through `MutationAuthority`; no independent growth-spread state exists. Common Shroud and Deadly/Red visual families, semantic tags, explicit loot behavior and original assets are present.
 
-Exact PR-head gates passed: unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR sanity, growth-specific GameTests, Shroud SavedData plus growth-block two-boot reload and dedicated-server two-boot save/reload smoke.
+Exact final PR-head gates passed: unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR sanity, growth-specific GameTests, Shroud SavedData plus growth-block two-boot reload and dedicated-server two-boot save/reload smoke.
 
 ### ✅ 03 purification and regression
 
@@ -511,17 +511,45 @@ The native `enshrouded:shroud_lich` is persistent, physically beatable, excluded
 
 Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR verification, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 03 First Manifestation Encounter
+
+- Branch: `feat/06-first-manifestation`.
+- Structural encounter RED: commit `f392f7849f34fea23bb9b275538a9e8402713b1d`, workflow `33331097136` — GameTest compilation failed before `ManifestationEncounterService` existed.
+- Actor-manifestation identity RED: commit `294766ecaaf10a04e19ffc46a0f2d93a9c722887` — unit/build/JAR were GREEN and the GameTest failed because the accepted physical actor did not yet carry a manifestation marker.
+- Actor identity GREEN checkpoint: HEAD `0dbc8658246e5b1c44b7fa7755b2322df9c29c3a` — full CI GREEN.
+- Runtime-arena RED: commit `27aca162e2afb67d28a0c5aef3c5946b08fc6279` — unit/build/JAR were GREEN and the GameTest proved the real encounter was not yet composed into the authoritative Exposure query.
+- Shared-fixture diagnosis separated pre-existing stronger persistent Shroud from the temporary encounter overlay; the runtime fixture now installs/restores deterministic `ShroudSavedData` and proves the arena does not persist Shroud.
+- Arena/runtime GREEN checkpoint: HEAD `bfc96b82c6ad25de3404ee869626a59a4c34a7ab`, workflow `33336703751` — full gate GREEN.
+- Canceled-death RED: commit `ad35290d2949b3f311b0aeaaa60bfd7ae4b84278` — unit/build/JAR were GREEN and the GameTest gate failed before cancellation-safe death routing existed.
+- Final implementation HEAD: `908aeb3cc6a623596bc79b35133100d75a22e3ec`.
+- Final push verification: workflow `33337899786` / run #1122 — GREEN.
+- Draft PR #45 was closed unmerged only because the connector's ready-for-review GraphQL mutation failed on GitHub schema field `Repository.fullDatabaseId`.
+- Final replacement PR: #46 — `06.03 — First Manifestation Encounter`.
+- Final exact PR-head verification: workflow `33338185074` / run #1124 — GREEN across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Merge SHA: `5811d8f29189ed35e6608157ee5e39975bf8cbe9`.
+- Completed file: `✅-03-first-manifestation.md`.
+
+The first recurring-Lich body now starts only through explicit server-side encounter orchestration. `ManifestationEncounterService` resolves one canonical `ProgressionOwner`, persists that immutable owner with one stable encounter UUID and rejects another concurrent open encounter for the same owner. The accepted provider actor is independently marked with both encounter UUID and manifestation ID, while external/native entity identity never becomes progression authority.
+
+Narrative defeat accepts only the exact marked physical actor stored by the ACTIVE encounter. The defeat path reads the persisted `EncounterRecord.owner()` and never re-runs the owner resolver; a GameTest mutates resolver/team-like ownership after start and proves manifestation progress remains on the original stored owner. Unrelated actors and duplicate callbacks cannot complete the story. `LivingDeathEvent` routing runs at `EventPriority.LOWEST`, excludes canceled delivery and explicitly ignores canceled events, allowing an external provider to cancel death for a native phase transition without manufacturing a false Enshrouded victory.
+
+The Level-1 arena is a bounded ephemeral `ShroudQuery` overlay composed into the existing Exposure sampling boundary. It may intensify ordinary local Shroud but never creates or mutates persistent cores, regions or cells; cleanup removes only the encounter overlay and exposes the unchanged underlying Shroud field. `LichPhaseDirector` supplies provider-neutral escalation derived from health/time/event pressure without replacing provider-native AI.
+
+06.03 deliberately completes only the encounter/defeat portion of the reward chain: manifestation 1 reaches `DEFEATED`, the recurring Lich survives through the continuing phylactery/manifestation story, and `rewardIssued` remains false. The authentic skull, exactly-once reward issuance and concrete Stage 05 Flame ritual binding remain 06.04. The Stage 06 encounter/defeat side of `ENSH-L1-OWNER-SNAPSHOT-001` is now executable, but the contract remains open for 06.04 reward ownership and Stage 08 FTB Teams membership-change behavior. `ENSH-L1-LICH-REWARD-001` remains open for 06.04.
+
+Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR verification, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/06-first-manifestation` from the latest verified `main` after this documentation checkpoint.
+Create `feat/06-lich-skull` from the latest verified `main` after this documentation checkpoint.
 
-Read `plans/06-lich-story/README.md`, `plans/06-lich-story/03-first-manifestation.md`, `plans/06-lich-story/✅-01-story-state.md`, `plans/06-lich-story/✅-02-boss-provider.md`, Foundation `ProgressionOwner` / resolver / `EncounterContext` contracts and `plans/PENDING.md`. Begin with observed RED coverage for one explicit encounter start, duplicate rejection for the same immutable owner snapshot, unrelated unmarked entity death rejection and marked-boss defeat idempotence before writing the 06.03 encounter runtime.
+Read `plans/06-lich-story/README.md`, `plans/06-lich-story/04-lich-skull.md`, `plans/06-lich-story/✅-01-story-state.md`, `plans/06-lich-story/✅-02-boss-provider.md`, `plans/06-lich-story/✅-03-first-manifestation.md`, the Stage 05 generic ritual/altar contracts and `plans/PENDING.md`. Begin 06.04 with RED coverage for authentic skull identity, exactly-once encounter-scoped reward issuance through the stored owner, external-provider defeat equivalence, invalid/duplicate skull rejection at the altar and the concrete Level-1 Flame ritual checkpoint.
 
 Stage 06 causal implementation order:
 
 1. `✅ feat/06-story-state`
 2. `✅ feat/06-boss-provider`
-3. `feat/06-first-manifestation`
+3. `✅ feat/06-first-manifestation`
 4. `feat/06-lich-skull`
 
 ## Level 1 release gate
