@@ -12,6 +12,7 @@ import com.gustavaopere.enshrouded.network.ShroudSyncRuntime;
 import com.gustavaopere.enshrouded.registry.ModRegistries;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreRegistrationQueue;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRuleReloadRuntime;
+import com.gustavaopere.enshrouded.story.state.StoryStateRuntime;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -34,6 +35,7 @@ public final class Enshrouded {
         ShroudCoreCommand.registerRuntime();
         ShroudSyncRuntime.register();
         FlameProgressionRuntime.register();
+        StoryStateRuntime.register();
         FlameWardRuntime.register();
         ExposureRuntime.register();
         EntityCorruptionRuntime.register();

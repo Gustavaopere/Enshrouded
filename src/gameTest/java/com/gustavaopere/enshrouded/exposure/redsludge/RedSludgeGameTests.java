@@ -9,6 +9,8 @@ import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
+import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
+import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRule;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRuleRegistry;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionSafetyClass;
@@ -27,6 +29,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,6 +38,7 @@ import java.util.UUID;
 public final class RedSludgeGameTests {
     private static final UUID CONTACT_PLAYER_ID = UUID.fromString("ae48d882-6aac-43d4-94f0-92737e73b21d");
     private static final UUID RELOCATED_PLAYER_ID = UUID.fromString("3075c9a7-fe66-4f22-9c6e-e72a07ebd74f");
+    private static final String RELOCATED_SLUDGE_BATCH = "redSludgeRelocation";
 
     private RedSludgeGameTests() {
     }
@@ -89,32 +93,40 @@ public final class RedSludgeGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = RELOCATED_SLUDGE_BATCH)
     public static void relocatedSludgeRemainsLocalHazardWithoutCreatingLogicalShroud(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(0, 0, 1);
         BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, ModBlocks.RED_SLUDGE.get());
-        helper.assertBlockPresent(ModBlocks.RED_SLUDGE.get(), relative);
+        ShroudSavedData shroudData = ShroudSavedData.get(level);
+        ShroudWorldState original = shroudData.state();
+        shroudData.replace(new ShroudWorldState(original.schemaVersion(), Map.of(), Map.of()));
 
-        FakePlayer player = FakePlayerFactory.get(level, new GameProfile(RELOCATED_PLAYER_ID, "RelocatedSludge"));
-        RedSludgeExposureHandler.forget(player.getUUID());
-        var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
-        player.setData(attachmentType, new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 1_000));
+        try {
+            helper.setBlock(relative, ModBlocks.RED_SLUDGE.get());
+            helper.assertBlockPresent(ModBlocks.RED_SLUDGE.get(), relative);
 
-        var query = DefaultShroudQuery.levelOne(ShroudGridGeometry.levelOne());
-        ShroudSample logicalBefore = query.sample(level, absolute, player);
-        helper.assertTrue(logicalBefore.severity() == ShroudSeverity.CLEAR,
-                "physical Red Sludge outside a logical region must not become authoritative Shroud state");
+            FakePlayer player = FakePlayerFactory.get(level, new GameProfile(RELOCATED_PLAYER_ID, "RelocatedSludge"));
+            RedSludgeExposureHandler.forget(player.getUUID());
+            var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
+            player.setData(attachmentType, new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 1_000));
 
-        RedSludgeExposureHandler.onContact(player);
+            var query = DefaultShroudQuery.levelOne(ShroudGridGeometry.levelOne());
+            ShroudSample logicalBefore = query.sample(level, absolute, player);
+            helper.assertTrue(logicalBefore.severity() == ShroudSeverity.CLEAR,
+                    "physical Red Sludge outside a logical region must not become authoritative Shroud state");
 
-        ShroudSample logicalAfter = query.sample(level, absolute, player);
-        helper.assertTrue(player.getData(attachmentType).remainingTicks() < 1_000,
-                "relocated physical Red Sludge must remain locally hazardous");
-        helper.assertTrue(logicalAfter.severity() == ShroudSeverity.CLEAR && logicalAfter.intensity() == 0.0F,
-                "physical fluid contact must not create a core, region, cell or synthetic logical intensity");
-        helper.succeed();
+            RedSludgeExposureHandler.onContact(player);
+
+            ShroudSample logicalAfter = query.sample(level, absolute, player);
+            helper.assertTrue(player.getData(attachmentType).remainingTicks() < 1_000,
+                    "relocated physical Red Sludge must remain locally hazardous");
+            helper.assertTrue(logicalAfter.severity() == ShroudSeverity.CLEAR && logicalAfter.intensity() == 0.0F,
+                    "physical fluid contact must not create a core, region, cell or synthetic logical intensity");
+            helper.succeed();
+        } finally {
+            shroudData.replace(original);
+        }
     }
 
     @GameTest(template = "foundation_empty")

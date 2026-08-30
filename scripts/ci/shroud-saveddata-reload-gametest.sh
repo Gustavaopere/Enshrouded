@@ -47,6 +47,10 @@ grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_CREATED' "$FIRST_LOG" || {
   echo 'First GameTest boot did not create the Flame progression sentinel' >&2
   exit 1
 }
+grep -Fq 'ENSHROUDED_STORY_CREATED' "$FIRST_LOG" || {
+  echo 'First GameTest boot did not create the Story State sentinel' >&2
+  exit 1
+}
 grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_CREATED' "$FIRST_LOG" || {
   echo 'First GameTest boot did not create the Shroud SavedData sentinel' >&2
   exit 1
@@ -69,6 +73,10 @@ grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_CREATED' "$FIRST_LOG" || {
 }
 if grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_RELOADED' "$FIRST_LOG"; then
   echo 'First GameTest boot unexpectedly loaded pre-existing Flame progression' >&2
+  exit 1
+fi
+if grep -Fq 'ENSHROUDED_STORY_RELOADED' "$FIRST_LOG"; then
+  echo 'First GameTest boot unexpectedly loaded pre-existing Story State' >&2
   exit 1
 fi
 if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$FIRST_LOG"; then
@@ -95,6 +103,13 @@ if (( ${#FLAME_DATA_FILES[@]} != 1 )); then
   exit 1
 fi
 
+mapfile -t STORY_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_story.dat' -print)
+if (( ${#STORY_DATA_FILES[@]} != 1 )); then
+  echo "Expected exactly one server-global enshrouded_story.dat after first boot, found ${#STORY_DATA_FILES[@]}" >&2
+  printf '%s\n' "${STORY_DATA_FILES[@]:-}"
+  exit 1
+fi
+
 mapfile -t SHROUD_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_shroud.dat' -print)
 if (( ${#SHROUD_DATA_FILES[@]} != 1 )); then
   echo "Expected exactly one dimension-local enshrouded_shroud.dat after first boot, found ${#SHROUD_DATA_FILES[@]}" >&2
@@ -105,6 +120,10 @@ fi
 run_gametest_boot "$RELOAD_LOG"
 grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_RELOADED' "$RELOAD_LOG" || {
   echo 'Second GameTest boot did not reload the persisted Flame progression sentinel' >&2
+  exit 1
+}
+grep -Fq 'ENSHROUDED_STORY_RELOADED' "$RELOAD_LOG" || {
+  echo 'Second GameTest boot did not reconcile and reload the persisted Story State sentinel' >&2
   exit 1
 }
 grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$RELOAD_LOG" || {
@@ -129,6 +148,10 @@ grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_RELOADED' "$RELOAD_LOG" || {
 }
 if grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_CREATED' "$RELOAD_LOG"; then
   echo 'Second GameTest boot recreated Flame progression instead of loading it' >&2
+  exit 1
+fi
+if grep -Fq 'ENSHROUDED_STORY_CREATED' "$RELOAD_LOG"; then
+  echo 'Second GameTest boot recreated Story State instead of loading it' >&2
   exit 1
 fi
 if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_CREATED' "$RELOAD_LOG"; then
@@ -160,4 +183,16 @@ if [[ "${FLAME_RELOAD_DATA_FILES[0]}" != "${FLAME_DATA_FILES[0]}" ]]; then
   exit 1
 fi
 
-echo "Flame progression, Shroud SavedData, growth block, purification and entity corruption two-boot reload GameTest: PASS (Flame: ${FLAME_DATA_FILES[0]}; Shroud: ${SHROUD_DATA_FILES[0]})"
+mapfile -t STORY_RELOAD_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_story.dat' -print)
+if (( ${#STORY_RELOAD_DATA_FILES[@]} != 1 )); then
+  echo "Expected exactly one server-global enshrouded_story.dat after reload, found ${#STORY_RELOAD_DATA_FILES[@]}" >&2
+  printf '%s\n' "${STORY_RELOAD_DATA_FILES[@]:-}"
+  exit 1
+fi
+if [[ "${STORY_RELOAD_DATA_FILES[0]}" != "${STORY_DATA_FILES[0]}" ]]; then
+  echo 'Story State data file moved between boots instead of reloading in place' >&2
+  printf 'first: %s\nsecond: %s\n' "${STORY_DATA_FILES[0]}" "${STORY_RELOAD_DATA_FILES[0]}" >&2
+  exit 1
+fi
+
+echo "Flame progression, Story State, Shroud SavedData, growth block, purification and entity corruption two-boot reload GameTest: PASS (Flame: ${FLAME_DATA_FILES[0]}; Story: ${STORY_DATA_FILES[0]}; Shroud: ${SHROUD_DATA_FILES[0]})"
