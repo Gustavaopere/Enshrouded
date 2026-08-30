@@ -7,11 +7,9 @@ import com.gustavaopere.enshrouded.flame.ritual.FlameRitualRegistry;
 import com.gustavaopere.enshrouded.flame.ritual.RitualOutcome;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.Bootstrap;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -29,20 +27,17 @@ final class FlameAltarServiceContractsTest {
             ResourceLocation.fromNamespaceAndPath("enshrouded", "synthetic_altar_ritual");
     private static final ResourceLocation INTENT_ID =
             ResourceLocation.fromNamespaceAndPath("enshrouded", "synthetic_altar_intent");
-
-    @BeforeAll
-    static void bootstrapVanillaRegistries() {
-        Bootstrap.bootStrap();
-    }
+    private static final Item VALID_OFFERING = new Item(new Item.Properties());
+    private static final Item WRONG_OFFERING = new Item(new Item.Properties());
 
     @Test
     void altarDelegatesOfferingValidationConsumptionAndCheckpointToMergedExecutor() {
         FlameRitualRegistry registry = new FlameRitualRegistry();
-        registry.register(syntheticBlazePowderRitual());
+        registry.register(syntheticOfferingRitual());
         FlameAltarService service = new FlameAltarService(registry);
         MemoryStore store = new MemoryStore();
         FlameRitualExecutor executor = new FlameRitualExecutor(ignored -> OWNER, registry, store);
-        ItemStackHandler inventory = singleSlot(Items.BLAZE_POWDER.getDefaultInstance());
+        ItemStackHandler inventory = singleSlot(new ItemStack(VALID_OFFERING));
 
         FlameAltarService.ActivationResult result = service.activate(PLAYER_ID, inventory, executor);
 
@@ -57,28 +52,28 @@ final class FlameAltarServiceContractsTest {
     @Test
     void forgedOrWrongServerInventoryCannotBypassRitualOfferingContract() {
         FlameRitualRegistry registry = new FlameRitualRegistry();
-        registry.register(syntheticBlazePowderRitual());
+        registry.register(syntheticOfferingRitual());
         FlameAltarService service = new FlameAltarService(registry);
         MemoryStore store = new MemoryStore();
         FlameRitualExecutor executor = new FlameRitualExecutor(ignored -> OWNER, registry, store);
-        ItemStackHandler inventory = singleSlot(Items.ROTTEN_FLESH.getDefaultInstance());
+        ItemStackHandler inventory = singleSlot(new ItemStack(WRONG_OFFERING));
 
         FlameAltarService.ActivationResult result = service.activate(PLAYER_ID, inventory, executor);
 
         assertEquals(FlameAltarService.Status.NO_MATCHING_RITUAL, result.status());
-        assertTrue(inventory.getStackInSlot(0).is(Items.ROTTEN_FLESH));
+        assertTrue(inventory.getStackInSlot(0).is(WRONG_OFFERING));
         assertFalse(store.state().hasOwner(OWNER));
     }
 
     @Test
     void duplicateActivationAcrossTheSameOrAnotherAltarCannotGrantOrConsumeTwice() {
         FlameRitualRegistry registry = new FlameRitualRegistry();
-        registry.register(syntheticBlazePowderRitual());
+        registry.register(syntheticOfferingRitual());
         FlameAltarService service = new FlameAltarService(registry);
         MemoryStore store = new MemoryStore();
         FlameRitualExecutor executor = new FlameRitualExecutor(ignored -> OWNER, registry, store);
-        ItemStackHandler firstAltar = singleSlot(Items.BLAZE_POWDER.getDefaultInstance());
-        ItemStackHandler secondAltar = singleSlot(Items.BLAZE_POWDER.getDefaultInstance());
+        ItemStackHandler firstAltar = singleSlot(new ItemStack(VALID_OFFERING));
+        ItemStackHandler secondAltar = singleSlot(new ItemStack(VALID_OFFERING));
 
         FlameAltarService.ActivationResult first = service.activate(PLAYER_ID, firstAltar, executor);
         FlameAltarService.ActivationResult duplicate = service.activate(PLAYER_ID, secondAltar, executor);
@@ -92,16 +87,16 @@ final class FlameAltarServiceContractsTest {
 
     @Test
     void offeringConsumptionFailsClosedIfInventoryChangedAfterValidation() {
-        ItemStackHandler inventory = singleSlot(Items.BLAZE_POWDER.getDefaultInstance());
+        ItemStackHandler inventory = singleSlot(new ItemStack(VALID_OFFERING));
         FlameAltarOffering offering = FlameAltarOffering.capture(inventory, 0);
 
-        inventory.setStackInSlot(0, Items.ROTTEN_FLESH.getDefaultInstance());
+        inventory.setStackInSlot(0, new ItemStack(WRONG_OFFERING));
 
         assertFalse(offering.consumeOne());
-        assertTrue(inventory.getStackInSlot(0).is(Items.ROTTEN_FLESH));
+        assertTrue(inventory.getStackInSlot(0).is(WRONG_OFFERING));
     }
 
-    private static FlameRitual syntheticBlazePowderRitual() {
+    private static FlameRitual syntheticOfferingRitual() {
         return new FlameRitual() {
             @Override
             public ResourceLocation id() {
@@ -124,7 +119,7 @@ final class FlameAltarServiceContractsTest {
                     @Override
                     public boolean accepts(Context context, Offering offering) {
                         return offering instanceof FlameAltarOffering altarOffering
-                                && altarOffering.stack().is(Items.BLAZE_POWDER);
+                                && altarOffering.stack().is(VALID_OFFERING);
                     }
 
                     @Override
