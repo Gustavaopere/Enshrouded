@@ -7,6 +7,7 @@ import com.gustavaopere.enshrouded.flame.ritual.FlameRitualRegistry;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionSavedData;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionState;
 import com.gustavaopere.enshrouded.gametest.GameTestBootstrap;
+import com.gustavaopere.enshrouded.registry.ModItems;
 import com.gustavaopere.enshrouded.story.reward.LichSkullItem;
 import com.gustavaopere.enshrouded.story.ritual.LevelOneLichSkullRitual;
 import com.gustavaopere.enshrouded.story.state.LichStoryState;
@@ -16,6 +17,8 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -31,6 +34,26 @@ public final class LichSkullRewardGameTests {
     private static final String BATCH = "lichSkullReward";
 
     private LichSkullRewardGameTests() {
+    }
+
+    @GameTest(template = "foundation_empty", batch = BATCH)
+    public static void realItemComponentMarksAuthenticSkullAndRejectsLookalikes(GameTestHelper helper) {
+        UUID encounterId = UUID.fromString("60604006-0000-4000-8000-000000000001");
+        ItemStack authentic = LichSkullItem.createAuthentic(ModItems.LICH_SKULL_MANIFESTATION_1.get(), encounterId, 1);
+        ItemStack unstampedCustomSkull = new ItemStack(ModItems.LICH_SKULL_MANIFESTATION_1.get());
+        ItemStack vanillaLookalike = new ItemStack(Items.WITHER_SKELETON_SKULL);
+
+        helper.assertTrue(LichSkullItem.isAuthenticLevelOne(authentic),
+                "registered Lich skull with persistent identity component must validate as authentic");
+        helper.assertTrue(LichSkullItem.encounterId(authentic).filter(encounterId::equals).isPresent(),
+                "authentic item component must retain the stable source encounter UUID");
+        helper.assertTrue(LichSkullItem.manifestationIndex(authentic).orElseThrow() == 1,
+                "authentic item component must retain manifestation index 1");
+        helper.assertTrue(!LichSkullItem.isAuthenticLevelOne(unstampedCustomSkull),
+                "same registered item without the authority component must fail closed");
+        helper.assertTrue(!LichSkullItem.isAuthenticLevelOne(vanillaLookalike),
+                "unrelated skull-like vanilla item must never satisfy the ritual contract");
+        helper.succeed();
     }
 
     @GameTest(template = "foundation_empty", batch = BATCH)
