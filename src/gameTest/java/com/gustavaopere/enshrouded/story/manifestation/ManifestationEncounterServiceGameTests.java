@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwnerResolver;
 import com.gustavaopere.enshrouded.gametest.GameTestBootstrap;
 import com.gustavaopere.enshrouded.story.boss.LichBossRuntime;
+import com.gustavaopere.enshrouded.story.boss.ManifestationDirector;
 import com.gustavaopere.enshrouded.story.state.EncounterOutcome;
 import com.gustavaopere.enshrouded.story.state.LichStoryState;
 import com.gustavaopere.enshrouded.story.state.StorySavedData;
@@ -57,6 +58,11 @@ public final class ManifestationEncounterServiceGameTests {
                     "persisted encounter must use the exact same owner snapshot");
             helper.assertTrue(savedData.state().encounter(active.encounterId()).orElseThrow().outcome() == EncounterOutcome.ACTIVE,
                     "successful encounter start must atomically reach ACTIVE with a physical actor");
+            helper.assertTrue(ManifestationDirector.encounterId(active.entity()).orElseThrow().equals(active.encounterId()),
+                    "accepted actor must retain the stable encounter UUID marker");
+            helper.assertTrue(ManifestationDirector.manifestationId(active.entity()).orElseThrow()
+                            == ManifestationEncounterService.FIRST_MANIFESTATION_INDEX,
+                    "accepted actor must retain the manifestation identity independently from its provider/entity type");
 
             helper.assertTrue(service.start(level, playerId, helper.absolutePos(new BlockPos(3, 1, 3))).isEmpty(),
                     "a concurrent second encounter for the same resolved owner must be rejected");
