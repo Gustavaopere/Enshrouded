@@ -2,6 +2,8 @@ package com.gustavaopere.enshrouded.flame.state;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
@@ -51,6 +53,36 @@ final class FlameProgressionPersistenceTest {
         CompoundTag encoded = FlameProgressionCodec.encode(state);
         var owners = encoded.getList("owners", CompoundTag.TAG_COMPOUND);
         owners.add(owners.getCompound(0).copy());
+
+        assertThrows(IllegalArgumentException.class, () -> FlameProgressionCodec.decode(encoded));
+    }
+
+    @Test
+    void missingOwnersListFailsClosedInsteadOfDecodingAsEmptyProgression() {
+        CompoundTag encoded = FlameProgressionCodec.encode(FlameProgressionState.empty());
+        encoded.remove("owners");
+
+        assertThrows(IllegalArgumentException.class, () -> FlameProgressionCodec.decode(encoded));
+    }
+
+    @Test
+    void mistypedOwnersListFailsClosedInsteadOfDecodingAsEmptyProgression() {
+        CompoundTag encoded = FlameProgressionCodec.encode(FlameProgressionState.empty());
+        ListTag wrongType = new ListTag();
+        wrongType.add(StringTag.valueOf("not-an-owner-record"));
+        encoded.put("owners", wrongType);
+
+        assertThrows(IllegalArgumentException.class, () -> FlameProgressionCodec.decode(encoded));
+    }
+
+    @Test
+    void missingCompletedRitualListFailsClosedInsteadOfErasingOwnerHistory() {
+        ProgressionOwner owner = ProgressionOwner.player(UUID.fromString("33333333-3333-3333-3333-333333333333"));
+        ResourceLocation ritual = ResourceLocation.fromNamespaceAndPath("enshrouded", "synthetic_history");
+        CompoundTag encoded = FlameProgressionCodec.encode(
+                FlameProgressionState.empty().applyRitualCheckpoint(owner, ritual, 1, 1).orElseThrow()
+        );
+        encoded.getList("owners", CompoundTag.TAG_COMPOUND).getCompound(0).remove("completed_rituals");
 
         assertThrows(IllegalArgumentException.class, () -> FlameProgressionCodec.decode(encoded));
     }
