@@ -10,7 +10,7 @@ Last structural update: 2026-08-30.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
 - [x] 03 Exposure — all 4 tasks verified and merged.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
-- [ ] 05 Flame Progression — 1/4 tasks verified and merged; 05.01 complete.
+- [ ] 05 Flame Progression — 2/4 tasks verified and merged; 05.01 and 05.04 complete.
 - [ ] 06 Lich & Story — not implemented.
 - [ ] 07 Client Experience — not implemented.
 - [ ] 08 Integrations — not implemented.
@@ -386,16 +386,37 @@ The final CI hardens restart evidence: exactly one server-global `enshrouded_fla
 
 Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 50 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 04 generic Level 1 ritual framework
+
+- Branch: `feat/05-level1-ritual`
+- TDD RED: commit `db7df85374a8065f435b8650f97c7b024eb3ebe7`, workflow `33289604543` — test compilation failed because the planned ritual framework/readiness API did not yet exist.
+- Final implementation HEAD: `b3f6c0cabb3f4aa91191cf4a1197cadc68214a35`
+- First complete exact-head verification: workflow `33289912453` / run #894 — GREEN.
+- PR: #32 — `05.04 — Generic Flame ritual framework`.
+- Final PR-head verification: workflow `33290135711` / run #895 — GREEN.
+- Merge SHA: `37d100e7ea6511a76d954b640f6347bbb598d1d9`
+- Completed file: `✅-04-level1-ritual.md`
+
+Stage 05 now has a provider/UI-agnostic ritual engine through `FlameRitual`, `FlameRitualRegistry`, `FlameRitualExecutor` and `RitualOutcome`. Stable ritual IDs reject duplicates; invocation resolves `ProgressionOwner` once and retains that immutable owner through eligibility, offering validation/consumption, outcome application and persistence. Duplicate invocation is idempotently rejected before a second offering can be consumed.
+
+Level-1 completion persists `nextLevelReady=true` while deliberately preserving Flame Level 1 and Passage Level 1. The persistence schema advanced from v1 to v2 with explicit v1 migration/default behavior for the readiness bit; invalid/future schemas remain fail-closed. Offering consumption occurs only after the resulting progression snapshot is validated under the same store lock.
+
+A real NeoForge GameTest invokes a synthetic ritual through `FlameRitualExecutor.forServer(...)` with no Flame Altar or production Lich Skull classes, proving the server adapter seam, stable owner, single consumption, persisted checkpoint and no premature Level-2 passage. The physical altar remains Task 05.02; the authentic Lich Skull and concrete ritual binding remain Stage 06 responsibilities.
+
+The Stage 05 ritual-execution side of `ENSH-L1-OWNER-SNAPSHOT-001` is now executable and verified. That cross-stage contract remains open only for Stage 06 encounter/reward ownership and Stage 08 FTB Teams membership-change behavior. No new hidden cross-stage dependency was introduced.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/05-level1-ritual` from the latest verified `main` after this documentation checkpoint.
+Create `feat/05-flame-altar` from the latest verified `main` after this documentation checkpoint.
 
-Read `plans/05-flame-progression/README.md`, `plans/05-flame-progression/04-level1-ritual.md`, `plans/05-flame-progression/✅-01-flame-state.md`, the merged Foundation progression boundaries and `plans/PENDING.md`. Begin with observed RED coverage for the generic ritual registry/executor and stable owner snapshot semantics before production ritual execution code.
+Read `plans/05-flame-progression/README.md`, `plans/05-flame-progression/02-flame-altar.md`, `plans/05-flame-progression/✅-01-flame-state.md`, `plans/05-flame-progression/✅-04-level1-ritual.md`, the merged Foundation mutation/progression boundaries and `plans/PENDING.md`. Begin with observed RED coverage for the physical Flame Altar adapter, ensuring the altar delegates ritual/progression authority to the merged Stage 05 executor rather than duplicating it.
 
 Stage 05 causal implementation order remains:
 
 1. `✅ feat/05-flame-state`
-2. `feat/05-level1-ritual`
+2. `✅ feat/05-level1-ritual`
 3. `feat/05-flame-altar`
 4. `feat/05-sanctuary`
 
