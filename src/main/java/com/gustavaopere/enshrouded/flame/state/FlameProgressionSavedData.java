@@ -7,8 +7,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.LevelResource;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Server-global owner-scoped Flame progression.
@@ -41,7 +45,37 @@ public final class FlameProgressionSavedData extends SavedData {
 
     public static FlameProgressionSavedData get(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        return server.overworld().getDataStorage().computeIfAbsent(FACTORY, DATA_NAME);
+        var storage = server.overworld().getDataStorage();
+        FlameProgressionSavedData loaded = storage.get(FACTORY, DATA_NAME);
+        Path dataFile = server.getWorldPath(LevelResource.ROOT)
+                .resolve("data")
+                .resolve(DATA_NAME + ".dat");
+        FlameProgressionSavedData resolved = resolveLoadedOrAbsent(
+                loaded,
+                dataFile,
+                FlameProgressionSavedData::create
+        );
+        if (loaded == null) {
+            storage.set(DATA_NAME, resolved);
+        }
+        return resolved;
+    }
+
+    static FlameProgressionSavedData resolveLoadedOrAbsent(
+            FlameProgressionSavedData loaded,
+            Path dataFile,
+            Supplier<FlameProgressionSavedData> factory) {
+        Objects.requireNonNull(dataFile, "dataFile");
+        Objects.requireNonNull(factory, "factory");
+        if (loaded != null) {
+            return loaded;
+        }
+        if (!Files.notExists(dataFile)) {
+            throw new IllegalStateException(
+                    "Existing Flame progression data could not be loaded safely: " + dataFile.toAbsolutePath()
+            );
+        }
+        return Objects.requireNonNull(factory.get(), "factory result");
     }
 
     public static FlameProgressionSavedData get(ServerLevel level) {
