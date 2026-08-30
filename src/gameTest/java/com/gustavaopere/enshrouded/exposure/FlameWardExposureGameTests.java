@@ -30,11 +30,13 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class FlameWardExposureGameTests {
     private static final ShroudGridGeometry GEOMETRY = ShroudGridGeometry.levelOne();
+    private static final String WARD_MASK_BATCH = "flameWardMask";
+    private static final String WARD_EXPOSURE_BATCH = "flameWardExposure";
 
     private FlameWardExposureGameTests() {
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = WARD_MASK_BATCH)
     public static void altarMasksLogicalShroudAndRemovalRevealsSameThreat(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos altarRelative = new BlockPos(2, 1, 2);
@@ -67,7 +69,7 @@ public final class FlameWardExposureGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = WARD_EXPOSURE_BATCH)
     public static void logicalShroudInsideWardRecoversExposureReserve(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos altarRelative = new BlockPos(2, 1, 2);
