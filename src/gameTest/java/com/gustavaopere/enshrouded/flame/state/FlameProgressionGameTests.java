@@ -19,6 +19,7 @@ import java.util.UUID;
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FlameProgressionGameTests {
+    private static final String FLAME_STATE_BATCH = "flameState";
     private static final UUID RELOAD_OWNER_ID = UUID.fromString("5f05a111-1aa1-4e51-9c31-05f05a111111");
     private static final ProgressionOwner RELOAD_OWNER = ProgressionOwner.player(RELOAD_OWNER_ID);
     private static final ResourceLocation RELOAD_RITUAL =
@@ -27,7 +28,7 @@ public final class FlameProgressionGameTests {
     private FlameProgressionGameTests() {
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = FLAME_STATE_BATCH)
     public static void standalonePlayersRemainIndependentAndStorageIsServerGlobal(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         ServerLevel nether = level.getServer().getLevel(Level.NETHER);
@@ -71,7 +72,7 @@ public final class FlameProgressionGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = FLAME_STATE_BATCH)
     public static void flameProgressionSurvivesRealTwoBootSaveReload(GameTestHelper helper) {
         FlameProgressionSavedData data = FlameProgressionSavedData.get(GameTestBootstrap.requireServerLevel(helper));
         FlameProgressionState.OwnerProgression progression = data.progression(RELOAD_OWNER);
