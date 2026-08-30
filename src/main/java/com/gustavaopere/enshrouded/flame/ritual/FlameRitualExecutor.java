@@ -127,8 +127,10 @@ public final class FlameRitualExecutor {
         FlameProgressionState.OwnerProgression progression();
 
         /**
-         * Applies the checkpoint and runs offering consumption only when the ritual is still unique.
-         * Implementations must keep duplicate check, consumption and state mutation under one store lock.
+         * Applies the checkpoint and runs offering consumption only when the ritual is still unique
+         * and the resulting progression state has already been validated.
+         * Implementations must keep duplicate check, validation, consumption and state mutation
+         * under one store lock.
          */
         boolean applyCheckpoint(ResourceLocation ritualId, RitualOutcome outcome, Runnable consumeOffering);
     }
@@ -159,17 +161,23 @@ public final class FlameRitualExecutor {
                         Objects.requireNonNull(ritualId, "ritualId");
                         Objects.requireNonNull(outcome, "outcome");
                         Objects.requireNonNull(consumeOffering, "consumeOffering");
-                        if (savedData.progression(owner).completedRituals().contains(ritualId)) {
-                            return false;
-                        }
-                        consumeOffering.run();
-                        return savedData.applyRitualCheckpoint(
+
+                        Optional<FlameProgressionState> next = savedData.state().applyRitualCheckpoint(
                                 owner,
                                 ritualId,
                                 outcome.flameLevel(),
                                 outcome.passageLevel(),
                                 outcome.nextLevelReady()
                         );
+                        if (next.isEmpty()) {
+                            return false;
+                        }
+
+                        // All progression validation has succeeded while holding the same store lock.
+                        // If consumption itself fails, no progression state is committed.
+                        consumeOffering.run();
+                        savedData.replace(next.orElseThrow());
+                        return true;
                     }
                 });
             }
