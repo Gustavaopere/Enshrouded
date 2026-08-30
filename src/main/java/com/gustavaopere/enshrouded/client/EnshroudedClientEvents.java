@@ -1,10 +1,13 @@
 package com.gustavaopere.enshrouded.client;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.registry.ModEntities;
 import com.gustavaopere.enshrouded.registry.ModMenus;
+import net.minecraft.client.renderer.entity.SkeletonRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 @EventBusSubscriber(modid = Enshrouded.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -15,5 +18,10 @@ public final class EnshroudedClientEvents {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.FLAME_ALTAR.get(), FlameAltarScreen::new);
+    }
+
+    @SubscribeEvent
+    public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.SHROUD_LICH.get(), SkeletonRenderer::new);
     }
 }
