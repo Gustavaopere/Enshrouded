@@ -3,7 +3,6 @@ package com.gustavaopere.enshrouded.registry;
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.story.boss.NativeShroudLichEntity;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -18,8 +17,6 @@ public final class ModEntities {
 
     private static final ResourceLocation SHROUD_LICH_ID =
             ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "shroud_lich");
-    private static final ResourceKey<EntityType<?>> SHROUD_LICH_KEY =
-            ResourceKey.create(Registries.ENTITY_TYPE, SHROUD_LICH_ID);
 
     public static final DeferredHolder<EntityType<?>, EntityType<NativeShroudLichEntity>> SHROUD_LICH =
             ENTITY_TYPES.register(
@@ -28,7 +25,7 @@ public final class ModEntities {
                             .sized(0.8F, 2.4F)
                             .clientTrackingRange(10)
                             .updateInterval(2)
-                            .build(SHROUD_LICH_KEY)
+                            .build(SHROUD_LICH_ID.toString())
             );
 
     private ModEntities() {
