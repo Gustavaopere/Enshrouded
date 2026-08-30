@@ -7,11 +7,23 @@ import com.gustavaopere.enshrouded.flame.ritual.RitualOutcome;
 import com.gustavaopere.enshrouded.story.reward.LichSkullItem;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Objects;
+
 /** Concrete Stage-06 binding from the authentic first Lich skull to the generic Stage-05 engine. */
 public final class LevelOneLichSkullRitual implements FlameRitual {
     public static final ResourceLocation RITUAL_ID =
             ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "lich_manifestation_1");
     public static final ResourceLocation INTENT_ID = RITUAL_ID;
+
+    private final OfferingPolicy offeringPolicy;
+
+    public LevelOneLichSkullRitual() {
+        this(new PhysicalOfferingPolicy());
+    }
+
+    LevelOneLichSkullRitual(OfferingPolicy offeringPolicy) {
+        this.offeringPolicy = Objects.requireNonNull(offeringPolicy, "offeringPolicy");
+    }
 
     @Override
     public ResourceLocation id() {
@@ -35,17 +47,12 @@ public final class LevelOneLichSkullRitual implements FlameRitual {
         return new OfferingContract() {
             @Override
             public boolean accepts(Context context, Offering offering) {
-                return offering instanceof FlameAltarOffering altarOffering
-                        && LichSkullItem.isAuthenticLevelOne(altarOffering.stack());
+                return offeringPolicy.accepts(offering);
             }
 
             @Override
             public void consume(Context context, Offering offering) {
-                if (!(offering instanceof FlameAltarOffering altarOffering)
-                        || !LichSkullItem.isAuthenticLevelOne(altarOffering.stack())
-                        || !altarOffering.consumeOne()) {
-                    throw new IllegalStateException("authentic Lich skull offering changed before ritual commit");
-                }
+                offeringPolicy.consume(offering);
             }
         };
     }
@@ -53,5 +60,28 @@ public final class LevelOneLichSkullRitual implements FlameRitual {
     @Override
     public RitualOutcome outcome(Context context) {
         return RitualOutcome.levelOneCheckpoint();
+    }
+
+    interface OfferingPolicy {
+        boolean accepts(Offering offering);
+
+        void consume(Offering offering);
+    }
+
+    private static final class PhysicalOfferingPolicy implements OfferingPolicy {
+        @Override
+        public boolean accepts(Offering offering) {
+            return offering instanceof FlameAltarOffering altarOffering
+                    && LichSkullItem.isAuthenticLevelOne(altarOffering.stack());
+        }
+
+        @Override
+        public void consume(Offering offering) {
+            if (!(offering instanceof FlameAltarOffering altarOffering)
+                    || !LichSkullItem.isAuthenticLevelOne(altarOffering.stack())
+                    || !altarOffering.consumeOne()) {
+                throw new IllegalStateException("authentic Lich skull offering changed before ritual commit");
+            }
+        }
     }
 }
