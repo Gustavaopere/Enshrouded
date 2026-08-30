@@ -12,7 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -42,7 +42,8 @@ public final class NativeShroudLichCombatGameTests {
                 .orElseThrow(() -> new AssertionError("native Lich must spawn for combat contract test"))
                 .entity();
 
-        ArmorStand target = new ArmorStand(EntityType.ARMOR_STAND, level);
+        Zombie target = new Zombie(EntityType.ZOMBIE, level);
+        target.setNoAi(true);
         target.moveTo(context.origin().getX() + 6.5D, context.origin().getY(), context.origin().getZ() + 0.5D);
         helper.assertTrue(level.addFreshEntity(target), "stationary living target must be added for ranged contract test");
 
