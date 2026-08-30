@@ -34,6 +34,7 @@ import java.util.Optional;
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FlameAltarGameTests {
+    private static final String FLAME_ALTAR_BATCH = "flameAltar";
     private static final ResourceLocation DOUBLE_RITUAL_ID =
             ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_double");
     private static final ResourceLocation DOUBLE_INTENT_ID =
@@ -47,7 +48,7 @@ public final class FlameAltarGameTests {
     private FlameAltarGameTests() {
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = FLAME_ALTAR_BATCH)
     public static void recipePlacesAndReloadsPersistentAltarInventory(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         CraftingInput input = CraftingInput.of(3, 3, List.of(
@@ -78,7 +79,7 @@ public final class FlameAltarGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = FLAME_ALTAR_BATCH)
     public static void forgedClientLikeActivationWithoutRegisteredOfferingIsDenied(GameTestHelper helper) {
         ensureSyntheticRitualsRegistered();
         ServerPlayer player = requireServerPlayer(helper);
@@ -102,7 +103,7 @@ public final class FlameAltarGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = FLAME_ALTAR_BATCH)
     public static void twoAltarsCannotDuplicateOneRitualOutcomeOrConsumption(GameTestHelper helper) {
         ensureSyntheticRitualsRegistered();
         ServerPlayer player = requireServerPlayer(helper);
@@ -134,7 +135,7 @@ public final class FlameAltarGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = FLAME_ALTAR_BATCH)
     public static void breakingAltarAfterRitualNeverRollsBackOwnerProgression(GameTestHelper helper) {
         ensureSyntheticRitualsRegistered();
         ServerPlayer player = requireServerPlayer(helper);

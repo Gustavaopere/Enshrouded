@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.flame.altar;
 
+import com.gustavaopere.enshrouded.flame.ward.FlameWardRuntime;
 import com.gustavaopere.enshrouded.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -34,6 +35,22 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
 
     public ItemStackHandler inventory() {
         return inventory;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel serverLevel) {
+            FlameWardRuntime.onAltarLoaded(serverLevel, worldPosition);
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        if (level instanceof ServerLevel serverLevel) {
+            FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
+        }
+        super.setRemoved();
     }
 
     @Override

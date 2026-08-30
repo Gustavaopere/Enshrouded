@@ -4,6 +4,7 @@ import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.combat.magic.MagicResistanceService;
 import com.gustavaopere.enshrouded.exposure.ExposureSchema;
 import com.gustavaopere.enshrouded.exposure.deadly.PassageRequirement;
+import com.gustavaopere.enshrouded.flame.ward.FlameWardService;
 import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import com.gustavaopere.enshrouded.shroud.core.CoreSafetyLimits;
 import com.gustavaopere.enshrouded.shroud.query.ShroudSeverityThresholds;
@@ -18,6 +19,7 @@ public final class EnshroudedConfig {
     private static final ModConfigSpec.IntValue CORE_REGRESSION_WORK_PER_TICK;
     private static final ModConfigSpec.IntValue PURIFICATION_CLEANUP_WORK_PER_TICK;
     private static final ModConfigSpec.DoubleValue SHROUD_DEADLY_INTENSITY_THRESHOLD;
+    private static final ModConfigSpec.IntValue FLAME_WARD_RADIUS;
     private static final ModConfigSpec.IntValue EXPOSURE_MAX_RESERVE_TICKS;
     private static final ModConfigSpec.IntValue EXPOSURE_EMERGENCY_WINDOW_TICKS;
     private static final ModConfigSpec.IntValue DEADLY_REQUIRED_PASSAGE_LEVEL;
@@ -78,6 +80,17 @@ public final class EnshroudedConfig {
                         (double) ShroudSeverityThresholds.DEFAULT_DEADLY_AT_OR_ABOVE,
                         0.01D,
                         1.0D
+                );
+        builder.pop();
+
+        builder.push("flameSanctuary");
+        FLAME_WARD_RADIUS = builder
+                .comment("Radius in blocks projected by each loaded Flame Altar Sanctuary ward.")
+                .defineInRange(
+                        "radius",
+                        FlameWardService.DEFAULT_RADIUS,
+                        FlameWardService.MIN_RADIUS,
+                        FlameWardService.MAX_RADIUS
                 );
         builder.pop();
 
@@ -174,6 +187,10 @@ public final class EnshroudedConfig {
 
     public static float shroudDeadlyIntensityThreshold() {
         return SHROUD_DEADLY_INTENSITY_THRESHOLD.get().floatValue();
+    }
+
+    public static int flameWardRadius() {
+        return FLAME_WARD_RADIUS.getAsInt();
     }
 
     public static int exposureMaxReserveTicks() {

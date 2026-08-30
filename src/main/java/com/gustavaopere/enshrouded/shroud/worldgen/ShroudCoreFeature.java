@@ -1,5 +1,10 @@
 package com.gustavaopere.enshrouded.shroud.worldgen;
 
+import com.gustavaopere.enshrouded.api.shroud.FlameWardRuntimeBindings;
+import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
+import com.gustavaopere.enshrouded.api.shroud.MutationKind;
+import com.gustavaopere.enshrouded.protection.DefaultMutationAuthority;
+import com.gustavaopere.enshrouded.protection.ProtectedAreaService;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlockEntity;
 import com.mojang.serialization.Codec;
@@ -16,10 +21,19 @@ import java.util.Objects;
 
 public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
     private final ShroudCoreCandidateField candidates;
+    private final MutationAuthority mutationAuthority;
 
     public ShroudCoreFeature(Codec<NoneFeatureConfiguration> codec, ShroudCoreCandidateField candidates) {
+        this(codec, candidates, ShroudCoreFeature::canMutateFromRuntimeConfig);
+    }
+
+    ShroudCoreFeature(
+            Codec<NoneFeatureConfiguration> codec,
+            ShroudCoreCandidateField candidates,
+            MutationAuthority mutationAuthority) {
         super(codec);
         this.candidates = Objects.requireNonNull(candidates, "candidates");
+        this.mutationAuthority = Objects.requireNonNull(mutationAuthority, "mutationAuthority");
     }
 
     @Override
@@ -50,6 +64,9 @@ public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
         if (!Block.canSupportRigidBlock(level, corePos.below())) {
             return false;
         }
+        if (!mutationAuthority.canMutate(level.getLevel(), corePos, MutationKind.CORE_PLACEMENT)) {
+            return false;
+        }
 
         if (!level.setBlock(corePos, ModBlocks.SHROUD_CORE.get().defaultBlockState(), Block.UPDATE_CLIENTS)) {
             return false;
@@ -58,5 +75,15 @@ public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
             coreBlockEntity.requestAutomaticActivation();
         }
         return true;
+    }
+
+    private static boolean canMutateFromRuntimeConfig(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos pos,
+            MutationKind kind) {
+        return DefaultMutationAuthority.fromConfig(
+                FlameWardRuntimeBindings.query(),
+                ProtectedAreaService.none()
+        ).canMutate(level, pos, kind);
     }
 }
