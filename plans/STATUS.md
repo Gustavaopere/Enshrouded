@@ -11,7 +11,7 @@ Last structural update: 2026-08-30.
 - [x] 03 Exposure — all 4 tasks verified and merged.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
-- [ ] 06 Lich & Story — 1/4 tasks verified and merged; 06.01 Story State complete; 06.02 Boss Provider is next.
+- [ ] 06 Lich & Story — 2/4 tasks verified and merged; 06.01 Story State and 06.02 Boss Provider complete; 06.03 First Manifestation is next.
 - [ ] 07 Client Experience — not implemented.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
@@ -488,16 +488,39 @@ The real two-boot harness now proves exactly one server-global `enshrouded_story
 
 Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR verification, GameTest server, Story/Flame/Shroud two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 02 Boss Provider Abstraction
+
+- Branch: `feat/06-boss-provider`.
+- Native entity API compatibility was proven against NeoForge/Minecraft 1.21.1; workflow #1065 / `33319620016` closed the registry-builder correction GREEN.
+- Combat RED sequence required the real inherited ranged-AI path plus a health-driven second phase; fixture diagnostics were separated from product behavior before GREEN.
+- Combat GREEN: HEAD `b275080df62af2a0452ef5f45563dd42cb9d316d`, workflow `33320345243` / run #1069 — all gates GREEN, including the native ranged Shroud attack, Darkness rider, phase transition, two-boot reload and dedicated-server smoke.
+- Provider-neutral bossbar structural RED: commit `516af955dfdce9f58f2219aaf8c450969b4ad427`, workflow `33320592151` / run #1070 — `compileGameTestJava` failed only because `bossEvent()` / `syncBossEvent()` did not yet exist.
+- Bossbar GREEN: HEAD `cef36cd69fe8dbe85b0df7b4150a523ed76fdcc6`, workflow `33320744336` / run #1071 — all gates GREEN.
+- Final implementation HEAD: `8fe1d56083e76135d272e1e8dd3763db321fccf6`.
+- PR: #43 — `06.02 — Boss Provider Abstraction`.
+- Final push verification: workflow `33326923926` / run #1074 — GREEN.
+- Final exact PR-head verification: workflow `33327173318` / run #1075 — GREEN.
+- Merge SHA: `b45f164c6f3c29cf380e89e64ba19df3e2386c35`.
+- Completed file: `✅-02-boss-provider.md`.
+
+Provider selection is deterministic by priority/availability with stable ID ordering and a mandatory standalone native fallback. The selected actor remains strongly typed as `LivingEntity`, is validated as live, same-level and actually added before acceptance, and receives the stable encounter UUID without Story State mutation. Invalid, removed or unavailable preferred providers fall through to the native provider rather than corrupting story state.
+
+The native `enshrouded:shroud_lich` is persistent, physically beatable, excluded from Stage 04 ecology corruption, explicitly armed for ranged Skeleton AI, and supplies Enshrouded-owned Shroud ranged damage plus Darkness. At or below half health it transitions to a faster second combat phase. All providers feed the same director-owned `ServerBossEvent`; the bossbar mirrors the accepted living actor but owns no narrative transition. Client rendering is isolated through `EntityRenderersEvent.RegisterRenderers` and uses the vanilla Skeleton renderer, with EN/pt-BR entity localization; exact dedicated-server smoke proves that client registration remains server-safe.
+
+06.02 deliberately does not own active encounter creation, duplicate encounter prevention, immutable owner capture at encounter start, narrative defeat or reward issuance. Those remain 06.03 responsibilities. `ENSH-L1-OWNER-SNAPSHOT-001` therefore remains open for 06.03 + Stage 08, and `ENSH-L1-LICH-REWARD-001` remains open for the first-manifestation reward path / 06.04 skull binding. No new hidden cross-stage blocker was introduced.
+
+Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR verification, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/06-boss-provider` from the latest verified `main` after this documentation checkpoint.
+Create `feat/06-first-manifestation` from the latest verified `main` after this documentation checkpoint.
 
-Read `plans/06-lich-story/README.md`, `plans/06-lich-story/02-boss-provider.md`, `plans/06-lich-story/✅-01-story-state.md`, Foundation `LichManifestationProvider` / `EncounterContext` contracts, Stage 04 magic-resistance boundaries and `plans/PENDING.md`. Begin with observed RED coverage for deterministic provider priority/fallback and the native standalone manifestation before writing provider production code.
+Read `plans/06-lich-story/README.md`, `plans/06-lich-story/03-first-manifestation.md`, `plans/06-lich-story/✅-01-story-state.md`, `plans/06-lich-story/✅-02-boss-provider.md`, Foundation `ProgressionOwner` / resolver / `EncounterContext` contracts and `plans/PENDING.md`. Begin with observed RED coverage for one explicit encounter start, duplicate rejection for the same immutable owner snapshot, unrelated unmarked entity death rejection and marked-boss defeat idempotence before writing the 06.03 encounter runtime.
 
 Stage 06 causal implementation order:
 
 1. `✅ feat/06-story-state`
-2. `feat/06-boss-provider`
+2. `✅ feat/06-boss-provider`
 3. `feat/06-first-manifestation`
 4. `feat/06-lich-skull`
 
