@@ -31,44 +31,53 @@ public final class FlameWardMutationGameTests {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos altarRelative = new BlockPos(2, 1, 2);
         BlockPos center = helper.absolutePos(altarRelative);
-        helper.setBlock(altarRelative, ModBlocks.FLAME_ALTAR.get());
 
-        int radius = EnshroudedConfig.flameWardRadius();
-        BlockPos insideCore = center.offset(1, 0, 0);
-        BlockPos outsideCore = center.offset(radius + 1, 0, 0);
-        BlockPos insideCorruption = center.offset(0, 0, 1);
-        BlockPos outsideCorruption = center.offset(0, 0, radius + 1);
-        level.setBlock(insideCore, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(outsideCore, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(insideCorruption, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(outsideCorruption, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+        // This batch verifies one deterministic ward. Remove loaded-altar state left by prior
+        // GameTest batches so their spatial layout cannot redefine this fixture's "outside".
+        FlameWardRuntime.service().clear();
 
-        DefaultMutationAuthority authority = DefaultMutationAuthority.fromConfig(
-                FlameWardRuntimeBindings.query(),
-                ProtectedAreaService.none()
-        );
+        try {
+            helper.setBlock(altarRelative, ModBlocks.FLAME_ALTAR.get());
 
-        helper.assertTrue(!authority.canMutate(level, insideCore, MutationKind.CORE_PLACEMENT),
-                "Sanctuary must veto new Shroud core placement inside the ward");
-        helper.assertTrue(authority.canMutate(level, outsideCore, MutationKind.CORE_PLACEMENT),
-                "Equivalent core placement just outside the ward must remain eligible");
-        helper.assertTrue(!authority.canMutate(level, insideCorruption, MutationKind.CORRUPTION),
-                "Sanctuary must veto new terrain corruption inside the ward");
-        helper.assertTrue(authority.canMutate(level, outsideCorruption, MutationKind.CORRUPTION),
-                "Safe-tagged terrain just outside the ward must remain corruptible");
-        helper.assertTrue(authority.canMutate(level, insideCorruption, MutationKind.PURIFICATION),
-                "Sanctuary must not trap safe purification cleanup inside the ward");
+            int radius = EnshroudedConfig.flameWardRadius();
+            BlockPos insideCore = center.offset(1, 0, 0);
+            BlockPos outsideCore = center.offset(radius + 1, 0, 0);
+            BlockPos insideCorruption = center.offset(0, 0, 1);
+            BlockPos outsideCorruption = center.offset(0, 0, radius + 1);
+            level.setBlock(insideCore, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(outsideCore, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(insideCorruption, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(outsideCorruption, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
 
-        DefaultMutationAuthority protectedAuthority = DefaultMutationAuthority.fromConfig(
-                FlameWardRuntimeBindings.query(),
-                (queryLevel, pos, kind) -> pos.equals(insideCorruption)
-                        ? ProtectionDecision.PROTECTED
-                        : ProtectionDecision.UNPROTECTED
-        );
-        helper.assertTrue(!protectedAuthority.canMutate(level, insideCorruption, MutationKind.PURIFICATION),
-                "Protected/player-owned targets must remain untouched even when Sanctuary permits cleanup");
+            DefaultMutationAuthority authority = DefaultMutationAuthority.fromConfig(
+                    FlameWardRuntimeBindings.query(),
+                    ProtectedAreaService.none()
+            );
 
-        helper.destroyBlock(altarRelative);
-        helper.succeed();
+            helper.assertTrue(!authority.canMutate(level, insideCore, MutationKind.CORE_PLACEMENT),
+                    "Sanctuary must veto new Shroud core placement inside the ward");
+            helper.assertTrue(authority.canMutate(level, outsideCore, MutationKind.CORE_PLACEMENT),
+                    "Equivalent core placement just outside the ward must remain eligible");
+            helper.assertTrue(!authority.canMutate(level, insideCorruption, MutationKind.CORRUPTION),
+                    "Sanctuary must veto new terrain corruption inside the ward");
+            helper.assertTrue(authority.canMutate(level, outsideCorruption, MutationKind.CORRUPTION),
+                    "Safe-tagged terrain just outside the ward must remain corruptible");
+            helper.assertTrue(authority.canMutate(level, insideCorruption, MutationKind.PURIFICATION),
+                    "Sanctuary must not trap safe purification cleanup inside the ward");
+
+            DefaultMutationAuthority protectedAuthority = DefaultMutationAuthority.fromConfig(
+                    FlameWardRuntimeBindings.query(),
+                    (queryLevel, pos, kind) -> pos.equals(insideCorruption)
+                            ? ProtectionDecision.PROTECTED
+                            : ProtectionDecision.UNPROTECTED
+            );
+            helper.assertTrue(!protectedAuthority.canMutate(level, insideCorruption, MutationKind.PURIFICATION),
+                    "Protected/player-owned targets must remain untouched even when Sanctuary permits cleanup");
+
+            helper.succeed();
+        } finally {
+            helper.destroyBlock(altarRelative);
+            FlameWardRuntime.service().clear();
+        }
     }
 }

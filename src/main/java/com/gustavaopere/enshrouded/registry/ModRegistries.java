@@ -16,6 +16,7 @@ public final class ModRegistries {
         ModFluids.register(modBus);
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
+        ModEntities.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
         ModMenus.MENUS.register(modBus);
         ShroudExposureAttachment.register(modBus);

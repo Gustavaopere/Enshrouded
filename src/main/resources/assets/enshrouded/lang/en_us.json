@@ -11,5 +11,6 @@
   "message.enshrouded.flame_altar.applied": "The Flame answers the ritual.",
   "message.enshrouded.flame_altar.already_completed": "This ritual has already marked your progression.",
   "message.enshrouded.flame_altar.no_matching_ritual": "No valid Flame ritual matches the current offering.",
+  "entity.enshrouded.shroud_lich": "Shroud Lich",
   "death.attack.madness": "%1$s succumbed to the Shroud's Madness"
 }
