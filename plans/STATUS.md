@@ -10,7 +10,7 @@ Last structural update: 2026-08-30.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
 - [x] 03 Exposure — all 4 tasks verified and merged.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
-- [ ] 05 Flame Progression — 2/4 tasks verified and merged; 05.01 and 05.04 complete.
+- [ ] 05 Flame Progression — 3/4 tasks verified and merged; 05.01, 05.04 and 05.02 complete; 05.03 Sanctuary remains.
 - [ ] 06 Lich & Story — not implemented.
 - [ ] 07 Client Experience — not implemented.
 - [ ] 08 Integrations — not implemented.
@@ -407,17 +407,37 @@ The Stage 05 ritual-execution side of `ENSH-L1-OWNER-SNAPSHOT-001` is now execut
 
 Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 02 physical Flame Altar
+
+- Branch: `feat/05-flame-altar`
+- Adapter RED sequence: unit tests first isolated delegation, wrong-offering rejection and duplicate-consumption semantics from Minecraft registry bootstrap; physical runtime was then added over the already-merged executor.
+- Final implementation HEAD: `b9fbc27a41eddaadc3515ac47bd1fc8bd7a751d0`.
+- PR #34: closed unmerged only because the connector's ready-for-review GraphQL mutation failed while the PR remained draft.
+- Final replacement PR: #35 — `05.02 — Flame Altar`.
+- Prior exact-head verification: workflow `33292226154` / run #962 — GREEN.
+- Final PR-head verification: workflow `33292568059` / run #963 — GREEN.
+- Merge SHA: `f47bcd70247acbbbb550e3af02baadc0f41eab63`.
+- Completed file: `✅-02-flame-altar.md`.
+
+`enshrouded:flame_altar` is now a physical block/block entity with one persistent server-owned offering slot, a menu/screen, Level-1 recipe, loot behavior and EN/pt-BR localization. The altar delegates all ritual eligibility, idempotence, consumption and progression mutation to the canonical `FlameRitualExecutor`; client interaction sends only an intent and server code re-reads authoritative inventory/progression state.
+
+Runtime GameTests prove the recipe is parsed and discoverable by the real Minecraft 1.21.1 `RecipeManager`, placed altar inventory survives serialization/reload, invalid server offerings cannot be forged through a client-like activation, two physical altars cannot duplicate one ritual outcome or consume twice, and destroying the altar never rolls back earned owner progression. The real Stage 06 Lich Skull is still absent from Stage 05 production/tests by design.
+
+The behavioral RED run exposed two fixture/data defects before merge: shaped-recipe key entries initially used the pre-1.21 string form instead of the 1.21.1 object schema, and generic GameTest mock players were not `ServerPlayer`; both were corrected before final verification. No new task-local cross-stage contract was introduced. `ENSH-L1-OWNER-SNAPSHOT-001` remains open only for Stage 06 encounter/reward ownership and Stage 08 membership-change evidence.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 55/55 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/05-flame-altar` from the latest verified `main` after this documentation checkpoint.
+Create `feat/05-sanctuary` from the latest verified `main` after this documentation checkpoint.
 
-Read `plans/05-flame-progression/README.md`, `plans/05-flame-progression/02-flame-altar.md`, `plans/05-flame-progression/✅-01-flame-state.md`, `plans/05-flame-progression/✅-04-level1-ritual.md`, the merged Foundation mutation/progression boundaries and `plans/PENDING.md`. Begin with observed RED coverage for the physical Flame Altar adapter, ensuring the altar delegates ritual/progression authority to the merged Stage 05 executor rather than duplicating it.
+Read `plans/05-flame-progression/README.md`, `plans/05-flame-progression/03-sanctuary.md`, all three completed Stage 05 task plans, the merged Foundation `FlameWardQuery`/mutation boundaries, Stage 03 exposure consumers and `plans/PENDING.md`. Begin with observed RED coverage for the real Sanctuary provider and its integration with exposure and mutation while preserving latent Shroud state.
 
 Stage 05 causal implementation order remains:
 
 1. `✅ feat/05-flame-state`
 2. `✅ feat/05-level1-ritual`
-3. `feat/05-flame-altar`
+3. `✅ feat/05-flame-altar`
 4. `feat/05-sanctuary`
 
 ## Level 1 release gate
