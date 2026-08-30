@@ -1,17 +1,15 @@
 package com.gustavaopere.enshrouded.story.reward;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.Objects;
 import java.util.UUID;
 
-/** Proof of one committed story-reward issuance. */
+/** Proof of one committed story-reward issuance, independent of physical delivery mechanics. */
 public record RewardReceipt(
         ProgressionOwner owner,
         UUID encounterId,
-        int manifestationIndex,
-        ItemStack reward) {
+        int manifestationIndex) {
 
     public RewardReceipt {
         owner = Objects.requireNonNull(owner, "owner");
@@ -19,14 +17,9 @@ public record RewardReceipt(
         if (manifestationIndex < 1) {
             throw new IllegalArgumentException("manifestationIndex must be >= 1");
         }
-        reward = Objects.requireNonNull(reward, "reward").copy();
-        if (reward.isEmpty() || reward.getCount() != 1) {
-            throw new IllegalArgumentException("reward receipt must contain exactly one item");
-        }
     }
 
-    @Override
-    public ItemStack reward() {
-        return reward.copy();
+    public LichSkullIdentity skullIdentity() {
+        return new LichSkullIdentity(encounterId, manifestationIndex);
     }
 }
