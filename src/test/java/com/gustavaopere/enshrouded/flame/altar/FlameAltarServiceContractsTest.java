@@ -7,9 +7,11 @@ import com.gustavaopere.enshrouded.flame.ritual.FlameRitualRegistry;
 import com.gustavaopere.enshrouded.flame.ritual.RitualOutcome;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionState;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -27,6 +29,11 @@ final class FlameAltarServiceContractsTest {
             ResourceLocation.fromNamespaceAndPath("enshrouded", "synthetic_altar_ritual");
     private static final ResourceLocation INTENT_ID =
             ResourceLocation.fromNamespaceAndPath("enshrouded", "synthetic_altar_intent");
+
+    @BeforeAll
+    static void bootstrapVanillaRegistries() {
+        Bootstrap.bootStrap();
+    }
 
     @Test
     void altarDelegatesOfferingValidationConsumptionAndCheckpointToMergedExecutor() {
