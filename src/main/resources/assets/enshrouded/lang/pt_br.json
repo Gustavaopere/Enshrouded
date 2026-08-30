@@ -1,0 +1,15 @@
+{
+  "mod.enshrouded.name": "Enshrouded",
+  "block.enshrouded.red_sludge": "Lodo Vermelho",
+  "block.enshrouded.flame_altar": "Altar da Chama",
+  "container.enshrouded.flame_altar": "Altar da Chama",
+  "screen.enshrouded.flame_altar.activate": "Invocar",
+  "screen.enshrouded.flame_altar.flame_level": "Nível da Chama: %s",
+  "screen.enshrouded.flame_altar.passage_level": "Nível de Passagem: %s",
+  "screen.enshrouded.flame_altar.ready": "Próxima passagem disponível",
+  "screen.enshrouded.flame_altar.not_ready": "Passagem ritual incompleta",
+  "message.enshrouded.flame_altar.applied": "A Chama responde ao ritual.",
+  "message.enshrouded.flame_altar.already_completed": "Este ritual já marcou sua progressão.",
+  "message.enshrouded.flame_altar.no_matching_ritual": "Nenhum ritual válido da Chama corresponde à oferenda atual.",
+  "death.attack.madness": "%1$s sucumbiu à Loucura da Mortalha"
+}
