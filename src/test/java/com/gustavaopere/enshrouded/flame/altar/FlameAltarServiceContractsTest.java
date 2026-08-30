@@ -7,9 +7,6 @@ import com.gustavaopere.enshrouded.flame.ritual.FlameRitualRegistry;
 import com.gustavaopere.enshrouded.flame.ritual.RitualOutcome;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -27,8 +24,6 @@ final class FlameAltarServiceContractsTest {
             ResourceLocation.fromNamespaceAndPath("enshrouded", "synthetic_altar_ritual");
     private static final ResourceLocation INTENT_ID =
             ResourceLocation.fromNamespaceAndPath("enshrouded", "synthetic_altar_intent");
-    private static final Item VALID_OFFERING = new Item(new Item.Properties());
-    private static final Item WRONG_OFFERING = new Item(new Item.Properties());
 
     @Test
     void altarDelegatesOfferingValidationConsumptionAndCheckpointToMergedExecutor() {
@@ -37,31 +32,31 @@ final class FlameAltarServiceContractsTest {
         FlameAltarService service = new FlameAltarService(registry);
         MemoryStore store = new MemoryStore();
         FlameRitualExecutor executor = new FlameRitualExecutor(ignored -> OWNER, registry, store);
-        ItemStackHandler inventory = singleSlot(new ItemStack(VALID_OFFERING));
+        TestOffering offering = new TestOffering(true);
 
-        FlameAltarService.ActivationResult result = service.activate(PLAYER_ID, inventory, executor);
+        FlameAltarService.ActivationResult result = service.activate(PLAYER_ID, offering, executor);
 
         assertEquals(FlameAltarService.Status.APPLIED, result.status());
         assertEquals(Optional.of(RITUAL_ID), result.ritualId());
-        assertTrue(inventory.getStackInSlot(0).isEmpty());
+        assertTrue(offering.consumed());
         assertTrue(store.state().progression(OWNER).completedRituals().contains(RITUAL_ID));
         assertTrue(store.state().progression(OWNER).nextLevelReady());
         assertEquals(1, store.state().progression(OWNER).passageLevel());
     }
 
     @Test
-    void forgedOrWrongServerInventoryCannotBypassRitualOfferingContract() {
+    void forgedOrWrongOfferingCannotBypassRitualContract() {
         FlameRitualRegistry registry = new FlameRitualRegistry();
         registry.register(syntheticOfferingRitual());
         FlameAltarService service = new FlameAltarService(registry);
         MemoryStore store = new MemoryStore();
         FlameRitualExecutor executor = new FlameRitualExecutor(ignored -> OWNER, registry, store);
-        ItemStackHandler inventory = singleSlot(new ItemStack(WRONG_OFFERING));
+        TestOffering offering = new TestOffering(false);
 
-        FlameAltarService.ActivationResult result = service.activate(PLAYER_ID, inventory, executor);
+        FlameAltarService.ActivationResult result = service.activate(PLAYER_ID, offering, executor);
 
         assertEquals(FlameAltarService.Status.NO_MATCHING_RITUAL, result.status());
-        assertTrue(inventory.getStackInSlot(0).is(WRONG_OFFERING));
+        assertFalse(offering.consumed());
         assertFalse(store.state().hasOwner(OWNER));
     }
 
@@ -72,28 +67,17 @@ final class FlameAltarServiceContractsTest {
         FlameAltarService service = new FlameAltarService(registry);
         MemoryStore store = new MemoryStore();
         FlameRitualExecutor executor = new FlameRitualExecutor(ignored -> OWNER, registry, store);
-        ItemStackHandler firstAltar = singleSlot(new ItemStack(VALID_OFFERING));
-        ItemStackHandler secondAltar = singleSlot(new ItemStack(VALID_OFFERING));
+        TestOffering firstOffering = new TestOffering(true);
+        TestOffering secondOffering = new TestOffering(true);
 
-        FlameAltarService.ActivationResult first = service.activate(PLAYER_ID, firstAltar, executor);
-        FlameAltarService.ActivationResult duplicate = service.activate(PLAYER_ID, secondAltar, executor);
+        FlameAltarService.ActivationResult first = service.activate(PLAYER_ID, firstOffering, executor);
+        FlameAltarService.ActivationResult duplicate = service.activate(PLAYER_ID, secondOffering, executor);
 
         assertEquals(FlameAltarService.Status.APPLIED, first.status());
         assertEquals(FlameAltarService.Status.ALREADY_COMPLETED, duplicate.status());
-        assertTrue(firstAltar.getStackInSlot(0).isEmpty());
-        assertEquals(1, secondAltar.getStackInSlot(0).getCount());
+        assertTrue(firstOffering.consumed());
+        assertFalse(secondOffering.consumed());
         assertEquals(1, store.state().progression(OWNER).completedRituals().size());
-    }
-
-    @Test
-    void offeringConsumptionFailsClosedIfInventoryChangedAfterValidation() {
-        ItemStackHandler inventory = singleSlot(new ItemStack(VALID_OFFERING));
-        FlameAltarOffering offering = FlameAltarOffering.capture(inventory, 0);
-
-        inventory.setStackInSlot(0, new ItemStack(WRONG_OFFERING));
-
-        assertFalse(offering.consumeOne());
-        assertTrue(inventory.getStackInSlot(0).is(WRONG_OFFERING));
     }
 
     private static FlameRitual syntheticOfferingRitual() {
@@ -118,14 +102,13 @@ final class FlameAltarServiceContractsTest {
                 return new OfferingContract() {
                     @Override
                     public boolean accepts(Context context, Offering offering) {
-                        return offering instanceof FlameAltarOffering altarOffering
-                                && altarOffering.stack().is(VALID_OFFERING);
+                        return offering instanceof TestOffering testOffering && testOffering.valid();
                     }
 
                     @Override
                     public void consume(Context context, Offering offering) {
-                        if (!(offering instanceof FlameAltarOffering altarOffering) || !altarOffering.consumeOne()) {
-                            throw new IllegalStateException("altar offering changed before transactional consumption");
+                        if (!(offering instanceof TestOffering testOffering) || !testOffering.consume()) {
+                            throw new IllegalStateException("synthetic altar offering changed before consumption");
                         }
                     }
                 };
@@ -138,10 +121,29 @@ final class FlameAltarServiceContractsTest {
         };
     }
 
-    private static ItemStackHandler singleSlot(ItemStack stack) {
-        ItemStackHandler handler = new ItemStackHandler(1);
-        handler.setStackInSlot(0, stack.copy());
-        return handler;
+    private static final class TestOffering implements FlameRitual.Offering {
+        private final boolean valid;
+        private boolean consumed;
+
+        private TestOffering(boolean valid) {
+            this.valid = valid;
+        }
+
+        private boolean valid() {
+            return valid;
+        }
+
+        private boolean consumed() {
+            return consumed;
+        }
+
+        private boolean consume() {
+            if (consumed) {
+                return false;
+            }
+            consumed = true;
+            return true;
+        }
     }
 
     private static final class MemoryStore implements FlameRitualExecutor.ProgressionStore {
