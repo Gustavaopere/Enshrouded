@@ -21,6 +21,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 /**
  * Authoritative Level-1 player exposure runtime. Persistent state lives only in the player
@@ -30,7 +31,8 @@ public final class ExposureRuntime {
     public static final int SAMPLE_INTERVAL_TICKS = 20;
     public static final int MAX_ELAPSED_TICKS = SAMPLE_INTERVAL_TICKS * 5;
 
-    private static final ShroudQuery QUERY = DefaultShroudQuery.levelOne(ShroudGridGeometry.levelOne());
+    private static final ShroudQuery BASE_QUERY = DefaultShroudQuery.levelOne(ShroudGridGeometry.levelOne());
+    private static volatile ShroudQuery query = BASE_QUERY;
     private static final ExposureSamplingCadence CADENCE = new ExposureSamplingCadence(SAMPLE_INTERVAL_TICKS);
     private static final ExposurePlayerSyncTracker SYNC_TRACKER = new ExposurePlayerSyncTracker();
     private static final ProgressionOwnerResolver PROGRESSION_OWNER_RESOLVER = ProgressionRuntimeBindings.ownerResolver();
@@ -48,6 +50,25 @@ public final class ExposureRuntime {
     public static void register() {
         NeoForge.EVENT_BUS.addListener(ExposureRuntime::onPlayerTickPost);
         NeoForge.EVENT_BUS.addListener(ExposureRuntime::onPlayerLoggedOut);
+    }
+
+    /**
+     * Returns the read-only query used by the canonical exposure sampler. Consumers may inspect this
+     * boundary, but permanent Shroud state remains owned by Stage 01.
+     */
+    public static ShroudQuery shroudQuery() {
+        return query;
+    }
+
+    /**
+     * Installs one read-only query decorator without transferring ownership of Shroud persistence or
+     * player exposure. This is intended for bounded, ephemeral overlays such as a story encounter arena.
+     */
+    public static synchronized ShroudQuery decorateShroudQuery(UnaryOperator<ShroudQuery> decorator) {
+        Objects.requireNonNull(decorator, "decorator");
+        ShroudQuery decorated = Objects.requireNonNull(decorator.apply(query), "decorated query");
+        query = decorated;
+        return decorated;
     }
 
     static void onPlayerTickPost(PlayerTickEvent.Post event) {
@@ -79,7 +100,7 @@ public final class ExposureRuntime {
 
     static ExposureSnapshot process(ServerPlayer player, int elapsedTicks) {
         Objects.requireNonNull(player, "player");
-        ShroudSample sample = QUERY.sample(player.serverLevel(), player.blockPosition(), player);
+        ShroudSample sample = shroudQuery().sample(player.serverLevel(), player.blockPosition(), player);
         return processSample(player, sample, elapsedTicks);
     }
 
