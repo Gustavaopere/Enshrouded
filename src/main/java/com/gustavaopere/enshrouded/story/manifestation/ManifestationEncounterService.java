@@ -4,6 +4,8 @@ import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwnerResolver;
 import com.gustavaopere.enshrouded.api.story.EncounterContext;
 import com.gustavaopere.enshrouded.story.boss.ManifestationDirector;
+import com.gustavaopere.enshrouded.story.state.EncounterOutcome;
+import com.gustavaopere.enshrouded.story.state.EncounterRecord;
 import com.gustavaopere.enshrouded.story.state.StorySavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -14,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Coordinates the explicit Level-1 manifestation start over the canonical Story State and boss provider director.
+ * Coordinates the explicit Level-1 manifestation lifecycle over canonical Story State and the boss provider director.
  */
 public final class ManifestationEncounterService {
     public static final int FIRST_MANIFESTATION_INDEX = 1;
@@ -71,6 +73,44 @@ public final class ManifestationEncounterService {
         return Optional.of(new ActiveEncounter(owner, encounterId, manifestation));
     }
 
+    /**
+     * Accepts only the actual dead physical actor bound to an ACTIVE encounter. The owner is read from
+     * the persisted encounter record and is never re-resolved from a player or team at defeat time.
+     */
+    public Optional<DefeatResult> defeatFromActor(LivingEntity actor) {
+        Objects.requireNonNull(actor, "actor");
+        if (actor.isAlive() || !(actor.level() instanceof ServerLevel level)) {
+            return Optional.empty();
+        }
+
+        Optional<UUID> taggedEncounterId = ManifestationDirector.encounterId(actor);
+        if (taggedEncounterId.isEmpty()) {
+            return Optional.empty();
+        }
+
+        UUID encounterId = taggedEncounterId.orElseThrow();
+        StorySavedData savedData = StorySavedData.get(level);
+        synchronized (savedData) {
+            Optional<EncounterRecord> recordOptional = savedData.state().encounter(encounterId);
+            if (recordOptional.isEmpty()) {
+                return Optional.empty();
+            }
+
+            EncounterRecord record = recordOptional.orElseThrow();
+            if (record.outcome() != EncounterOutcome.ACTIVE
+                    || record.entityId().filter(actor.getUUID()::equals).isEmpty()) {
+                return Optional.empty();
+            }
+
+            ProgressionOwner storedOwner = record.owner();
+            int manifestationIndex = record.manifestationIndex();
+            if (!savedData.defeatEncounter(encounterId)) {
+                return Optional.empty();
+            }
+            return Optional.of(new DefeatResult(storedOwner, encounterId, manifestationIndex));
+        }
+    }
+
     private static long seed(ServerLevel level, UUID encounterId) {
         return level.getSeed()
                 ^ encounterId.getMostSignificantBits()
@@ -89,6 +129,16 @@ public final class ManifestationEncounterService {
 
         public LivingEntity entity() {
             return manifestation.entity();
+        }
+    }
+
+    public record DefeatResult(ProgressionOwner owner, UUID encounterId, int manifestationIndex) {
+        public DefeatResult {
+            owner = Objects.requireNonNull(owner, "owner");
+            encounterId = Objects.requireNonNull(encounterId, "encounterId");
+            if (manifestationIndex < 1) {
+                throw new IllegalArgumentException("manifestationIndex must be >= 1");
+            }
         }
     }
 }
