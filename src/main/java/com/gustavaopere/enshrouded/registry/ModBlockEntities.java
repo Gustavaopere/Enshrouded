@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.registry;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarBlockEntity;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -15,6 +16,12 @@ public final class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register(
                     "shroud_core",
                     () -> BlockEntityType.Builder.of(ShroudCoreBlockEntity::new, ModBlocks.SHROUD_CORE.get()).build(null)
+            );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FlameAltarBlockEntity>> FLAME_ALTAR =
+            BLOCK_ENTITY_TYPES.register(
+                    "flame_altar",
+                    () -> BlockEntityType.Builder.of(FlameAltarBlockEntity::new, ModBlocks.FLAME_ALTAR.get()).build(null)
             );
 
     private ModBlockEntities() {
