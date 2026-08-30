@@ -1,5 +1,15 @@
 {
   "mod.enshrouded.name": "Enshrouded",
   "block.enshrouded.red_sludge": "Red Sludge",
+  "block.enshrouded.flame_altar": "Flame Altar",
+  "container.enshrouded.flame_altar": "Flame Altar",
+  "screen.enshrouded.flame_altar.activate": "Invoke",
+  "screen.enshrouded.flame_altar.flame_level": "Flame Level: %s",
+  "screen.enshrouded.flame_altar.passage_level": "Passage Level: %s",
+  "screen.enshrouded.flame_altar.ready": "Next passage ready",
+  "screen.enshrouded.flame_altar.not_ready": "Ritual passage incomplete",
+  "message.enshrouded.flame_altar.applied": "The Flame answers the ritual.",
+  "message.enshrouded.flame_altar.already_completed": "This ritual has already marked your progression.",
+  "message.enshrouded.flame_altar.no_matching_ritual": "No valid Flame ritual matches the current offering.",
   "death.attack.madness": "%1$s succumbed to the Shroud's Madness"
 }

@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.content.block.ShroudGrowthBlock;
 import com.gustavaopere.enshrouded.content.block.ShroudVeinBlock;
 import com.gustavaopere.enshrouded.content.block.WitheredGrowthBlock;
 import com.gustavaopere.enshrouded.content.fluid.RedSludgeBlock;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarBlock;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.PushReaction;
@@ -19,6 +20,15 @@ public final class ModBlocks {
             () -> new ShroudCoreBlock(
                     BlockBehaviour.Properties.of()
                             .strength(5.0F, 1200.0F)
+                            .pushReaction(PushReaction.BLOCK)
+            )
+    );
+
+    public static final DeferredBlock<FlameAltarBlock> FLAME_ALTAR = BLOCKS.register(
+            "flame_altar",
+            () -> new FlameAltarBlock(
+                    BlockBehaviour.Properties.of()
+                            .strength(3.5F, 6.0F)
                             .pushReaction(PushReaction.BLOCK)
             )
     );
