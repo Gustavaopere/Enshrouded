@@ -5,11 +5,11 @@
 ## Task order
 
 1. [`✅ 01 story state`](✅-01-story-state.md)
-2. [`02 boss provider`](02-boss-provider.md)
+2. [`✅ 02 boss provider`](✅-02-boss-provider.md)
 3. [`03 first manifestation`](03-first-manifestation.md)
 4. [`04 Lich Skull + Flame binding`](04-lich-skull.md)
 
-Current state: **1/4 tasks verified and merged**. The next Stage 06 implementation task is **02 Boss Provider Abstraction**.
+Current state: **2/4 tasks verified and merged**. The next Stage 06 implementation task is **03 First Manifestation Encounter**.
 
 ## Runtime contracts
 
