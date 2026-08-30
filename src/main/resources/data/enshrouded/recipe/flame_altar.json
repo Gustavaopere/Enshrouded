@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SGS",
+    "GCG",
+    "SGS"
+  ],
+  "key": {
+    "S": "minecraft:stone_bricks",
+    "G": "minecraft:gold_ingot",
+    "C": "minecraft:campfire"
+  },
+  "result": {
+    "id": "enshrouded:flame_altar",
+    "count": 1
+  }
+}
