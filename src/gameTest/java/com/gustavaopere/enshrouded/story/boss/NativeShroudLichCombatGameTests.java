@@ -13,6 +13,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -46,10 +47,12 @@ public final class NativeShroudLichCombatGameTests {
         helper.assertTrue(level.addFreshEntity(target), "stationary living target must be added for ranged contract test");
 
         helper.assertTrue(lich.combatPhase() == 1, "native Lich must begin in phase 1");
+        helper.assertTrue(lich.getMainHandItem().is(Items.BOW),
+                "native fallback created without finalizeSpawn must still be explicitly armed for ranged AI");
         double phaseOneSpeed = lich.getAttributeValue(Attributes.MOVEMENT_SPEED);
         float targetHealthBefore = target.getHealth();
 
-        lich.castShroudBoltAt(target);
+        lich.performRangedAttack(target, 1.0F);
 
         helper.assertTrue(target.getHealth() < targetHealthBefore,
                 "native ranged Shroud attack must damage a living target without requiring melee contact");
