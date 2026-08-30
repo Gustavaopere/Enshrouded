@@ -1,6 +1,6 @@
 package com.gustavaopere.enshrouded.shroud.purification;
 
-import com.gustavaopere.enshrouded.api.shroud.FlameWardQuery;
+import com.gustavaopere.enshrouded.api.shroud.FlameWardRuntimeBindings;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.protection.DefaultMutationAuthority;
 import com.gustavaopere.enshrouded.protection.ProtectedAreaService;
@@ -78,7 +78,10 @@ public final class ShroudPurificationRuntime {
                 level.dimension(),
                 ignored -> new TerrainRestorationService(
                         CorruptionRuleReloadListener::currentRegistry,
-                        DefaultMutationAuthority.fromConfig(FlameWardQuery.none(), ProtectedAreaService.none()),
+                        DefaultMutationAuthority.fromConfig(
+                                FlameWardRuntimeBindings.query(),
+                                ProtectedAreaService.none()
+                        ),
                         GEOMETRY,
                         RESTORATION_QUEUE_CAPACITY
                 )
