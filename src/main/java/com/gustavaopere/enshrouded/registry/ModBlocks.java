@@ -29,7 +29,6 @@ public final class ModBlocks {
             () -> new FlameAltarBlock(
                     BlockBehaviour.Properties.of()
                             .strength(3.5F, 6.0F)
-                            .requiresCorrectToolForDrops()
                             .pushReaction(PushReaction.BLOCK)
             )
     );
