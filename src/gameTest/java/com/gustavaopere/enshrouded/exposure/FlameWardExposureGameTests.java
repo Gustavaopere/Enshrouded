@@ -49,7 +49,7 @@ public final class FlameWardExposureGameTests {
         ShroudSample latent = query.sample(level, altarPos, null);
         helper.assertTrue(!latent.sanctuarySuppressed(), "Precondition: logical Shroud must initially be effective");
         helper.assertTrue(latent.severity() != ShroudSeverity.CLEAR, "Precondition: test position must contain logical Shroud");
-        helper.assertTrue(latent.sourceCore().orElseThrow().equals(coreId), "Precondition: expected test core must own the logical cell");
+        helper.assertTrue(latent.sourceId().orElseThrow().equals(coreId), "Precondition: expected test core must own the logical cell");
 
         helper.setBlock(altarRelative, ModBlocks.FLAME_ALTAR.get());
         ShroudSample warded = query.sample(level, altarPos, null);
@@ -130,7 +130,7 @@ public final class FlameWardExposureGameTests {
                 "Sanctuary must not change canonical logical intensity");
         helper.assertTrue(expected.severity() == actual.severity(),
                 "Sanctuary must not change canonical logical severity");
-        helper.assertTrue(expected.sourceCore().equals(actual.sourceCore()),
+        helper.assertTrue(expected.sourceId().equals(actual.sourceId()),
                 "Sanctuary must not change canonical source core provenance");
     }
 }
