@@ -29,16 +29,27 @@ public final class FlameAltarService {
             UUID playerId,
             IItemHandler inventory,
             FlameRitualExecutor executor) {
-        Objects.requireNonNull(playerId, "playerId");
         Objects.requireNonNull(inventory, "inventory");
-        Objects.requireNonNull(executor, "executor");
         if (inventory.getSlots() <= OFFERING_SLOT || inventory.getStackInSlot(OFFERING_SLOT).isEmpty()) {
             return ActivationResult.noMatchingRitual();
         }
+        return activate(playerId, FlameAltarOffering.capture(inventory, OFFERING_SLOT), executor);
+    }
+
+    /**
+     * Package-private seam used by the contract test so delegation can be verified without booting
+     * Minecraft item registries. Production callers always use the inventory overload above.
+     */
+    ActivationResult activate(
+            UUID playerId,
+            FlameRitual.Offering offering,
+            FlameRitualExecutor executor) {
+        Objects.requireNonNull(playerId, "playerId");
+        Objects.requireNonNull(offering, "offering");
+        Objects.requireNonNull(executor, "executor");
 
         ResourceLocation completedRitual = null;
         for (FlameRitual ritual : registry.rituals()) {
-            FlameAltarOffering offering = FlameAltarOffering.capture(inventory, OFFERING_SLOT);
             FlameRitualExecutor.ExecutionResult execution = executor.invoke(
                     playerId,
                     ritual.id(),
