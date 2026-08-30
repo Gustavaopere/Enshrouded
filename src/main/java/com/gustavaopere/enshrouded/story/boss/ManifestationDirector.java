@@ -11,6 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 /**
@@ -18,6 +19,7 @@ import java.util.UUID;
  */
 public final class ManifestationDirector {
     private static final String ENCOUNTER_ID_TAG = "EnshroudedEncounterId";
+    private static final String MANIFESTATION_ID_TAG = "EnshroudedManifestationId";
 
     private final LichManifestationProviderRegistry registry;
 
@@ -42,7 +44,7 @@ public final class ManifestationDirector {
                 continue;
             }
 
-            bindEncounter(entity, context.encounterId());
+            bindEncounter(entity, context);
             ServerBossEvent bossEvent = new ServerBossEvent(
                     entity.getDisplayName(),
                     BossEvent.BossBarColor.PURPLE,
@@ -65,6 +67,16 @@ public final class ManifestationDirector {
         return Optional.of(data.getUUID(ENCOUNTER_ID_TAG));
     }
 
+    public static OptionalInt manifestationId(Entity entity) {
+        Objects.requireNonNull(entity, "entity");
+        var data = entity.getPersistentData();
+        if (!data.contains(MANIFESTATION_ID_TAG)) {
+            return OptionalInt.empty();
+        }
+        int manifestationId = data.getInt(MANIFESTATION_ID_TAG);
+        return manifestationId >= 1 ? OptionalInt.of(manifestationId) : OptionalInt.empty();
+    }
+
     private static boolean isUsable(ServerLevel level, LivingEntity entity) {
         return entity.level() == level
                 && entity.isAlive()
@@ -72,8 +84,10 @@ public final class ManifestationDirector {
                 && level.getEntity(entity.getUUID()) == entity;
     }
 
-    private static void bindEncounter(LivingEntity entity, UUID encounterId) {
-        entity.getPersistentData().putUUID(ENCOUNTER_ID_TAG, encounterId);
+    private static void bindEncounter(LivingEntity entity, EncounterContext context) {
+        var data = entity.getPersistentData();
+        data.putUUID(ENCOUNTER_ID_TAG, context.encounterId());
+        data.putInt(MANIFESTATION_ID_TAG, context.manifestationLevel());
     }
 
     public record ActiveManifestation(String providerId, LivingEntity entity, ServerBossEvent bossEvent) {
