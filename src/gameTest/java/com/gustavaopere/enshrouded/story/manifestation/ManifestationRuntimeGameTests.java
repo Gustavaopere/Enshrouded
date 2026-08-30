@@ -2,6 +2,8 @@ package com.gustavaopere.enshrouded.story.manifestation;
 
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
+import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.exposure.ExposureRuntime;
 import com.gustavaopere.enshrouded.gametest.GameTestBootstrap;
 import com.gustavaopere.enshrouded.story.state.EncounterOutcome;
 import com.gustavaopere.enshrouded.story.state.LichStoryState;
@@ -37,6 +39,13 @@ public final class ManifestationRuntimeGameTests {
             active = ManifestationRuntime.service()
                     .start(level, playerId, helper.absolutePos(new BlockPos(1, 1, 1)))
                     .orElseThrow(() -> new AssertionError("runtime encounter must start through the canonical provider director"));
+            BlockPos arenaCenter = active.entity().blockPosition();
+
+            var activeArenaSample = ExposureRuntime.shroudQuery().sample(level, arenaCenter, active.entity());
+            helper.assertTrue(activeArenaSample.severity() == ShroudSeverity.SHROUD,
+                    "runtime start must install the Level-1 arena overlay in the authoritative exposure query");
+            helper.assertTrue(activeArenaSample.sourceId().orElseThrow().equals(active.encounterId()),
+                    "runtime exposure query must attribute the temporary arena overlay to the stable encounter UUID");
 
             active.entity().setHealth(1.0F);
             active.entity().hurt(level.damageSources().generic(), 100.0F);
@@ -49,6 +58,10 @@ public final class ManifestationRuntimeGameTests {
                     "automatic death routing must advance manifestation 1 for the owner captured at runtime start");
             helper.assertTrue(!savedData.state().encounter(active.encounterId()).orElseThrow().rewardIssued(),
                     "automatic 06.03 defeat routing must not issue the 06.04 concrete reward");
+
+            var afterDefeatSample = ExposureRuntime.shroudQuery().sample(level, arenaCenter, null);
+            helper.assertTrue(afterDefeatSample.sourceId().filter(active.encounterId()::equals).isEmpty(),
+                    "valid defeat must remove only the temporary arena overlay from the authoritative exposure query");
 
             helper.succeed();
         } finally {
