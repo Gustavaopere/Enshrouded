@@ -10,8 +10,8 @@ Last structural update: 2026-08-30.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
 - [x] 03 Exposure — all 4 tasks verified and merged.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
-- [ ] 05 Flame Progression — 3/4 tasks verified and merged; 05.01, 05.04 and 05.02 complete; 05.03 Sanctuary remains.
-- [ ] 06 Lich & Story — not implemented.
+- [x] 05 Flame Progression — all 4 tasks verified and merged.
+- [ ] 06 Lich & Story — not implemented; 06.01 Story State is next.
 - [ ] 07 Client Experience — not implemented.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
@@ -359,7 +359,7 @@ Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff 
 
 **04 Corrupted Ecology is complete.**
 
-## 05 Flame Progression — in progress
+## 05 Flame Progression — complete
 
 ### ✅ 01 persistent Flame state
 
@@ -427,18 +427,52 @@ The behavioral RED run exposed two fixture/data defects before merge: shaped-rec
 
 Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 55/55 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 03 Flame Sanctuary
+
+- Branch: `feat/05-sanctuary`.
+- Initial structural RED: commit `cae28726e875e7165aeec95d16ec0553f1d52675`, workflow #969.
+- Registry/config regression: workflow #991 exposed eager SERVER-config access from worldgen registry construction; configuration-dependent mutation authority creation was made lazy.
+- Runtime/fixture regression: workflow #1003 exposed missing same-tick altar activation and mock-player networking noise; production gained immediate server-side ward activation and the exposure proof was moved to the authoritative reducer boundary.
+- Shared-state regression: workflow #1008 exposed cross-GameTest ward contamination from simultaneous default-batch tests.
+- Fixture-isolation regression: workflow #1014 proved batch separation but exposed pre-existing Shroud state contaminating the expected source core; logical fixtures now install a single deterministic state and restore previous `ShroudSavedData` in `finally`.
+- Final implementation HEAD: `89c6346b4ed74af131b434662940ad9e0e171858`.
+- Draft PR #37 was closed only because the connector could not transition it to ready-for-review.
+- Final replacement PR: #38 — `05.03 — Flame Sanctuary`.
+- Final exact-head verification: workflow `33303582593` / run #1016 — GREEN.
+- Merge SHA: `35fd0f47239646b2df84cda2989126ad432e7fd4`.
+- Completed file: `✅-03-sanctuary.md`.
+
+Sanctuary is now a dimension-local, indexed physical ward projected by loaded Flame Altars through the single Foundation `FlameWardQuery` runtime handle. Radius is SERVER-configurable (`16` default, bounded `1..128`), overlap semantics are deterministic, queries inspect only relevant chunk buckets and no chunk is force-loaded. Placement activates the ward in the same server tick; block-entity `onLoad()` rebuilds it after lifecycle/restart, and removal deactivates it.
+
+`DefaultShroudQuery` preserves canonical latent intensity, severity and source while setting only `sanctuarySuppressed`. Exposure therefore recovers inside Sanctuary without rewriting logical Shroud. The shared `DefaultMutationAuthority` denies new `CORRUPTION` and `CORE_PLACEMENT` inside the ward while allowing safe `PURIFICATION` when all other protection checks permit it. `ShroudCoreFeature` also uses that same authority with lazy configuration construction, so no parallel mutation path was introduced.
+
+The final GameTest suite isolates spatial ward producers by batch and isolates logical Shroud fixtures with restore-on-finally semantics. This prevents unrelated tests from making Sanctuary results order-dependent while preserving the production global runtime behavior. `ENSH-L1-FLAME-WARD-001` is now closed: Foundation, Stage 02 mutation, Stage 03 exposure and Stage 05 provider sides all have executable evidence through the same boundary.
+
+Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR verification, 58/58 GameTests, SavedData two-boot reload GameTest and dedicated-server save/reload smoke.
+
+## Stage 05 acceptance
+
+- [x] Owner-scoped Flame/passage progression is version-aware, persistent and server-global.
+- [x] Generic ritual execution is transactional/idempotent and resolves one stable `ProgressionOwner` snapshot per invocation.
+- [x] Flame Altar is a physical server-authoritative adapter over the generic ritual engine and does not own progression truth.
+- [x] Sanctuary uses the single Foundation ward boundary for exposure and mutation while preserving latent logical Shroud.
+- [x] No Stage 05 production dependency on the Stage 06 Lich Skull or story implementation was introduced.
+- [x] All four Stage 05 task PRs received exact-head GREEN runtime CI before merge.
+
+**05 Flame Progression is complete.**
+
 ## Immediate next step
 
-Create `feat/05-sanctuary` from the latest verified `main` after this documentation checkpoint.
+Create `feat/06-story-state` from the latest verified `main` after this documentation checkpoint.
 
-Read `plans/05-flame-progression/README.md`, `plans/05-flame-progression/03-sanctuary.md`, all three completed Stage 05 task plans, the merged Foundation `FlameWardQuery`/mutation boundaries, Stage 03 exposure consumers and `plans/PENDING.md`. Begin with observed RED coverage for the real Sanctuary provider and its integration with exposure and mutation while preserving latent Shroud state.
+Read `plans/06-lich-story/README.md`, `plans/06-lich-story/01-story-state.md`, Foundation `ProgressionOwner`/Lich story contracts, merged persistence patterns, `plans/PENDING.md` and Stage 09 migration expectations. Begin with observed RED coverage for the versioned story-state schema and legal encounter transitions before writing production persistence.
 
-Stage 05 causal implementation order remains:
+Stage 06 causal implementation order:
 
-1. `✅ feat/05-flame-state`
-2. `✅ feat/05-level1-ritual`
-3. `✅ feat/05-flame-altar`
-4. `feat/05-sanctuary`
+1. `feat/06-story-state`
+2. `feat/06-boss-provider`
+3. `feat/06-first-manifestation`
+4. `feat/06-lich-skull`
 
 ## Level 1 release gate
 

@@ -9,9 +9,9 @@ The file numbering is historical; implementation order is causal:
 1. [`✅ 01 Flame state`](✅-01-flame-state.md)
 2. [`✅ 04 Level 1 ritual framework`](✅-04-level1-ritual.md)
 3. [`✅ 02 Flame Altar`](✅-02-flame-altar.md)
-4. [`03 sanctuary`](03-sanctuary.md)
+4. [`✅ 03 sanctuary`](✅-03-sanctuary.md)
 
-Current state: **3/4 tasks verified and merged**. The remaining Stage 05 implementation task is **03 Sanctuary**.
+Current state: **4/4 tasks verified and merged. Stage 05 is complete.**
 
 ## Runtime contracts
 
