@@ -7,9 +7,15 @@
     "SGS"
   ],
   "key": {
-    "S": "minecraft:stone_bricks",
-    "G": "minecraft:gold_ingot",
-    "C": "minecraft:campfire"
+    "S": {
+      "item": "minecraft:stone_bricks"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "C": {
+      "item": "minecraft:campfire"
+    }
   },
   "result": {
     "id": "enshrouded:flame_altar",
