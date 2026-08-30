@@ -42,7 +42,8 @@ public final class FlameWardExposureGameTests {
         ShroudSavedData data = ShroudSavedData.get(level);
         ShroudWorldState original = data.state();
         UUID coreId = UUID.randomUUID();
-        data.replace(withLogicalCell(original, altarPos, coreId));
+        ShroudWorldState injected = withLogicalCell(original, altarPos, coreId);
+        data.replace(injected);
 
         DefaultShroudQuery query = DefaultShroudQuery.levelOne(GEOMETRY);
         ShroudSample latent = query.sample(level, altarPos, null);
@@ -59,7 +60,7 @@ public final class FlameWardExposureGameTests {
         ShroudSample revealed = query.sample(level, altarPos, null);
         helper.assertTrue(!revealed.sanctuarySuppressed(), "Removing the altar must reveal the still-present logical Shroud");
         assertLatentSamplePreserved(helper, latent, revealed);
-        helper.assertTrue(data.state().equals(withLogicalCell(original, altarPos, coreId)),
+        helper.assertTrue(data.state().equals(injected),
                 "Sanctuary activation/removal must not rewrite canonical logical Shroud state");
 
         data.replace(original);
