@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -74,6 +75,48 @@ public final class ManifestationRuntimeGameTests {
         } finally {
             if (active != null && !active.entity().isRemoved()) {
                 active.entity().discard();
+            }
+            storySavedData.replace(storyBefore);
+            shroudSavedData.replace(shroudBefore);
+        }
+    }
+
+    @GameTest(template = "foundation_empty", batch = BATCH)
+    public static void canceledLivingDeathDoesNotDefeatOrCleanTheEncounter(GameTestHelper helper) {
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        StorySavedData storySavedData = StorySavedData.get(level);
+        LichStoryState storyBefore = storySavedData.state();
+        ShroudSavedData shroudSavedData = ShroudSavedData.get(level);
+        ShroudWorldState shroudBefore = shroudSavedData.state();
+        storySavedData.replace(LichStoryState.empty());
+        shroudSavedData.replace(ShroudWorldState.empty());
+
+        UUID playerId = UUID.fromString("60603006-0000-4000-8000-000000000001");
+        ManifestationEncounterService.ActiveEncounter active = null;
+        try {
+            active = ManifestationRuntime.service()
+                    .start(level, playerId, helper.absolutePos(new BlockPos(1, 1, 1)))
+                    .orElseThrow(() -> new AssertionError("runtime encounter must start"));
+            BlockPos arenaCenter = active.entity().blockPosition();
+            active.entity().setHealth(0.0F);
+
+            LivingDeathEvent canceled = new LivingDeathEvent(active.entity(), level.damageSources().generic());
+            canceled.setCanceled(true);
+            ManifestationRuntime.onLivingDeath(canceled);
+
+            helper.assertTrue(storySavedData.state().encounter(active.encounterId()).orElseThrow().outcome() == EncounterOutcome.ACTIVE,
+                    "a canceled provider death transition must not become a narrative boss defeat");
+            helper.assertTrue(ExposureRuntime.shroudQuery().sample(level, arenaCenter, active.entity())
+                            .sourceId().filter(active.encounterId()::equals).isPresent(),
+                    "canceled death must retain the active encounter arena overlay");
+
+            helper.succeed();
+        } finally {
+            if (active != null) {
+                ManifestationRuntime.service().defeatFromActor(active.entity());
+                if (!active.entity().isRemoved()) {
+                    active.entity().discard();
+                }
             }
             storySavedData.replace(storyBefore);
             shroudSavedData.replace(shroudBefore);
