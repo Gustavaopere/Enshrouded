@@ -2,7 +2,10 @@ package com.gustavaopere.enshrouded.story.boss;
 
 import com.gustavaopere.enshrouded.api.story.EncounterContext;
 import com.gustavaopere.enshrouded.api.story.LichManifestationProvider;
+import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -40,7 +43,14 @@ public final class ManifestationDirector {
             }
 
             bindEncounter(entity, context.encounterId());
-            return Optional.of(new ActiveManifestation(provider.id(), entity));
+            ServerBossEvent bossEvent = new ServerBossEvent(
+                    entity.getDisplayName(),
+                    BossEvent.BossBarColor.PURPLE,
+                    BossEvent.BossBarOverlay.PROGRESS
+            );
+            ActiveManifestation active = new ActiveManifestation(provider.id(), entity, bossEvent);
+            active.syncBossEvent();
+            return Optional.of(active);
         }
 
         return Optional.empty();
@@ -66,10 +76,20 @@ public final class ManifestationDirector {
         entity.getPersistentData().putUUID(ENCOUNTER_ID_TAG, encounterId);
     }
 
-    public record ActiveManifestation(String providerId, LivingEntity entity) {
+    public record ActiveManifestation(String providerId, LivingEntity entity, ServerBossEvent bossEvent) {
         public ActiveManifestation {
             providerId = Objects.requireNonNull(providerId, "providerId");
             entity = Objects.requireNonNull(entity, "entity");
+            bossEvent = Objects.requireNonNull(bossEvent, "bossEvent");
+        }
+
+        public void syncBossEvent() {
+            bossEvent.setName(entity.getDisplayName());
+            float maxHealth = entity.getMaxHealth();
+            float progress = maxHealth > 0.0F
+                    ? Mth.clamp(entity.getHealth() / maxHealth, 0.0F, 1.0F)
+                    : 0.0F;
+            bossEvent.setProgress(progress);
         }
     }
 }
