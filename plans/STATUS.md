@@ -200,7 +200,7 @@ Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff 
 - Branch: `feat/03-madness`
 - Structural RED: commit `86127f1eaa47b8568cd4dce4c7c54175749500c5`, workflow `33262797262`.
 - Threshold/presentation RED: commit `daf4df4c59bc32e7c9b189bba93ab66d1974f2a7`, workflow `33263055822`.
-- Runtime-surface RED: commit `f051b6b69b612c38e7d0223b2b56677529c1c2e5`, workflow `33263292918`.
+- Runtime-surface RED: commit `f051b6b69b612c38d7e0223b2b56677529c1c2e5`, workflow `33263292918`.
 - Valid behavioral RED: commit `e08b713c97d9f08c25a47681de22742e3525d6c6`, workflow `33263628901` — unit/build/JAR GREEN; exactly the fatal-outcome and critical-sprint GameTests failed against the no-op runtime. The preceding `makeMockPlayer` cast failure was a fixture defect and was not counted as behavioral evidence.
 - Final implementation HEAD: `c1e4ef5e00d6d9c616cf69890556563ccb6296a8`
 - Push verification: workflow `33264034907`, job `99130770574` — GREEN
