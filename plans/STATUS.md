@@ -1,6 +1,6 @@
 # Project Status
 
-Last structural update: 2026-08-29.
+Last structural update: 2026-08-30.
 
 ## Current checkpoint
 
@@ -10,7 +10,7 @@ Last structural update: 2026-08-29.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
 - [x] 03 Exposure — all 4 tasks verified and merged.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
-- [ ] 05 Flame Progression — not implemented.
+- [ ] 05 Flame Progression — 1/4 tasks verified and merged; 05.01 complete.
 - [ ] 06 Lich & Story — not implemented.
 - [ ] 07 Client Experience — not implemented.
 - [ ] 08 Integrations — not implemented.
@@ -359,15 +359,42 @@ Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff 
 
 **04 Corrupted Ecology is complete.**
 
+## 05 Flame Progression — in progress
+
+### ✅ 01 persistent Flame state
+
+- Branch: `feat/05-flame-state`
+- Structural RED: commit `5ea2f951` — planned Flame persistence APIs absent.
+- Core implementation checkpoint: `fbba700f`; workflow `33286153977` — GREEN.
+- Runtime binding RED: commit `a73acafc` — `ProgressionRuntimeBindings` absent.
+- Clean behavioral RED: commit `2b35171d1c7131a6b057a7644da4a1c254ee3f38`, workflow/job `33287106789` / `99192100243` — original 48 GameTests GREEN and only the Flame provider test failed because runtime still read the Level-1 fallback.
+- Provider GREEN checkpoint: `0548849ced0b73997f9c6a48ce7f72e9ae78601f`; workflow/job `33287281198` / `99192559833` — GREEN, including 50/50 GameTests, two-boot reload and dedicated-server smoke.
+- Final implementation HEAD: `6da96eeace23392816ec52ee667671f94bd3951f`
+- Push verification: workflow `33287565385`, job `99193313036` — GREEN.
+- PR: #30 — `05.01 — Persistent Flame progression state`.
+- Final PR-head verification: workflow `33287848454`, job `99194092949` — GREEN.
+- Merge SHA: `7d6d2f4b21f8839404e3689c972f68a01de68462`
+- Completed file: `✅-01-flame-state.md`
+
+Flame progression is now server-global and owner-scoped through the existing Foundation `ProgressionOwner`/resolver/query contracts. New owners read an implicit Flame Level 1 / Passage Level 1 baseline without materializing state. `FlameProgressionSavedData` persists a deterministic, version-aware owner map plus stable completed-ritual resource IDs; future unknown schemas fail closed instead of resetting progress. Ritual checkpoints are atomic/idempotent and cannot regress levels or grant the same ritual twice.
+
+`ProgressionRuntimeBindings` keeps Stage 03 dependent only on Foundation interfaces. Stage 05 installs the persistent resolver/passage provider at server start and resets it on server stop; no Stage 03 gameplay policy or DEADLY schema was redesigned. The two Flame GameTests run in the isolated `flameState` batch so the existing Red Sludge fixture cannot mask progression behavior.
+
+The final CI hardens restart evidence: exactly one server-global `enshrouded_flame_progression.dat` must exist, first boot must emit `ENSHROUDED_FLAME_PROGRESSION_CREATED`, second boot must emit `ENSHROUDED_FLAME_PROGRESSION_RELOADED`, and the inverse sentinels are rejected. Both boots execute 50/50 required GameTests.
+
+`ENSH-L1-FLAME-PASSAGE-001` remains open only for Stage 08 optional FTB Teams substitution/membership semantics; the Stage 05 persistence-backed provider side is now executable and verified. `ENSH-L1-OWNER-SNAPSHOT-001` remains open because transactional ritual execution, Stage 06 encounter/reward ownership and Stage 08 membership-change behavior still need evidence.
+
+Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 50 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/05-flame-state` from the latest verified `main` after this documentation checkpoint.
+Create `feat/05-level1-ritual` from the latest verified `main` after this documentation checkpoint.
 
-Read `plans/05-flame-progression/README.md`, `plans/05-flame-progression/01-flame-state.md`, the merged Foundation progression boundaries, Stage 03 passage consumer, Stage 02 mutation ward consumer and `plans/PENDING.md`. Begin with observed RED coverage before production Flame persistence/provider code.
+Read `plans/05-flame-progression/README.md`, `plans/05-flame-progression/04-level1-ritual.md`, `plans/05-flame-progression/✅-01-flame-state.md`, the merged Foundation progression boundaries and `plans/PENDING.md`. Begin with observed RED coverage for the generic ritual registry/executor and stable owner snapshot semantics before production ritual execution code.
 
-Stage 05 owns owner-scoped persistent Flame progression and its real provider implementation. The causal implementation order defined by the Stage 05 README is:
+Stage 05 causal implementation order remains:
 
-1. `feat/05-flame-state`
+1. `✅ feat/05-flame-state`
 2. `feat/05-level1-ritual`
 3. `feat/05-flame-altar`
 4. `feat/05-sanctuary`

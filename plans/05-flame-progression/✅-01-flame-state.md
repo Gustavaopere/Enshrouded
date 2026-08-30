@@ -31,19 +31,31 @@
 
 ## TDD / verification
 
-- [ ] Round-trip schema version, owner progression and ritual set through persistence.
-- [ ] Unit-test unknown-future-schema diagnostic/fail-closed behavior.
-- [ ] Unit-test initial Level 1, duplicate ritual rejection and owner isolation.
-- [ ] Contract test `FlamePassageService` through the Foundation `FlamePassageQuery` interface.
-- [ ] Contract test standalone resolver behavior matches the Foundation player-UUID resolver.
-- [ ] GameTest two players have independent state under standalone resolver.
+- [x] Round-trip schema version, owner progression and ritual set through persistence.
+- [x] Unit-test unknown-future-schema diagnostic/fail-closed behavior.
+- [x] Unit-test initial Level 1, duplicate ritual rejection and owner isolation.
+- [x] Contract test `FlamePassageService` through the Foundation `FlamePassageQuery` interface.
+- [x] Contract test standalone resolver behavior matches the Foundation player-UUID resolver.
+- [x] GameTest two players have independent state under standalone resolver.
 
 ## Merge gate
 
-- [ ] All task-specific tests are GREEN on the final branch HEAD.
-- [ ] `./gradlew test` is GREEN.
-- [ ] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
-- [ ] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
-- [ ] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
+- [x] All task-specific tests are GREEN on the final branch HEAD.
+- [x] `./gradlew test` is GREEN.
+- [x] NeoForge build is GREEN; run GameTests/dedicated-server smoke when this task touches runtime/bootstrap/world state.
+- [x] No unresolved cross-stage contract introduced by this task is hidden; `plans/PENDING.md` is updated when necessary.
+- [x] After merge, rename this file with `✅-` and update `plans/STATUS.md` in the same merge/checkpoint.
+
+## Verified completion
+
+- Branch: `feat/05-flame-state`
+- Final implementation HEAD: `6da96eeace23392816ec52ee667671f94bd3951f`
+- Push verification: workflow `33287565385`, job `99193313036` — GREEN.
+- PR: #30 — `05.01 — Persistent Flame progression state`.
+- Final PR-head verification: workflow `33287848454`, job `99194092949` — GREEN.
+- Merge SHA: `7d6d2f4b21f8839404e3689c972f68a01de68462`.
+- Runtime evidence: 50/50 GameTests GREEN; two-boot harness proves exactly one server-global `enshrouded_flame_progression.dat`, first-boot `ENSHROUDED_FLAME_PROGRESSION_CREATED` and second-boot `ENSHROUDED_FLAME_PROGRESSION_RELOADED`; dedicated-server save/reload smoke GREEN.
+
+`ENSH-L1-FLAME-PASSAGE-001` is not fully closed by this task: the Stage 05 persistence-backed provider side is proven, while Stage 08 still owns optional FTB Teams substitution and membership/ownership semantics through the same Foundation boundary.
 
 **Acceptance:** Flame progression survives restart with a version-aware persistence contract, starts at Level 1 and backs the pre-existing Foundation query boundaries without finding physical altar blocks or forcing Stage 03 changes.
