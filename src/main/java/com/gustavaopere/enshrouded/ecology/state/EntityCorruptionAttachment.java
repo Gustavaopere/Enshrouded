@@ -5,6 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -25,6 +28,13 @@ public record EntityCorruptionAttachment(int schemaVersion, float intensity) {
             state -> DataResult.success(new SerializedState(state.schemaVersion(), state.intensity()))
     );
     public static final Codec<EntityCorruptionAttachment> CODEC = MAP_CODEC.codec();
+    public static final StreamCodec<ByteBuf, EntityCorruptionAttachment> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT,
+            EntityCorruptionAttachment::schemaVersion,
+            ByteBufCodecs.FLOAT,
+            EntityCorruptionAttachment::intensity,
+            EntityCorruptionAttachment::new
+    );
 
     public static final Supplier<AttachmentType<EntityCorruptionAttachment>> ENTITY_CORRUPTION =
             () -> RegistryHolder.ENTITY_CORRUPTION.get();
@@ -72,6 +82,7 @@ public record EntityCorruptionAttachment(int schemaVersion, float intensity) {
                 "entity_corruption",
                 () -> AttachmentType.builder(EntityCorruptionAttachment::clean)
                         .serialize(CODEC)
+                        .sync(STREAM_CODEC)
                         .build()
         );
 
