@@ -37,7 +37,7 @@ public final class FlameProgressionCodec {
         }
 
         LinkedHashMap<ProgressionOwner, FlameProgressionState.OwnerProgression> owners = new LinkedHashMap<>();
-        ListTag encodedOwners = root.getList("owners", CompoundTag.TAG_COMPOUND);
+        ListTag encodedOwners = requireList(root, "owners", CompoundTag.TAG_COMPOUND);
         for (int index = 0; index < encodedOwners.size(); index++) {
             CompoundTag tag = encodedOwners.getCompound(index);
             String ownerKey = tag.getString("owner");
@@ -46,7 +46,7 @@ public final class FlameProgressionCodec {
             FlameProgressionState.OwnerProgression progression = new FlameProgressionState.OwnerProgression(
                     tag.getInt("flame_level"),
                     tag.getInt("passage_level"),
-                    decodeRituals(tag.getList("completed_rituals", CompoundTag.TAG_STRING))
+                    decodeRituals(requireList(tag, "completed_rituals", CompoundTag.TAG_STRING))
             );
             if (owners.put(owner, progression) != null) {
                 throw new IllegalArgumentException("duplicate progression owner: " + owner.stableKey());
@@ -69,6 +69,20 @@ public final class FlameProgressionCodec {
                 .forEach(rituals::add);
         tag.put("completed_rituals", rituals);
         return tag;
+    }
+
+    private static ListTag requireList(CompoundTag parent, String key, int expectedElementType) {
+        if (!(parent.get(key) instanceof ListTag list)) {
+            throw new IllegalArgumentException("missing or mistyped required list: " + key);
+        }
+        if (!list.isEmpty() && list.getElementType() != expectedElementType) {
+            throw new IllegalArgumentException(
+                    "invalid element type for required list " + key
+                            + ": expected " + expectedElementType
+                            + ", found " + list.getElementType()
+            );
+        }
+        return list;
     }
 
     private static Set<ResourceLocation> decodeRituals(ListTag list) {
