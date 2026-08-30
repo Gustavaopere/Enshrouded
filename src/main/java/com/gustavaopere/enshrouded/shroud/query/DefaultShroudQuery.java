@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.query;
 
 import com.gustavaopere.enshrouded.api.shroud.FlameWardQuery;
+import com.gustavaopere.enshrouded.api.shroud.FlameWardRuntimeBindings;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
@@ -50,7 +51,7 @@ public final class DefaultShroudQuery implements ShroudQuery {
     public static DefaultShroudQuery levelOne(ShroudGridGeometry geometry) {
         return new DefaultShroudQuery(
                 geometry,
-                FlameWardQuery.none(),
+                FlameWardRuntimeBindings.query(),
                 () -> new ShroudSeverityThresholds(EnshroudedConfig.shroudDeadlyIntensityThreshold()));
     }
 
