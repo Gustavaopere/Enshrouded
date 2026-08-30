@@ -81,7 +81,8 @@ Canonical implementation sequence:
 36. `feat/09-test-matrix`
 37. `feat/09-performance`
 38. `feat/09-world-upgrade`
-39. `feat/09-release-checklist`
+39. `feat/09-third-party-provenance`
+40. `feat/09-release-checklist`
 
 A branch may be split only when the split preserves this causal order and each resulting branch independently satisfies a meaningful review gate.
 
