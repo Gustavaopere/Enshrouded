@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.story.manifestation;
 import com.gustavaopere.enshrouded.api.progression.ProgressionRuntimeBindings;
 import com.gustavaopere.enshrouded.exposure.ExposureRuntime;
 import com.gustavaopere.enshrouded.story.boss.LichBossRuntime;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
@@ -36,10 +37,13 @@ public final class ManifestationRuntime {
         }
         registered = true;
         ExposureRuntime.decorateShroudQuery(current -> ARENA_RULE);
-        NeoForge.EVENT_BUS.addListener(ManifestationRuntime::onLivingDeath);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, ManifestationRuntime::onLivingDeath);
     }
 
-    private static void onLivingDeath(LivingDeathEvent event) {
+    static void onLivingDeath(LivingDeathEvent event) {
+        if (event.isCanceled()) {
+            return;
+        }
         SERVICE.defeatFromActor(event.getEntity());
     }
 }
