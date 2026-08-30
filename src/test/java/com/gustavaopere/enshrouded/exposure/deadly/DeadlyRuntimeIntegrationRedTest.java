@@ -20,11 +20,11 @@ class DeadlyRuntimeIntegrationRedTest {
                 "src/main/java/com/gustavaopere/enshrouded/exposure/ExposureRuntime.java"));
 
         assertTrue(source.contains("FlameGatedDeadlyExposurePolicy"),
-                "runtime must replace the Task-01 hard barrier with the Task-03 passage-aware policy");
-        assertTrue(source.contains("ProgressionOwnerResolver.standalone()"),
-                "standalone runtime must resolve progression through the Foundation owner boundary");
-        assertTrue(source.contains("FlamePassageQuery.levelOneFallback()"),
-                "standalone runtime must use the Foundation Level-1 passage fallback until Stage 05 provides persistence");
+                "runtime must keep the passage-aware policy as the single Deadly progression gate");
+        assertTrue(source.contains("ProgressionRuntimeBindings.ownerResolver()"),
+                "runtime must resolve progression through the stable Foundation owner-provider handle");
+        assertTrue(source.contains("ProgressionRuntimeBindings.passageQuery()"),
+                "runtime must read passage through the stable Foundation provider handle so Stage 05 can supply persistence");
         assertTrue(source.contains("EnshroudedConfig.deadlyRequiredPassageLevel()"),
                 "required Deadly passage tier must come from server config rather than a runtime literal");
     }
