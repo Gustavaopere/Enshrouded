@@ -1,5 +1,10 @@
 package com.gustavaopere.enshrouded.shroud.worldgen;
 
+import com.gustavaopere.enshrouded.api.shroud.FlameWardRuntimeBindings;
+import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
+import com.gustavaopere.enshrouded.api.shroud.MutationKind;
+import com.gustavaopere.enshrouded.protection.DefaultMutationAuthority;
+import com.gustavaopere.enshrouded.protection.ProtectedAreaService;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlockEntity;
 import com.mojang.serialization.Codec;
@@ -16,10 +21,26 @@ import java.util.Objects;
 
 public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
     private final ShroudCoreCandidateField candidates;
+    private final MutationAuthority mutationAuthority;
 
     public ShroudCoreFeature(Codec<NoneFeatureConfiguration> codec, ShroudCoreCandidateField candidates) {
+        this(
+                codec,
+                candidates,
+                DefaultMutationAuthority.fromConfig(
+                        FlameWardRuntimeBindings.query(),
+                        ProtectedAreaService.none()
+                )
+        );
+    }
+
+    ShroudCoreFeature(
+            Codec<NoneFeatureConfiguration> codec,
+            ShroudCoreCandidateField candidates,
+            MutationAuthority mutationAuthority) {
         super(codec);
         this.candidates = Objects.requireNonNull(candidates, "candidates");
+        this.mutationAuthority = Objects.requireNonNull(mutationAuthority, "mutationAuthority");
     }
 
     @Override
@@ -48,6 +69,9 @@ public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
             return false;
         }
         if (!Block.canSupportRigidBlock(level, corePos.below())) {
+            return false;
+        }
+        if (!mutationAuthority.canMutate(level.getLevel(), corePos, MutationKind.CORE_PLACEMENT)) {
             return false;
         }
 
