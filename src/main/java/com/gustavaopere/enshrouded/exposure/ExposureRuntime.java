@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.exposure;
 
 import com.gustavaopere.enshrouded.api.progression.FlamePassageQuery;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwnerResolver;
+import com.gustavaopere.enshrouded.api.progression.ProgressionRuntimeBindings;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
@@ -32,8 +33,8 @@ public final class ExposureRuntime {
     private static final ShroudQuery QUERY = DefaultShroudQuery.levelOne(ShroudGridGeometry.levelOne());
     private static final ExposureSamplingCadence CADENCE = new ExposureSamplingCadence(SAMPLE_INTERVAL_TICKS);
     private static final ExposurePlayerSyncTracker SYNC_TRACKER = new ExposurePlayerSyncTracker();
-    private static final ProgressionOwnerResolver PROGRESSION_OWNER_RESOLVER = ProgressionOwnerResolver.standalone();
-    private static final FlamePassageQuery FLAME_PASSAGE_QUERY = FlamePassageQuery.levelOneFallback();
+    private static final ProgressionOwnerResolver PROGRESSION_OWNER_RESOLVER = ProgressionRuntimeBindings.ownerResolver();
+    private static final FlamePassageQuery FLAME_PASSAGE_QUERY = ProgressionRuntimeBindings.passageQuery();
     private static final ShroudSample FORCED_DEADLY_CONTACT = new ShroudSample(
             1.0F,
             ShroudSeverity.DEADLY,
