@@ -13,8 +13,8 @@ The canonical state is recorded in [`plans/STATUS.md`](plans/STATUS.md). At this
 - **02 Terrain Corruption — complete.** Fail-closed mutation authority, bounded/reversible materialization, corruption growths and purification/regression.
 - **03 Exposure — complete.** Server-owned exposure reserve/timer, Madness, Deadly Shroud progression barrier and Red Sludge hazard.
 - **04 Corrupted Ecology — complete.** Persistent creature corruption, hostility/buffs, magic-resistance classification and reversible visual/drop behavior.
-- **05 Flame Progression — 3/4 canonical on this base.** Persistent Flame state, generic ritual execution and Flame Altar are merged; Sanctuary is the remaining canonical task at this checkpoint and is tracked by active development.
-- **06 Lich & Story — planned.** Recurring antagonist state, optional boss-provider body, first manifestation, unique Lich Skull and Level 1 Flame ritual binding.
+- **05 Flame Progression — complete (4/4).** Persistent Flame state, provider-neutral ritual execution, Flame Altar and Sanctuary are canonical.
+- **06 Lich & Story — next/planned.** Recurring antagonist state, optional boss-provider body, first manifestation, unique Lich Skull and Level 1 Flame ritual binding.
 - **07 Client Experience — planned.** HUD, fog, sound/particles and accessibility controls driven only by synchronized server state.
 - **08 Optional Integrations — planned.** Ars Zero, Ars Nouveau, Iron's, Epic Fight, claims/teams, JourneyMap and necromancy-flavour providers.
 - **09 Hardening — planned.** Full test matrix, performance, world upgrades and release/provenance closure.
@@ -43,29 +43,19 @@ Deadly/Red Shroud is a progression barrier controlled through the Flame Passage 
 
 ### Corrupted ecology
 
-Living entities can become persistently corrupted while preserving their original identity where possible. Corruption can:
+Living entities can become persistently corrupted while preserving their original identity where possible. Corruption can turn normally passive creatures hostile, strengthen corrupted hostiles, apply configurable magic-resistance behavior while retaining physical counterplay, and expose reversible presentation without blindly rewriting third-party AI internals.
 
-- turn normally passive creatures hostile;
-- strengthen corrupted hostile creatures;
-- apply configurable magic-resistance behavior while keeping physical counterplay viable;
-- expose reversible visual/drop presentation instead of permanently rewriting third-party AI internals when safer hooks exist.
+### Flame progression and Sanctuary
 
-### Flame progression
+Flame progression is owner-scoped and persists independently of altar block survival. A provider-neutral ritual engine validates and executes progression rituals; the **Flame Altar** is the physical interaction/UI adapter over that engine.
 
-Flame progression is owner-scoped and persistent independently of any specific altar block. A provider-neutral ritual engine validates and executes progression rituals; the **Flame Altar** is the physical interaction/UI adapter over that engine.
-
-The remaining Level 1 Flame contract is **Sanctuary**, a ward overlay that suppresses effective Shroud danger and feeds the same exposure/mutation safety interfaces without erasing the underlying logical Shroud field.
+**Sanctuary is implemented and canonical.** Altar-backed wards are indexed per dimension, activate without global altar scans, reconstruct through normal block-entity lifecycle, and suppress effective Shroud danger without erasing the underlying logical field. The same ward boundary feeds exposure and central mutation safety: corruption/core placement are vetoed inside Sanctuary while safe purification can proceed when all other protection rules permit it.
 
 ### Recurring Lich story — roadmap
 
 Stage 06 will add persistent recurring-antagonist state. An external mod may provide the physical Lich entity body, but Enshrouded will always own encounter identity, story state, progression and rewards.
 
-The Level 1 path is designed around:
-
-1. defeating the first Lich Manifestation without permanently ending the canonical antagonist;
-2. receiving the valid Level 1 Lich Skull exactly once for that encounter;
-3. offering the Skull through the Flame ritual system;
-4. completing the Level 1 milestone and preparing the save for later progression levels.
+The Level 1 path is designed around defeating the first Lich Manifestation without permanently ending the canonical antagonist, receiving the valid Level 1 Lich Skull exactly once, offering it through the Flame ritual system, and completing the Level 1 milestone.
 
 ### Client presentation — roadmap
 
@@ -107,15 +97,7 @@ The project uses Java 21. CI also exercises the applicable NeoForge GameTests, p
 
 ## Plans and project memory
 
-The full Level 1 design and implementation sequence live in [`plans/`](plans/README.md). New implementation work should read:
-
-1. [`plans/README.md`](plans/README.md)
-2. [`plans/STATUS.md`](plans/STATUS.md)
-3. [`plans/DECISIONS.md`](plans/DECISIONS.md)
-4. [`plans/PENDING.md`](plans/PENDING.md)
-5. the active stage/task files.
-
-Deliberately deferred progression beyond Level 1 is recorded in [`plans/FUTURE-LEVELS.md`](plans/FUTURE-LEVELS.md).
+The full Level 1 design and implementation sequence live in [`plans/`](plans/README.md). New implementation work should read `plans/README.md`, `plans/STATUS.md`, `plans/DECISIONS.md`, `plans/PENDING.md`, then the active stage/task files. Deliberately deferred progression beyond Level 1 is recorded in [`plans/FUTURE-LEVELS.md`](plans/FUTURE-LEVELS.md).
 
 ## License and provenance
 
