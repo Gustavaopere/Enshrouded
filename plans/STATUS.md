@@ -11,7 +11,7 @@ Last structural update: 2026-08-30.
 - [x] 03 Exposure — all 4 tasks verified and merged.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
-- [ ] 06 Lich & Story — not implemented; 06.01 Story State is next.
+- [ ] 06 Lich & Story — 1/4 tasks verified and merged; 06.01 Story State complete; 06.02 Boss Provider is next.
 - [ ] 07 Client Experience — not implemented.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
@@ -461,15 +461,42 @@ Exact final PR-head gates passed: wrapper provenance, unit tests, frontier bench
 
 **05 Flame Progression is complete.**
 
+## 06 Lich & Story — in progress
+
+### ✅ 01 persistent Story State
+
+- Branch: `feat/06-story-state`.
+- Initial structural RED: commit `d1ccd2bf8cb0bfb8ead2105d2c9c5d49a963c842`, workflow `33304524909` / run #1022 — `compileTestJava` failed only because the planned Story State domain/codec types did not yet exist.
+- Domain/codec GREEN: HEAD `cc05f5a034ba106bb731bb7f6adb4d12a60bd4b4`, workflow `33304707537` / run #1029 — all gates GREEN.
+- SavedData compile RED: commit `98ecdbc2703db6a2f912ca274406f384e429605c`, workflow `33304953122` / run #1031 — existing unit/build/JAR were GREEN; `compileGameTestJava` failed only because `StorySavedData` had not yet been implemented.
+- Behavioral reboot RED: HEAD `85bdace450bcfec9fe63db7583cc509c8df27db6`, workflow `33305045499` / run #1032 — first boot passed and persisted Story State; second boot failed because the orphaned encounter remained `ACTIVE`.
+- Recovery GREEN: HEAD `4e110095810035f1440a681dab586cbd069cde6e`, workflow `33305215278` / run #1034 — startup recovery and two-boot reconciliation GREEN.
+- Final implementation HEAD: `057b074fd1476778d748cfe53b943ed25fbf8a1b`.
+- PR: #41 — `06.01 — Persistent Lich Story State`.
+- Final push verification: workflow `33305648279` / run #1036 — GREEN.
+- Final exact PR-head verification: workflow `33305649672` / run #1037 — GREEN.
+- Merge SHA: `77552a3d7f089a47908c109f5f8c19aff8a0f97d`.
+- Completed file: `✅-01-story-state.md`.
+
+Story State is server-global and stored in Overworld `DataStorage` as one version-aware `enshrouded_story.dat`. Its deterministic codec persists the Foundation `ProgressionOwner` stable key directly for PLAYER/TEAM/WORLD, manifestation progress, stable encounter UUID, explicit outcome, reward-issued flag and the transient physical actor UUID only while an encounter is `ACTIVE`. Unknown or pre-versioned/future schemas fail closed rather than resetting story/reward state.
+
+The state machine is one-way and idempotent: `AVAILABLE -> ACTIVE -> DEFEATED|ABORTED`; only `DEFEATED` can become reward-issued. Duplicate encounter IDs, duplicate defeat/reward and concurrent open encounters for one owner fail closed. Server startup reconciles any persisted `ACTIVE` encounter whose tracked living actor is missing/dead to `ABORTED`, preserving the immutable owner/encounter identity and never manufacturing a victory or reward.
+
+The real two-boot harness now proves exactly one server-global `enshrouded_story.dat`, first-boot creation and second-boot reconciliation/reload. PR-head parallel execution also exposed a pre-existing Red Sludge relocation fixture that assumed shared `ShroudSavedData` was CLEAR; that test was isolated with schema-preserving temporary state and restore-on-finally, with no Story or Red Sludge production behavior changed.
+
+`ENSH-L1-OWNER-SNAPSHOT-001` remains open because 06.03 still must prove active encounter start/defeat/reward uses one immutable owner snapshot and Stage 08 must prove membership-change behavior. `ENSH-L1-LICH-REWARD-001` remains owned by 06.04. No new cross-stage blocker was introduced.
+
+Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR verification, GameTest server, Story/Flame/Shroud two-boot reload and dedicated-server save/reload smoke.
+
 ## Immediate next step
 
-Create `feat/06-story-state` from the latest verified `main` after this documentation checkpoint.
+Create `feat/06-boss-provider` from the latest verified `main` after this documentation checkpoint.
 
-Read `plans/06-lich-story/README.md`, `plans/06-lich-story/01-story-state.md`, Foundation `ProgressionOwner`/Lich story contracts, merged persistence patterns, `plans/PENDING.md` and Stage 09 migration expectations. Begin with observed RED coverage for the versioned story-state schema and legal encounter transitions before writing production persistence.
+Read `plans/06-lich-story/README.md`, `plans/06-lich-story/02-boss-provider.md`, `plans/06-lich-story/✅-01-story-state.md`, Foundation `LichManifestationProvider` / `EncounterContext` contracts, Stage 04 magic-resistance boundaries and `plans/PENDING.md`. Begin with observed RED coverage for deterministic provider priority/fallback and the native standalone manifestation before writing provider production code.
 
 Stage 06 causal implementation order:
 
-1. `feat/06-story-state`
+1. `✅ feat/06-story-state`
 2. `feat/06-boss-provider`
 3. `feat/06-first-manifestation`
 4. `feat/06-lich-skull`
