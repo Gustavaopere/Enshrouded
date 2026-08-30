@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.flame.ritual;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,6 +22,11 @@ public final class FlameRitualRegistry {
 
     public synchronized Optional<FlameRitual> find(ResourceLocation id) {
         return Optional.ofNullable(rituals.get(Objects.requireNonNull(id, "id")));
+    }
+
+    /** Immutable deterministic registration-order snapshot for physical ritual adapters. */
+    public synchronized List<FlameRitual> rituals() {
+        return List.copyOf(rituals.values());
     }
 
     public synchronized int size() {
