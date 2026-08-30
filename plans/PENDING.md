@@ -16,9 +16,9 @@ The former external Foundation blocker `ENSH-CI-ACTIONS-001` is closed: hosted r
 
 - `ENSH-L1-FLAME-WARD-001`: Foundation owns `FlameWardQuery`. `ShroudSample` retains canonical logical intensity/severity/source and Sanctuary is an effective suppression overlay. Stage 02 PR #15 proved that `DefaultMutationAuthority` vetoes warded `CORRUPTION`/`CORE_PLACEMENT` while not rejecting safe `PURIFICATION` merely because the ward is active; `RITUAL_STRUCTURE` remains subject to normal authorization. Stage 03 PR #22 proves suppressed `SHROUD`/`DEADLY` samples recover exposure safely without erasing the latent logical sample. Keep open until Stage 05 proves the real Sanctuary-provider behavior through the same boundary.
 
-## Progression owner snapshot semantics — cross-stage closure open
+## Progression owner snapshot semantics — Stage 05 ritual side complete; Stage 06/08 closure open
 
-- `ENSH-L1-OWNER-SNAPSHOT-001`: transactional progression resolves `ProgressionOwner` exactly once at operation start and retains that stable key. Keep open until Stage 05 ritual execution, Stage 06 active encounter/reward ownership and Stage 08 FTB Teams membership-change behavior are proven. No in-flight transaction may silently re-resolve or migrate ownership.
+- `ENSH-L1-OWNER-SNAPSHOT-001`: transactional progression resolves `ProgressionOwner` exactly once at operation start and retains that stable key. Stage 05 PR #32 (`feat/05-level1-ritual`) proves the ritual-execution side: the executor resolves once, retains the immutable owner through eligibility, offering validation/consumption, outcome application and persistence, and duplicate invocation cannot redirect or grant the checkpoint twice. Exact PR-head workflow `33290135711` / run #895 completed GREEN before merge `37d100e7ea6511a76d954b640f6347bbb598d1d9`, including a real NeoForge GameTest through `FlameRitualExecutor.forServer(...)`. Keep open until Stage 06 active encounter/reward ownership and Stage 08 FTB Teams membership-change behavior are proven. No in-flight transaction may silently re-resolve or migrate ownership.
 
 ## Initially open contracts
 
