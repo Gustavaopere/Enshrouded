@@ -1,15 +1,22 @@
 package com.gustavaopere.enshrouded.story.reward;
 
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -19,14 +26,31 @@ import java.util.UUID;
  * Authentic Enshrouded trophy for the first Lich manifestation.
  *
  * <p>Authenticity is encoded in persistent item-stack component data. Display name and lore are
- * presentation only and are never trusted by progression logic.</p>
+ * presentation only and are never trusted by progression logic. The vanilla Wither Skeleton skull
+ * blocks are used only to select Minecraft's skull item renderer; this trophy deliberately cannot
+ * place or remap those vanilla blocks.</p>
  */
-public final class LichSkullItem extends Item {
+public final class LichSkullItem extends StandingAndWallBlockItem {
     private static final String ROOT_KEY = "EnshroudedLichSkull";
     public static final int LEVEL_ONE_MANIFESTATION = 1;
 
     public LichSkullItem(Properties properties) {
-        super(properties);
+        super(
+                Blocks.WITHER_SKELETON_SKULL,
+                Blocks.WITHER_SKELETON_WALL_SKULL,
+                properties,
+                Direction.DOWN
+        );
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        return InteractionResult.FAIL;
+    }
+
+    @Override
+    public void registerBlocks(Map<Block, Item> blockToItemMap, Item item) {
+        // Render through the vanilla skull block type without replacing the vanilla block->item mapping.
     }
 
     /** Creates exactly one trophy stack with durable encounter/manifestation identity. */
