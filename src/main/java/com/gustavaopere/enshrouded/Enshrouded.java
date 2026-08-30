@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.command.ShroudCoreCommand;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionRuntime;
 import com.gustavaopere.enshrouded.exposure.ExposureRuntime;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuntime;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionRuntime;
 import com.gustavaopere.enshrouded.flame.ward.FlameWardRuntime;
 import com.gustavaopere.enshrouded.network.ModNetworking;
@@ -13,6 +14,7 @@ import com.gustavaopere.enshrouded.registry.ModRegistries;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreRegistrationQueue;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRuleReloadRuntime;
 import com.gustavaopere.enshrouded.story.manifestation.ManifestationRuntime;
+import com.gustavaopere.enshrouded.story.ritual.LevelOneLichSkullRitual;
 import com.gustavaopere.enshrouded.story.state.StoryStateRuntime;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -30,6 +32,7 @@ public final class Enshrouded {
 
     public Enshrouded(IEventBus modBus, ModContainer modContainer) {
         ModRegistries.register(modBus);
+        FlameAltarRuntime.registerRitual(new LevelOneLichSkullRitual());
         modBus.addListener(ModNetworking::register);
         modContainer.registerConfig(ModConfig.Type.SERVER, EnshroudedConfig.SERVER_SPEC);
         ShroudCoreRegistrationQueue.registerRuntime();
