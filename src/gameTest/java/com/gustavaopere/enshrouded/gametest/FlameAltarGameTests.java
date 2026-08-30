@@ -18,13 +18,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -35,10 +36,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FlameAltarGameTests {
-    private static final ResourceLocation RITUAL_ID =
-            ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_ritual");
-    private static final ResourceLocation INTENT_ID =
-            ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_intent");
+    private static final ResourceLocation DOUBLE_RITUAL_ID =
+            ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_double");
+    private static final ResourceLocation DOUBLE_INTENT_ID =
+            ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_double_intent");
+    private static final ResourceLocation BREAK_RITUAL_ID =
+            ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_break");
+    private static final ResourceLocation BREAK_INTENT_ID =
+            ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_break_intent");
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
     private FlameAltarGameTests() {
@@ -77,28 +82,31 @@ public final class FlameAltarGameTests {
 
     @GameTest(template = "foundation_empty")
     public static void forgedClientLikeActivationWithoutRegisteredOfferingIsDenied(GameTestHelper helper) {
-        ensureSyntheticRitualRegistered();
+        ensureSyntheticRitualsRegistered();
         ServerPlayer player = requireServerPlayer(helper);
+        ServerLevel level = level(helper);
+        ProgressionOwner owner = ProgressionRuntimeBindings.ownerResolver().resolve(player.getUUID());
+        var before = FlameProgressionSavedData.get(level).progression(owner);
         BlockPos relative = new BlockPos(1, 1, 1);
         helper.setBlock(relative, ModBlocks.FLAME_ALTAR.get());
         FlameAltarBlockEntity altar = requireAltar(helper, relative);
         altar.inventory().setStackInSlot(0, new ItemStack(Items.ROTTEN_FLESH));
 
         FlameAltarService.ActivationResult result = FlameAltarRuntime.activate(player, altar.inventory());
-        ProgressionOwner owner = ProgressionRuntimeBindings.ownerResolver().resolve(player.getUUID());
+        var after = FlameProgressionSavedData.get(level).progression(owner);
 
         helper.assertTrue(result.status() == FlameAltarService.Status.NO_MATCHING_RITUAL,
                 "Forged client-like activation with an invalid server offering must be denied");
         helper.assertTrue(altar.inventory().getStackInSlot(0).is(Items.ROTTEN_FLESH),
                 "Denied ritual must not consume the invalid offering");
-        helper.assertTrue(!FlameProgressionSavedData.get(level(helper)).state().hasOwner(owner),
-                "Denied ritual must not create owner progression");
+        helper.assertTrue(after.equals(before),
+                "Denied ritual must leave authoritative owner progression unchanged");
         helper.succeed();
     }
 
     @GameTest(template = "foundation_empty")
     public static void twoAltarsCannotDuplicateOneRitualOutcomeOrConsumption(GameTestHelper helper) {
-        ensureSyntheticRitualRegistered();
+        ensureSyntheticRitualsRegistered();
         ServerPlayer player = requireServerPlayer(helper);
         ServerLevel level = level(helper);
         BlockPos firstRelative = new BlockPos(1, 1, 1);
@@ -123,76 +131,81 @@ public final class FlameAltarGameTests {
         helper.assertTrue(second.inventory().getStackInSlot(0).is(Items.BLAZE_POWDER),
                 "Duplicate ritual must not consume the second altar offering");
         helper.assertTrue(FlameProgressionSavedData.get(level).progression(owner).completedRituals().stream()
-                        .filter(RITUAL_ID::equals).count() == 1L,
-                "Owner progression must contain the synthetic ritual exactly once");
+                        .filter(DOUBLE_RITUAL_ID::equals).count() == 1L,
+                "Owner progression must contain the double-activation ritual exactly once");
         helper.succeed();
     }
 
     @GameTest(template = "foundation_empty")
     public static void breakingAltarAfterRitualNeverRollsBackOwnerProgression(GameTestHelper helper) {
-        ensureSyntheticRitualRegistered();
+        ensureSyntheticRitualsRegistered();
         ServerPlayer player = requireServerPlayer(helper);
         ServerLevel level = level(helper);
         BlockPos relative = new BlockPos(1, 1, 1);
         helper.setBlock(relative, ModBlocks.FLAME_ALTAR.get());
         FlameAltarBlockEntity altar = requireAltar(helper, relative);
-        altar.inventory().setStackInSlot(0, new ItemStack(Items.BLAZE_POWDER));
+        altar.inventory().setStackInSlot(0, new ItemStack(Items.MAGMA_CREAM));
 
         FlameAltarService.ActivationResult applied = FlameAltarRuntime.activate(player, altar.inventory());
         ProgressionOwner owner = ProgressionRuntimeBindings.ownerResolver().resolve(player.getUUID());
         helper.assertTrue(applied.status() == FlameAltarService.Status.APPLIED,
-                "Precondition: synthetic altar ritual must apply before block destruction");
+                "Precondition: synthetic break-test ritual must apply before block destruction");
 
         helper.destroyBlock(relative);
 
         helper.assertBlockNotPresent(ModBlocks.FLAME_ALTAR.get(), relative);
-        helper.assertTrue(FlameProgressionSavedData.get(level).progression(owner).completedRituals().contains(RITUAL_ID),
+        helper.assertTrue(FlameProgressionSavedData.get(level).progression(owner).completedRituals().contains(BREAK_RITUAL_ID),
                 "Breaking/replacing a Flame Altar must never roll back earned owner progression");
         helper.succeed();
     }
 
-    private static void ensureSyntheticRitualRegistered() {
+    private static void ensureSyntheticRitualsRegistered() {
         if (REGISTERED.compareAndSet(false, true)) {
-            FlameAltarRuntime.registerRitual(new FlameRitual() {
-                @Override
-                public ResourceLocation id() {
-                    return RITUAL_ID;
-                }
-
-                @Override
-                public ResourceLocation intentId() {
-                    return INTENT_ID;
-                }
-
-                @Override
-                public boolean isEligible(Context context) {
-                    return context.progression().flameLevel() == 1 && context.progression().passageLevel() == 1;
-                }
-
-                @Override
-                public OfferingContract offering() {
-                    return new OfferingContract() {
-                        @Override
-                        public boolean accepts(Context context, Offering offering) {
-                            return offering instanceof FlameAltarOffering altarOffering
-                                    && altarOffering.stack().is(Items.BLAZE_POWDER);
-                        }
-
-                        @Override
-                        public void consume(Context context, Offering offering) {
-                            if (!(offering instanceof FlameAltarOffering altarOffering) || !altarOffering.consumeOne()) {
-                                throw new IllegalStateException("GameTest altar offering changed before consumption");
-                            }
-                        }
-                    };
-                }
-
-                @Override
-                public RitualOutcome outcome(Context context) {
-                    return RitualOutcome.levelOneCheckpoint();
-                }
-            });
+            FlameAltarRuntime.registerRitual(syntheticRitual(DOUBLE_RITUAL_ID, DOUBLE_INTENT_ID, Items.BLAZE_POWDER));
+            FlameAltarRuntime.registerRitual(syntheticRitual(BREAK_RITUAL_ID, BREAK_INTENT_ID, Items.MAGMA_CREAM));
         }
+    }
+
+    private static FlameRitual syntheticRitual(ResourceLocation ritualId, ResourceLocation intentId, Item requiredItem) {
+        return new FlameRitual() {
+            @Override
+            public ResourceLocation id() {
+                return ritualId;
+            }
+
+            @Override
+            public ResourceLocation intentId() {
+                return intentId;
+            }
+
+            @Override
+            public boolean isEligible(Context context) {
+                return context.progression().flameLevel() == 1 && context.progression().passageLevel() == 1;
+            }
+
+            @Override
+            public OfferingContract offering() {
+                return new OfferingContract() {
+                    @Override
+                    public boolean accepts(Context context, Offering offering) {
+                        return offering instanceof FlameAltarOffering altarOffering
+                                && altarOffering.stack().is(requiredItem);
+                    }
+
+                    @Override
+                    public void consume(Context context, Offering offering) {
+                        if (!(offering instanceof FlameAltarOffering altarOffering) || !altarOffering.consumeOne()) {
+                            throw new IllegalStateException("GameTest altar offering changed before consumption");
+                        }
+                    }
+                };
+            }
+
+            @Override
+            public RitualOutcome outcome(Context context) {
+                return RitualOutcome.levelOneCheckpoint();
+            }
+        };
     }
 
     private static ServerLevel level(GameTestHelper helper) {
