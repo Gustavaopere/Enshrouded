@@ -23,10 +23,6 @@ import java.util.UUID;
  */
 public final class LichSkullItem extends Item {
     private static final String ROOT_KEY = "EnshroudedLichSkull";
-    private static final String FORMAT_KEY = "Format";
-    private static final String ENCOUNTER_KEY = "EncounterId";
-    private static final String MANIFESTATION_KEY = "ManifestationIndex";
-    private static final int FORMAT_VERSION = 1;
     public static final int LEVEL_ONE_MANIFESTATION = 1;
 
     public LichSkullItem(Properties properties) {
@@ -45,63 +41,42 @@ public final class LichSkullItem extends Item {
         }
 
         ItemStack stack = new ItemStack(item, 1);
-        CompoundTag identity = new CompoundTag();
-        identity.putInt(FORMAT_KEY, FORMAT_VERSION);
-        identity.putUUID(ENCOUNTER_KEY, encounterId);
-        identity.putInt(MANIFESTATION_KEY, manifestationIndex);
         CompoundTag customData = new CompoundTag();
-        customData.put(ROOT_KEY, identity);
+        customData.put(ROOT_KEY, new LichSkullIdentity(encounterId, manifestationIndex).encode());
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(customData));
         return stack;
     }
 
     public static boolean isAuthenticLevelOne(ItemStack stack) {
-        return stack != null
-                && !stack.isEmpty()
-                && stack.getCount() >= 1
-                && stack.getItem() instanceof LichSkullItem
-                && manifestationIndex(stack).orElse(-1) == LEVEL_ONE_MANIFESTATION
-                && encounterId(stack).isPresent();
+        return identity(stack)
+                .filter(identity -> identity.manifestationIndex() == LEVEL_ONE_MANIFESTATION)
+                .isPresent();
     }
 
     public static Optional<UUID> encounterId(ItemStack stack) {
-        CompoundTag identity = identity(stack);
-        if (identity == null
-                || identity.getInt(FORMAT_KEY) != FORMAT_VERSION
-                || !identity.contains(ENCOUNTER_KEY, Tag.TAG_INT_ARRAY)) {
-            return Optional.empty();
-        }
-        try {
-            return Optional.of(identity.getUUID(ENCOUNTER_KEY));
-        } catch (RuntimeException malformed) {
-            return Optional.empty();
-        }
+        return identity(stack).map(LichSkullIdentity::encounterId);
     }
 
     public static OptionalInt manifestationIndex(ItemStack stack) {
-        CompoundTag identity = identity(stack);
-        if (identity == null
-                || identity.getInt(FORMAT_KEY) != FORMAT_VERSION
-                || !identity.contains(MANIFESTATION_KEY, Tag.TAG_INT)) {
-            return OptionalInt.empty();
-        }
-        int manifestationIndex = identity.getInt(MANIFESTATION_KEY);
-        return manifestationIndex > 0 ? OptionalInt.of(manifestationIndex) : OptionalInt.empty();
+        Optional<LichSkullIdentity> identity = identity(stack);
+        return identity.isPresent()
+                ? OptionalInt.of(identity.orElseThrow().manifestationIndex())
+                : OptionalInt.empty();
     }
 
-    private static CompoundTag identity(ItemStack stack) {
+    public static Optional<LichSkullIdentity> identity(ItemStack stack) {
         if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof LichSkullItem)) {
-            return null;
+            return Optional.empty();
         }
         CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
         if (customData == null) {
-            return null;
+            return Optional.empty();
         }
         CompoundTag root = customData.copyTag();
         if (!root.contains(ROOT_KEY, Tag.TAG_COMPOUND)) {
-            return null;
+            return Optional.empty();
         }
-        return root.getCompound(ROOT_KEY);
+        return LichSkullIdentity.decode(root.getCompound(ROOT_KEY));
     }
 
     @Override
