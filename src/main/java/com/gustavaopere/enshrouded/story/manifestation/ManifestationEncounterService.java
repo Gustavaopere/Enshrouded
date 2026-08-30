@@ -10,6 +10,7 @@ import com.gustavaopere.enshrouded.story.state.StorySavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -23,12 +24,21 @@ public final class ManifestationEncounterService {
 
     private final ProgressionOwnerResolver ownerResolver;
     private final ManifestationDirector manifestationDirector;
+    private final LichArenaRule arenaRule;
 
     public ManifestationEncounterService(
             ProgressionOwnerResolver ownerResolver,
             ManifestationDirector manifestationDirector) {
+        this(ownerResolver, manifestationDirector, null);
+    }
+
+    public ManifestationEncounterService(
+            ProgressionOwnerResolver ownerResolver,
+            ManifestationDirector manifestationDirector,
+            @Nullable LichArenaRule arenaRule) {
         this.ownerResolver = Objects.requireNonNull(ownerResolver, "ownerResolver");
         this.manifestationDirector = Objects.requireNonNull(manifestationDirector, "manifestationDirector");
+        this.arenaRule = arenaRule;
     }
 
     public Optional<ActiveEncounter> start(ServerLevel level, UUID playerId, BlockPos origin) {
@@ -70,6 +80,14 @@ public final class ManifestationEncounterService {
             return Optional.empty();
         }
 
+        if (arenaRule != null && !arenaRule.activate(level, encounterId, origin)) {
+            synchronized (savedData) {
+                savedData.abortEncounter(encounterId);
+            }
+            manifestation.entity().discard();
+            return Optional.empty();
+        }
+
         return Optional.of(new ActiveEncounter(owner, encounterId, manifestation));
     }
 
@@ -90,6 +108,7 @@ public final class ManifestationEncounterService {
 
         UUID encounterId = taggedEncounterId.orElseThrow();
         StorySavedData savedData = StorySavedData.get(level);
+        DefeatResult result;
         synchronized (savedData) {
             Optional<EncounterRecord> recordOptional = savedData.state().encounter(encounterId);
             if (recordOptional.isEmpty()) {
@@ -107,8 +126,13 @@ public final class ManifestationEncounterService {
             if (!savedData.defeatEncounter(encounterId)) {
                 return Optional.empty();
             }
-            return Optional.of(new DefeatResult(storedOwner, encounterId, manifestationIndex));
+            result = new DefeatResult(storedOwner, encounterId, manifestationIndex);
         }
+
+        if (arenaRule != null) {
+            arenaRule.cleanup(level, encounterId);
+        }
+        return Optional.of(result);
     }
 
     private static long seed(ServerLevel level, UUID encounterId) {
