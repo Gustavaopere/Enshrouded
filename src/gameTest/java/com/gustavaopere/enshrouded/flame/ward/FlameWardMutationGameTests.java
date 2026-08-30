@@ -21,10 +21,12 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FlameWardMutationGameTests {
+    private static final String WARD_MUTATION_BATCH = "flameWardMutation";
+
     private FlameWardMutationGameTests() {
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", batch = WARD_MUTATION_BATCH)
     public static void wardVetoesThreatMutationButNotSafePurification(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos altarRelative = new BlockPos(2, 1, 2);
