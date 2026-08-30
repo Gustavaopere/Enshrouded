@@ -31,12 +31,14 @@ import java.util.UUID;
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class LichSkullRewardGameTests {
-    private static final String BATCH = "lichSkullReward";
+    private static final String IDENTITY_BATCH = "lichSkullIdentity";
+    private static final String REWARD_BATCH = "lichSkullReward";
+    private static final String FLAME_LOOP_BATCH = "lichSkullFlameLoop";
 
     private LichSkullRewardGameTests() {
     }
 
-    @GameTest(template = "foundation_empty", batch = BATCH)
+    @GameTest(template = "foundation_empty", batch = IDENTITY_BATCH)
     public static void realItemComponentMarksAuthenticSkullAndRejectsLookalikes(GameTestHelper helper) {
         UUID encounterId = UUID.fromString("60604006-0000-4000-8000-000000000001");
         ItemStack authentic = LichSkullItem.createAuthentic(ModItems.LICH_SKULL_MANIFESTATION_1.get(), encounterId, 1);
@@ -56,7 +58,7 @@ public final class LichSkullRewardGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "foundation_empty", batch = BATCH)
+    @GameTest(template = "foundation_empty", batch = REWARD_BATCH)
     public static void validMarkedDeathEmitsOneAuthenticSkullAndReplayEmitsNone(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         StorySavedData storyData = StorySavedData.get(level);
@@ -105,7 +107,7 @@ public final class LichSkullRewardGameTests {
         }
     }
 
-    @GameTest(template = "foundation_empty", batch = BATCH)
+    @GameTest(template = "foundation_empty", batch = FLAME_LOOP_BATCH)
     public static void defeatToSkullToAltarClosesLevelOneCheckpointWithoutPassageTwo(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         StorySavedData storyData = StorySavedData.get(level);
