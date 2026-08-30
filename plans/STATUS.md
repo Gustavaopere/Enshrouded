@@ -9,7 +9,7 @@ Last structural update: 2026-08-29.
 - [x] 01 Shroud Field — all 5 tasks verified and merged.
 - [x] 02 Terrain Corruption — all 4 tasks verified and merged.
 - [x] 03 Exposure — all 4 tasks verified and merged.
-- [ ] 04 Corrupted Ecology — Tasks 01–03 verified and merged; Task 04 pending.
+- [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [ ] 05 Flame Progression — not implemented.
 - [ ] 06 Lich & Story — not implemented.
 - [ ] 07 Client Experience — not implemented.
@@ -267,7 +267,7 @@ Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff 
 
 **03 Exposure is complete.**
 
-## 04 Corrupted Ecology — in progress
+## 04 Corrupted Ecology — complete
 
 ### ✅ 01 entity corruption
 
@@ -324,17 +324,53 @@ Unit tests prove physical/magical classification, bounded one-pass resistance ma
 
 Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 47 GameTests, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 04 ecology visuals, loot and restoration
+
+- Branch: `feat/04-ecology-visuals`
+- Structural RED: commit `6779c7cf03507b13d6e189c0ea41238dd1553ce3`, workflow `33280996926` — `compileTestJava` failed only because the three planned completion surfaces did not exist.
+- API RED: commit `0f4db80fa52498ea1603a1cd206618041ceadc1e`, workflow `33281264969` — compile failed only for the deliberately absent visual/loot/purification behavior APIs.
+- Visual behavioral RED: commit `bea3615ca5606914942646d86b90e6c283d1ff15`, workflow `33281375399` — 169 unit tests ran with exactly one expected visual-state failure.
+- Purification behavioral RED: commit `5fc22006459d3769c3e4180458689b903b4bd420`, workflow `33281489335` — unit/build/JAR were GREEN and 48 GameTests ran with exactly one expected purification failure.
+- Visual-sync RED: commit `be8e5dfe2cb49e833ba37ee357396a1ad7b9217e`, workflow `33284672627` — `compileTestJava` failed with exactly 9 missing-symbol errors for the absent `CorruptionVisualRuntime` / attachment `STREAM_CODEC` contracts.
+- Final implementation HEAD: `d6e78dec43a3bf3f7e61d84f1c4cb6d1801262fd`
+- Push verification: workflow `33284776823`, job `99185955412` — GREEN
+- PR: #29 — `feat: complete corrupted ecology visuals and restoration`
+- Final PR-head verification: workflow `33285026758`, job `99186610687` — GREEN
+- Merge SHA: `958744a2c6a41eb9d6cdc78adf593e2c79cc98d7`
+- Completed file: `✅-04-ecology-visuals.md`
+
+Corrupted fauna now exposes bounded client-only visual cues without renderer replacement or per-mob asset duplication. The existing versioned `EntityCorruptionAttachment` remains the single source of truth and is synchronized with NeoForge `AttachmentType.sync` through a tested stream codec. `CorruptionVisualRuntime` projects TAINTED/CORRUPTED intensity into bounded vanilla `WITCH` / `REVERSE_PORTAL` particles and naturally degrades on custom renderers because no renderer-specific state is required.
+
+`EntityPurificationService` centralizes restoration: it removes only Enshrouded-owned corruption attachment, transient attributes and owned target behavior. GameTest evidence proves unrelated potion effects and third-party persistent data survive purification. The Level-1 corruption reagent policy is explicitly disabled with zero rolls because no current Level-1 recipe consumes such a reagent; this avoids orphan items and trivially prevents duplicate corruption drops.
+
+No new task-local pending contract was introduced. Existing Flame passage/ward, Stage 08 magic-adapter and claim-safety pendings remain under their canonical owners.
+
+Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR sanity, 48 GameTests, Shroud SavedData two-boot reload and dedicated-server save/reload smoke.
+
+## Stage 04 acceptance
+
+- [x] Eligible non-player living entities preserve identity while carrying persistent canonical corruption state.
+- [x] Corruption hostility and bounded attribute buffs are reversible and do not replace native/external combat ownership.
+- [x] Magic resistance uses the single Foundation classification model and one reducer while physical counterplay remains unchanged.
+- [x] Corrupted fauna has bounded client-readable cues derived from the canonical synced attachment without per-mob renderer duplication.
+- [x] Level-1 corruption loot is explicitly bounded to zero while no recipe consumes a native reagent.
+- [x] Purification removes only Enshrouded-owned ecology state and preserves unrelated effects/third-party data.
+- [x] All four Stage 04 task PRs received exact-head GREEN runtime CI before merge.
+
+**04 Corrupted Ecology is complete.**
+
 ## Immediate next step
 
-Create `feat/04-ecology-visuals` from the latest `main` after this documentation checkpoint.
+Create `feat/05-flame-state` from the latest verified `main` after this documentation checkpoint.
 
-Read `plans/04-corrupted-ecology/04-ecology-visuals.md`, the merged entity-corruption, hostility/buffs and magic-resistance runtimes, existing client/bootstrap seams, loot infrastructure and `plans/PENDING.md`. Begin with observed RED coverage before production visuals/loot/restoration code.
+Read `plans/05-flame-progression/README.md`, `plans/05-flame-progression/01-flame-state.md`, the merged Foundation progression boundaries, Stage 03 passage consumer, Stage 02 mutation ward consumer and `plans/PENDING.md`. Begin with observed RED coverage before production Flame persistence/provider code.
 
-Task 04 owns readable corrupted-entity cues, bounded at-most-once corruption loot and purification cleanup of only Enshrouded-owned ecology state. It must preserve unrelated potion effects, third-party data and native entity identity.
+Stage 05 owns owner-scoped persistent Flame progression and its real provider implementation. The causal implementation order defined by the Stage 05 README is:
 
-Remaining canonical Stage 04 order is:
-
-1. `feat/04-ecology-visuals`
+1. `feat/05-flame-state`
+2. `feat/05-level1-ritual`
+3. `feat/05-flame-altar`
+4. `feat/05-sanctuary`
 
 ## Level 1 release gate
 
