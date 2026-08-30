@@ -6,7 +6,7 @@ The design takes inspiration from the survival/exploration structure of the game
 
 ## Current implementation on `main`
 
-The canonical state is recorded in [`plans/STATUS.md`](plans/STATUS.md). At this repository checkpoint:
+The implementation ledger lives in [`plans/STATUS.md`](plans/STATUS.md); source/tests and merged PR evidence remain authoritative when that ledger is between closeout updates. At this repository checkpoint:
 
 - **00 Foundation — complete.** Build/CI, persistence/networking contracts, test infrastructure and provenance rules.
 - **01 Shroud Field — complete.** Persistent per-dimension Shroud state, core lifecycle, bounded frontier expansion, indexed querying/sync and deterministic new-terrain core seeding.
@@ -14,12 +14,12 @@ The canonical state is recorded in [`plans/STATUS.md`](plans/STATUS.md). At this
 - **03 Exposure — complete.** Server-owned exposure reserve/timer, Madness, Deadly Shroud progression barrier and Red Sludge hazard.
 - **04 Corrupted Ecology — complete.** Persistent creature corruption, hostility/buffs, magic-resistance classification and reversible visual/drop behavior.
 - **05 Flame Progression — complete (4/4).** Persistent Flame state, provider-neutral ritual execution, Flame Altar and Sanctuary are canonical.
-- **06 Lich & Story — next/planned.** Recurring antagonist state, optional boss-provider body, first manifestation, unique Lich Skull and Level 1 Flame ritual binding.
+- **06 Lich & Story — active (1/4 canonical).** Persistent owner-scoped Story State is merged; boss-provider integration, first manifestation and Lich Skull/reward binding remain.
 - **07 Client Experience — planned.** HUD, fog, sound/particles and accessibility controls driven only by synchronized server state.
 - **08 Optional Integrations — planned.** Ars Zero, Ars Nouveau, Iron's, Epic Fight, claims/teams, JourneyMap and necromancy-flavour providers.
 - **09 Hardening — planned.** Full test matrix, performance, world upgrades and release/provenance closure.
 
-Because other implementation branches may advance while this README is being read, [`plans/STATUS.md`](plans/STATUS.md) remains the authority for exact task completion.
+Because implementation branches may advance while this README is being read, inspect the latest merged source/tests and `plans/STATUS.md` before starting new work.
 
 ## Level 1 gameplay model
 
@@ -51,11 +51,11 @@ Flame progression is owner-scoped and persists independently of altar block surv
 
 **Sanctuary is implemented and canonical.** Altar-backed wards are indexed per dimension, activate without global altar scans, reconstruct through normal block-entity lifecycle, and suppress effective Shroud danger without erasing the underlying logical field. The same ward boundary feeds exposure and central mutation safety: corruption/core placement are vetoed inside Sanctuary while safe purification can proceed when all other protection rules permit it.
 
-### Recurring Lich story — roadmap
+### Recurring Lich story
 
-Stage 06 will add persistent recurring-antagonist state. An external mod may provide the physical Lich entity body, but Enshrouded will always own encounter identity, story state, progression and rewards.
+The first Stage 06 contract is implemented: Enshrouded owns a persistent, owner-scoped Story State with stable encounter identity, one-way encounter transitions, idempotent defeat/reward bookkeeping and restart reconciliation. A physical boss entity UUID is runtime presence, not narrative identity.
 
-The Level 1 path is designed around defeating the first Lich Manifestation without permanently ending the canonical antagonist, receiving the valid Level 1 Lich Skull exactly once, offering it through the Flame ritual system, and completing the Level 1 milestone.
+The remaining Level 1 Lich work adds the optional boss-provider body, first manifestation encounter behavior and the unique Lich Skull reward/Flame ritual binding. An external mod may provide the physical Lich entity body, but Enshrouded remains authority for encounter identity, story state, progression and rewards.
 
 ### Client presentation — roadmap
 
