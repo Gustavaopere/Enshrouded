@@ -10,7 +10,7 @@ BOOT_TIMEOUT_SECONDS=240
 KILL_AFTER_SECONDS=15
 
 command -v timeout >/dev/null 2>&1 || {
-  echo 'GNU timeout is required for Shroud SavedData reload verification' >&2
+  echo 'GNU timeout is required for SavedData reload verification' >&2
   exit 1
 }
 
@@ -33,7 +33,7 @@ run_gametest_boot() {
   set -e
 
   if grep -Fq 'No test functions were given!' "$log_file"; then
-    echo 'GameTest discovery failed during Shroud SavedData reload verification' >&2
+    echo 'GameTest discovery failed during SavedData reload verification' >&2
     return 1
   fi
   if (( status != 0 )); then
@@ -43,6 +43,10 @@ run_gametest_boot() {
 }
 
 run_gametest_boot "$FIRST_LOG"
+grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_CREATED' "$FIRST_LOG" || {
+  echo 'First GameTest boot did not create the Flame progression sentinel' >&2
+  exit 1
+}
 grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_CREATED' "$FIRST_LOG" || {
   echo 'First GameTest boot did not create the Shroud SavedData sentinel' >&2
   exit 1
@@ -63,6 +67,10 @@ grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_CREATED' "$FIRST_LOG" || {
   echo 'First GameTest boot did not create the entity corruption sentinel' >&2
   exit 1
 }
+if grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_RELOADED' "$FIRST_LOG"; then
+  echo 'First GameTest boot unexpectedly loaded pre-existing Flame progression' >&2
+  exit 1
+fi
 if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$FIRST_LOG"; then
   echo 'First GameTest boot unexpectedly loaded pre-existing Shroud SavedData' >&2
   exit 1
@@ -80,6 +88,13 @@ if grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_RELOADED' "$FIRST_LOG"; then
   exit 1
 fi
 
+mapfile -t FLAME_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_flame_progression.dat' -print)
+if (( ${#FLAME_DATA_FILES[@]} != 1 )); then
+  echo "Expected exactly one server-global enshrouded_flame_progression.dat after first boot, found ${#FLAME_DATA_FILES[@]}" >&2
+  printf '%s\n' "${FLAME_DATA_FILES[@]:-}"
+  exit 1
+fi
+
 mapfile -t SHROUD_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_shroud.dat' -print)
 if (( ${#SHROUD_DATA_FILES[@]} != 1 )); then
   echo "Expected exactly one dimension-local enshrouded_shroud.dat after first boot, found ${#SHROUD_DATA_FILES[@]}" >&2
@@ -88,6 +103,10 @@ if (( ${#SHROUD_DATA_FILES[@]} != 1 )); then
 fi
 
 run_gametest_boot "$RELOAD_LOG"
+grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_RELOADED' "$RELOAD_LOG" || {
+  echo 'Second GameTest boot did not reload the persisted Flame progression sentinel' >&2
+  exit 1
+}
 grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$RELOAD_LOG" || {
   echo 'Second GameTest boot did not reload the persisted Shroud SavedData sentinel' >&2
   exit 1
@@ -108,6 +127,10 @@ grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_RELOADED' "$RELOAD_LOG" || {
   echo 'Second GameTest boot did not reload the persisted entity corruption attachment' >&2
   exit 1
 }
+if grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_CREATED' "$RELOAD_LOG"; then
+  echo 'Second GameTest boot recreated Flame progression instead of loading it' >&2
+  exit 1
+fi
 if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_CREATED' "$RELOAD_LOG"; then
   echo 'Second GameTest boot recreated Shroud SavedData instead of loading it' >&2
   exit 1
@@ -125,4 +148,16 @@ if grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_CREATED' "$RELOAD_LOG"; then
   exit 1
 fi
 
-echo "Shroud SavedData, growth block, purification and entity corruption two-boot reload GameTest: PASS (${SHROUD_DATA_FILES[0]})"
+mapfile -t FLAME_RELOAD_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_flame_progression.dat' -print)
+if (( ${#FLAME_RELOAD_DATA_FILES[@]} != 1 )); then
+  echo "Expected exactly one server-global enshrouded_flame_progression.dat after reload, found ${#FLAME_RELOAD_DATA_FILES[@]}" >&2
+  printf '%s\n' "${FLAME_RELOAD_DATA_FILES[@]:-}"
+  exit 1
+fi
+if [[ "${FLAME_RELOAD_DATA_FILES[0]}" != "${FLAME_DATA_FILES[0]}" ]]; then
+  echo 'Flame progression data file moved between boots instead of reloading in place' >&2
+  printf 'first: %s\nsecond: %s\n' "${FLAME_DATA_FILES[0]}" "${FLAME_RELOAD_DATA_FILES[0]}" >&2
+  exit 1
+fi
+
+echo "Flame progression, Shroud SavedData, growth block, purification and entity corruption two-boot reload GameTest: PASS (Flame: ${FLAME_DATA_FILES[0]}; Shroud: ${SHROUD_DATA_FILES[0]})"

@@ -136,7 +136,7 @@ jobs:
           fi
           exit "$STATUS"
 
-      - name: Shroud SavedData two-boot reload GameTest
+      - name: SavedData two-boot reload GameTest
         shell: bash
         run: bash scripts/ci/shroud-saveddata-reload-gametest.sh
 
