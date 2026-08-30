@@ -7,8 +7,10 @@
 1. [`01 test matrix`](01-test-matrix.md)
 2. [`02 performance`](02-performance.md)
 3. [`03 world upgrade`](03-world-upgrade.md)
-4. [`04 release checklist`](04-release-checklist.md)
-5. [`05 third-party licenses/provenance`](05-third-party-licenses-provenance.md)
+4. [`05 third-party licenses/provenance`](05-third-party-licenses-provenance.md)
+5. [`04 release checklist`](04-release-checklist.md)
+
+The numeric filenames are historical identifiers; causal execution order places provenance/license closure before the final release checklist because `04-release-checklist.md` depends on task 05.
 
 ## Runtime/release contracts
 
