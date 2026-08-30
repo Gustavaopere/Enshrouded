@@ -62,8 +62,8 @@ public final class ManifestationRuntimeGameTests {
                     "LivingDeathEvent must route the marked actor to the canonical encounter defeat service");
             helper.assertTrue(storySavedData.state().manifestation(expectedOwner).isDefeated(1),
                     "automatic death routing must advance manifestation 1 for the owner captured at runtime start");
-            helper.assertTrue(!storySavedData.state().encounter(active.encounterId()).orElseThrow().rewardIssued(),
-                    "automatic 06.03 defeat routing must not issue the 06.04 concrete reward");
+            helper.assertTrue(storySavedData.state().encounter(active.encounterId()).orElseThrow().rewardIssued(),
+                    "06.04 runtime defeat routing must atomically commit the concrete first-manifestation reward exactly once");
 
             var afterDefeatSample = ExposureRuntime.shroudQuery().sample(level, arenaCenter, null);
             helper.assertTrue(afterDefeatSample.sourceId().filter(active.encounterId()::equals).isEmpty(),
