@@ -25,13 +25,11 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -44,7 +42,7 @@ public final class FlameAltarGameTests {
             ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_break");
     private static final ResourceLocation BREAK_INTENT_ID =
             ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "gametest_flame_altar_break_intent");
-    private static final AtomicBoolean REGISTERED = new AtomicBoolean();
+    private static boolean registered;
 
     private FlameAltarGameTests() {
     }
@@ -159,11 +157,13 @@ public final class FlameAltarGameTests {
         helper.succeed();
     }
 
-    private static void ensureSyntheticRitualsRegistered() {
-        if (REGISTERED.compareAndSet(false, true)) {
-            FlameAltarRuntime.registerRitual(syntheticRitual(DOUBLE_RITUAL_ID, DOUBLE_INTENT_ID, Items.BLAZE_POWDER));
-            FlameAltarRuntime.registerRitual(syntheticRitual(BREAK_RITUAL_ID, BREAK_INTENT_ID, Items.MAGMA_CREAM));
+    private static synchronized void ensureSyntheticRitualsRegistered() {
+        if (registered) {
+            return;
         }
+        FlameAltarRuntime.registerRitual(syntheticRitual(DOUBLE_RITUAL_ID, DOUBLE_INTENT_ID, Items.BLAZE_POWDER));
+        FlameAltarRuntime.registerRitual(syntheticRitual(BREAK_RITUAL_ID, BREAK_INTENT_ID, Items.MAGMA_CREAM));
+        registered = true;
     }
 
     private static FlameRitual syntheticRitual(ResourceLocation ritualId, ResourceLocation intentId, Item requiredItem) {
@@ -212,11 +212,12 @@ public final class FlameAltarGameTests {
         return GameTestBootstrap.requireServerLevel(helper);
     }
 
+    @SuppressWarnings("removal")
     private static ServerPlayer requireServerPlayer(GameTestHelper helper) {
-        var player = GameTestBootstrap.makeMockPlayer(helper, GameType.SURVIVAL);
-        helper.assertTrue(player instanceof ServerPlayer,
-                "Flame Altar GameTest requires the mock player to be a ServerPlayer");
-        return (ServerPlayer) player;
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        helper.assertTrue(player != null,
+                "Flame Altar GameTest requires a server-side mock player");
+        return player;
     }
 
     private static FlameAltarBlockEntity requireAltar(GameTestHelper helper, BlockPos relative) {
