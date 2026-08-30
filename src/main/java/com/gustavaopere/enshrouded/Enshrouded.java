@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.command.ShroudCoreCommand;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionRuntime;
 import com.gustavaopere.enshrouded.exposure.ExposureRuntime;
+import com.gustavaopere.enshrouded.flame.state.FlameProgressionRuntime;
 import com.gustavaopere.enshrouded.network.ModNetworking;
 import com.gustavaopere.enshrouded.network.ShroudSyncRuntime;
 import com.gustavaopere.enshrouded.registry.ModRegistries;
@@ -31,6 +32,7 @@ public final class Enshrouded {
         ShroudCoreRegistrationQueue.registerRuntime();
         ShroudCoreCommand.registerRuntime();
         ShroudSyncRuntime.register();
+        FlameProgressionRuntime.register();
         ExposureRuntime.register();
         EntityCorruptionRuntime.register();
         MagicResistanceRuntime.register();
