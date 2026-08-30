@@ -24,14 +24,7 @@ public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
     private final MutationAuthority mutationAuthority;
 
     public ShroudCoreFeature(Codec<NoneFeatureConfiguration> codec, ShroudCoreCandidateField candidates) {
-        this(
-                codec,
-                candidates,
-                DefaultMutationAuthority.fromConfig(
-                        FlameWardRuntimeBindings.query(),
-                        ProtectedAreaService.none()
-                )
-        );
+        this(codec, candidates, ShroudCoreFeature::canMutateFromRuntimeConfig);
     }
 
     ShroudCoreFeature(
@@ -82,5 +75,15 @@ public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
             coreBlockEntity.requestAutomaticActivation();
         }
         return true;
+    }
+
+    private static boolean canMutateFromRuntimeConfig(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos pos,
+            MutationKind kind) {
+        return DefaultMutationAuthority.fromConfig(
+                FlameWardRuntimeBindings.query(),
+                ProtectedAreaService.none()
+        ).canMutate(level, pos, kind);
     }
 }
