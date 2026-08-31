@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.story.state;
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.gametest.GameTestBootstrap;
+import com.gustavaopere.enshrouded.story.reward.LichRewardService;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -20,6 +21,10 @@ public final class StoryStateGameTests {
             UUID.fromString("60601001-0000-4000-8000-000000000001"));
     private static final UUID RELOAD_ENCOUNTER = UUID.fromString("60601001-0000-4000-8000-000000000002");
     private static final UUID MISSING_ACTOR = UUID.fromString("60601001-0000-4000-8000-000000000003");
+    private static final ProgressionOwner REWARD_RELOAD_OWNER = ProgressionOwner.player(
+            UUID.fromString("60604004-0000-4000-8000-000000000001"));
+    private static final UUID REWARD_RELOAD_ENCOUNTER = UUID.fromString("60604004-0000-4000-8000-000000000002");
+    private static final UUID REWARD_DEFEATED_ACTOR = UUID.fromString("60604004-0000-4000-8000-000000000003");
 
     private StoryStateGameTests() {
     }
@@ -40,14 +45,19 @@ public final class StoryStateGameTests {
 
     @GameTest(template = "foundation_empty", batch = STORY_STATE_BATCH)
     public static void activeEncounterWithoutActorAbortsAcrossRealTwoBootReload(GameTestHelper helper) {
-        StorySavedData data = StorySavedData.get(GameTestBootstrap.requireServerLevel(helper));
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        StorySavedData data = StorySavedData.get(level);
         var existing = data.state().encounter(RELOAD_ENCOUNTER);
 
         if (existing.isEmpty()) {
-            LichStoryState active = data.state()
+            LichStoryState firstBoot = data.state()
                     .createEncounter(RELOAD_OWNER, RELOAD_ENCOUNTER, 1).orElseThrow()
-                    .activateEncounter(RELOAD_ENCOUNTER, MISSING_ACTOR).orElseThrow();
-            data.replace(active);
+                    .activateEncounter(RELOAD_ENCOUNTER, MISSING_ACTOR).orElseThrow()
+                    .createEncounter(REWARD_RELOAD_OWNER, REWARD_RELOAD_ENCOUNTER, 1).orElseThrow()
+                    .activateEncounter(REWARD_RELOAD_ENCOUNTER, REWARD_DEFEATED_ACTOR).orElseThrow()
+                    .defeatEncounter(REWARD_RELOAD_ENCOUNTER).orElseThrow()
+                    .issueReward(REWARD_RELOAD_ENCOUNTER).orElseThrow();
+            data.replace(firstBoot);
             GameTestBootstrap.forceSaveForReload(helper);
             System.out.println("ENSHROUDED_STORY_CREATED");
         } else {
@@ -62,6 +72,16 @@ public final class StoryStateGameTests {
                     "Missing-actor recovery must never manufacture a defeat reward");
             helper.assertTrue(!data.state().manifestation(RELOAD_OWNER).defeatedManifestationIndices().contains(1),
                     "Missing-actor recovery must not mark manifestation 1 defeated");
+
+            EncounterRecord issuedReward = data.state().encounter(REWARD_RELOAD_ENCOUNTER).orElseThrow();
+            helper.assertTrue(issuedReward.owner().equals(REWARD_RELOAD_OWNER),
+                    "reload must preserve the stored owner of an already-issued first-manifestation reward");
+            helper.assertTrue(issuedReward.outcome() == EncounterOutcome.DEFEATED && issuedReward.rewardIssued(),
+                    "already-issued first-manifestation reward must remain durably marked after reload");
+            helper.assertTrue(LichRewardService.forLevel(level)
+                            .issue(REWARD_RELOAD_ENCOUNTER, receipt -> true).isEmpty(),
+                    "reloading then replaying reward issuance must not produce a second skull receipt");
+            System.out.println("ENSHROUDED_LICH_REWARD_RELOADED_NO_REPLAY");
             System.out.println("ENSHROUDED_STORY_RELOADED");
         }
         helper.succeed();

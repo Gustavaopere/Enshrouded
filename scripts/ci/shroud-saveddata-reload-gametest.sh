@@ -16,8 +16,19 @@ command -v timeout >/dev/null 2>&1 || {
 
 mkdir -p "$BUILD_DIR"
 rm -rf "$RUN_DIR"
-mkdir -p "$RUN_DIR"
+mkdir -p "$RUN_DIR/world/serverconfig"
 printf 'eula=true\n' > "$RUN_DIR/eula.txt"
+
+# The first boot intentionally persists a mid-purification sentinel. The GameTest server keeps
+# ticking production runtimes after that individual test succeeds, so use a world-local SERVER
+# config only in this two-boot harness to prevent the sentinel from completing before shutdown.
+# This does not change production defaults or the ordinary GameTest-server CI gate. NeoForge may
+# normalize the partial TOML file on load; the second-boot sentinel is the authoritative behavioral
+# proof that the harness budget remained low enough for restart verification.
+cat > "$RUN_DIR/world/serverconfig/enshrouded-server.toml" <<'EOF'
+[shroudCore]
+regressionWorkPerTick = 1
+EOF
 
 run_gametest_boot() {
   local log_file="$1"
@@ -126,6 +137,10 @@ grep -Fq 'ENSHROUDED_STORY_RELOADED' "$RELOAD_LOG" || {
   echo 'Second GameTest boot did not reconcile and reload the persisted Story State sentinel' >&2
   exit 1
 }
+grep -Fq 'ENSHROUDED_LICH_REWARD_RELOADED_NO_REPLAY' "$RELOAD_LOG" || {
+  echo 'Second GameTest boot did not prove exactly-once Lich reward replay protection' >&2
+  exit 1
+}
 grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$RELOAD_LOG" || {
   echo 'Second GameTest boot did not reload the persisted Shroud SavedData sentinel' >&2
   exit 1
@@ -195,4 +210,4 @@ if [[ "${STORY_RELOAD_DATA_FILES[0]}" != "${STORY_DATA_FILES[0]}" ]]; then
   exit 1
 fi
 
-echo "Flame progression, Story State, Shroud SavedData, growth block, purification and entity corruption two-boot reload GameTest: PASS (Flame: ${FLAME_DATA_FILES[0]}; Story: ${STORY_DATA_FILES[0]}; Shroud: ${SHROUD_DATA_FILES[0]})"
+echo "Flame progression, Story State, exactly-once Lich reward, Shroud SavedData, growth block, purification and entity corruption two-boot reload GameTest: PASS (Flame: ${FLAME_DATA_FILES[0]}; Story: ${STORY_DATA_FILES[0]}; Shroud: ${SHROUD_DATA_FILES[0]})"
