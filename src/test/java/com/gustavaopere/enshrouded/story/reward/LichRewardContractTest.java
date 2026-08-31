@@ -37,8 +37,8 @@ final class LichRewardContractTest {
         MemoryRewardStore store = new MemoryRewardStore(defeatedState());
         LichRewardService service = new LichRewardService(store);
 
-        RewardReceipt first = service.issue(ENCOUNTER_ID).orElseThrow();
-        Optional<RewardReceipt> replay = service.issue(ENCOUNTER_ID);
+        RewardReceipt first = service.issue(ENCOUNTER_ID, receipt -> true).orElseThrow();
+        Optional<RewardReceipt> replay = service.issue(ENCOUNTER_ID, receipt -> true);
 
         assertEquals(OWNER, first.owner());
         assertEquals(ENCOUNTER_ID, first.encounterId());
