@@ -15,5 +15,14 @@
   "item.enshrouded.lich_skull_manifestation_1.tooltip": "Trophy of the first defeated manifestation. Accepted by the Flame Altar.",
   "item.enshrouded.lich_skull_manifestation_1.authentic": "Authentic Enshrouded encounter trophy",
   "entity.enshrouded.shroud_lich": "Shroud Lich",
-  "death.attack.madness": "%1$s succumbed to the Shroud's Madness"
+  "death.attack.madness": "%1$s succumbed to the Shroud's Madness",
+  "hud.enshrouded.shroud": "Shroud",
+  "hud.enshrouded.deadly_shroud": "Deadly Shroud",
+  "hud.enshrouded.passage_blocked": "Passage blocked",
+  "hud.enshrouded.madness": "Madness: %s",
+  "hud.enshrouded.madness.stable": "Stable",
+  "hud.enshrouded.madness.uneasy": "Uneasy",
+  "hud.enshrouded.madness.distorted": "Distorted",
+  "hud.enshrouded.madness.critical": "Critical",
+  "hud.enshrouded.madness.fatal": "Fatal"
 }
