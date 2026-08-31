@@ -19,13 +19,9 @@ public final class ShroudHudOverlay {
     private static final ResourceLocation ICON_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "textures/gui/shroud_hud_icons.png");
 
-    private static final int PANEL_WIDTH = 136;
-    private static final int PANEL_HEIGHT = 44;
+    private static final int PANEL_WIDTH = 160;
+    private static final int PANEL_HEIGHT = 60;
     private static final int MARGIN = 8;
-    private static final long NANOS_PER_TICK = 50_000_000L;
-
-    private static long trackedSequence = Long.MIN_VALUE;
-    private static long acceptedAtNanos;
 
     private ShroudHudOverlay() {
     }
@@ -41,17 +37,10 @@ public final class ShroudHudOverlay {
         }
 
         ClientExposureState state = ClientExposureState.INSTANCE;
-        long sequence = state.lastSequence();
-        long now = System.nanoTime();
-        if (sequence != trackedSequence) {
-            trackedSequence = sequence;
-            acceptedAtNanos = now;
-        }
-
-        int elapsedTicks = sequence < 0L
-                ? 0
-                : (int) Math.min(Integer.MAX_VALUE, Math.max(0L, (now - acceptedAtNanos) / NANOS_PER_TICK));
-        ExposureHudModel model = ExposureHudModel.fromSnapshot(state.snapshot(), elapsedTicks);
+        // Exposure snapshots are produced from server-tick cadence and the HUD renders whole seconds.
+        // Do not invent additional drain from client wall-clock time: pause, low server TPS and stalls
+        // must leave the last authoritative reserve unchanged until a newer server snapshot arrives.
+        ExposureHudModel model = ExposureHudModel.fromSnapshot(state.snapshot(), 0);
         if (!model.visible()) {
             return;
         }
@@ -94,9 +83,14 @@ public final class ShroudHudOverlay {
                     x + 6, y + 30, 0xFFE2DFF0, true);
 
             if (model.passageWarning()) {
-                graphics.drawString(minecraft.font,
+                graphics.drawWordWrap(
+                        minecraft.font,
                         Component.translatable(model.warningTranslationKey()),
-                        x + 82, y + 17, 0xFFFFD27F, true);
+                        x + 6,
+                        y + 43,
+                        PANEL_WIDTH - 12,
+                        0xFFFFD27F
+                );
             }
         } finally {
             graphics.pose().popPose();
