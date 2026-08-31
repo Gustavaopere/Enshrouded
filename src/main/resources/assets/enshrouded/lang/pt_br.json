@@ -24,5 +24,8 @@
   "hud.enshrouded.madness.uneasy": "Inquieta",
   "hud.enshrouded.madness.distorted": "Distorcida",
   "hud.enshrouded.madness.critical": "Crítica",
-  "hud.enshrouded.madness.fatal": "Fatal"
+  "hud.enshrouded.madness.fatal": "Fatal",
+  "subtitles.enshrouded.shroud_ambient": "A Mortalha se agita",
+  "subtitles.enshrouded.deadly_shroud_ambient": "A Mortalha Mortal se revolve",
+  "subtitles.enshrouded.madness_whisper": "A Loucura sussurra"
 }

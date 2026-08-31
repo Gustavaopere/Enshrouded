@@ -24,5 +24,8 @@
   "hud.enshrouded.madness.uneasy": "Uneasy",
   "hud.enshrouded.madness.distorted": "Distorted",
   "hud.enshrouded.madness.critical": "Critical",
-  "hud.enshrouded.madness.fatal": "Fatal"
+  "hud.enshrouded.madness.fatal": "Fatal",
+  "subtitles.enshrouded.shroud_ambient": "Shroud ambience swirls",
+  "subtitles.enshrouded.deadly_shroud_ambient": "Deadly Shroud churns",
+  "subtitles.enshrouded.madness_whisper": "Madness whispers"
 }

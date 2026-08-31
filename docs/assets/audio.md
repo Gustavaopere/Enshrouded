@@ -1,10 +1,9 @@
 # Enshrouded audio assets
 
-Stage 07.03 ambient audio is original project material generated procedurally from synthetic oscillators plus deterministic seeded noise. No third-party recordings, samples, or proprietary Enshrouded-game assets are included.
+Stage 07.03 audio is original project material generated procedurally from synthetic oscillators and deterministic seeded noise. No third-party samples or proprietary game audio are included.
 
-| Asset | Purpose | Provenance | Redistribution |
-|---|---|---|---|
-| `src/main/resources/assets/enshrouded/sounds/ambient/shroud.ogg` | Ordinary Shroud local ambient pulse | Procedurally generated for this repository; synthetic waveform/noise only | CC0-1.0 |
-| `src/main/resources/assets/enshrouded/sounds/ambient/deadly_shroud.ogg` | Deadly Shroud local ambient pulse | Procedurally generated for this repository; synthetic waveform/noise only | CC0-1.0 |
+- `sounds/ambient/shroud.ogg` — ordinary Shroud ambient pulse; procedural project asset; CC0-1.0.
+- `sounds/ambient/deadly_shroud.ogg` — Deadly Shroud ambient pulse; procedural project asset; CC0-1.0.
+- `sounds/madness/whisper.ogg` — Critical/Fatal Madness cue; procedural project asset from synthetic noise and tones; CC0-1.0.
 
-The files are short, non-looping Ogg/Vorbis pulses. Runtime spacing is controlled by the client-side bounded emission budget rather than by a persistent looping sound instance, so leaving the Shroud cannot leave an owned ambient loop alive.
+The files are short non-looping Ogg/Vorbis pulses. Runtime cooldowns bound playback and no persistent Enshrouded-owned loop is created.

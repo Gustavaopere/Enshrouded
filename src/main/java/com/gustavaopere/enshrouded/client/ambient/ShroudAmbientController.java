@@ -1,12 +1,13 @@
 package com.gustavaopere.enshrouded.client.ambient;
 
+import com.gustavaopere.enshrouded.client.effects.MadnessAudioCue;
 import com.gustavaopere.enshrouded.client.state.ClientExposureState;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
 import com.gustavaopere.enshrouded.exposure.ExposureSnapshot;
+import com.gustavaopere.enshrouded.registry.ModParticles;
 import com.gustavaopere.enshrouded.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.IEventBus;
@@ -14,15 +15,12 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 import java.util.Objects;
 
-/**
- * Client-only bounded ambient presentation derived exclusively from synchronized Exposure state.
- */
+/** Client-only bounded ambient presentation derived exclusively from synchronized Exposure state. */
 public final class ShroudAmbientController {
     private static final BudgetState BUDGET = new BudgetState();
     private static long clientTick;
 
-    private ShroudAmbientController() {
-    }
+    private ShroudAmbientController() {}
 
     public static void register(IEventBus gameBus) {
         Objects.requireNonNull(gameBus, "gameBus");
@@ -36,16 +34,12 @@ public final class ShroudAmbientController {
 
     private static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || minecraft.player == null) {
-            return;
-        }
+        if (minecraft.level == null || minecraft.player == null) return;
 
         clientTick++;
         ExposureSnapshot snapshot = ClientExposureState.INSTANCE.snapshot();
-        ShroudSoundProfile soundProfile = ShroudSoundProfile.forState(
-                snapshot.severity(), snapshot.sanctuarySuppressed());
-        ShroudParticleProfile particleProfile = ShroudParticleProfile.forState(
-                snapshot.severity(), snapshot.sanctuarySuppressed());
+        ShroudSoundProfile soundProfile = ShroudSoundProfile.forState(snapshot.severity(), snapshot.sanctuarySuppressed());
+        ShroudParticleProfile particleProfile = ShroudParticleProfile.forState(snapshot.severity(), snapshot.sanctuarySuppressed());
         EnshroudedClientConfig.AudioSettings audio = EnshroudedClientConfig.audioSettings();
         EnshroudedClientConfig.ParticleSettings particles = EnshroudedClientConfig.particleSettings();
 
@@ -55,6 +49,12 @@ public final class ShroudAmbientController {
         }
         if (plan.particleCount() > 0) {
             emitParticles(minecraft, particleProfile, plan.particleCount());
+        }
+
+        MadnessAudioCue madnessCue = MadnessAudioCue.forStage(snapshot.madnessStage());
+        EnshroudedClientConfig.MadnessAudioSettings madnessAudio = EnshroudedClientConfig.madnessAudioSettings();
+        if (planMadness(madnessCue, madnessAudio, clientTick, BUDGET)) {
+            emitMadnessCue(minecraft, madnessCue, (float) (madnessCue.volumeMultiplier() * madnessAudio.intensity()));
         }
     }
 
@@ -72,30 +72,36 @@ public final class ShroudAmbientController {
         Objects.requireNonNull(state, "state");
 
         boolean playSound = false;
-        if (soundProfile != ShroudSoundProfile.NONE
-                && audio.enabled()
-                && audio.volume() > 0.0D
-                && tick >= state.nextSoundTick) {
+        if (soundProfile != ShroudSoundProfile.NONE && audio.enabled() && audio.volume() > 0.0D && tick >= state.nextSoundTick) {
             playSound = true;
             state.nextSoundTick = saturatingAdd(tick, soundProfile.cooldownTicks());
         }
 
         int particleCount = 0;
-        if (particleProfile != ShroudParticleProfile.NONE
-                && particles.enabled()
-                && particles.maxCount() > 0
-                && tick >= state.nextParticleTick) {
+        if (particleProfile != ShroudParticleProfile.NONE && particles.enabled() && particles.maxCount() > 0 && tick >= state.nextParticleTick) {
             particleCount = Math.min(particleProfile.baseCount(), particles.maxCount());
             state.nextParticleTick = saturatingAdd(tick, particleProfile.intervalTicks());
         }
-
         return new EmissionPlan(playSound, particleCount);
     }
 
-    private static long saturatingAdd(long tick, int delta) {
-        if (delta <= 0 || tick > Long.MAX_VALUE - delta) {
-            return Long.MAX_VALUE;
+    public static boolean planMadness(
+            MadnessAudioCue cue,
+            EnshroudedClientConfig.MadnessAudioSettings settings,
+            long tick,
+            BudgetState state) {
+        Objects.requireNonNull(cue, "cue");
+        Objects.requireNonNull(settings, "settings");
+        Objects.requireNonNull(state, "state");
+        if (cue == MadnessAudioCue.NONE || !settings.enabled() || settings.intensity() <= 0.0D || tick < state.nextMadnessSoundTick) {
+            return false;
         }
+        state.nextMadnessSoundTick = saturatingAdd(tick, cue.cooldownTicks());
+        return true;
+    }
+
+    private static long saturatingAdd(long tick, int delta) {
+        if (delta <= 0 || tick > Long.MAX_VALUE - delta) return Long.MAX_VALUE;
         return tick + delta;
     }
 
@@ -103,22 +109,20 @@ public final class ShroudAmbientController {
         SoundEvent sound = profile == ShroudSoundProfile.DEADLY
                 ? ModSounds.DEADLY_SHROUD_AMBIENT.get()
                 : ModSounds.SHROUD_AMBIENT.get();
-        minecraft.level.playLocalSound(
-                minecraft.player.getX(),
-                minecraft.player.getY(),
-                minecraft.player.getZ(),
-                sound,
-                SoundSource.AMBIENT,
-                volume,
-                1.0F,
-                false
-        );
+        minecraft.level.playLocalSound(minecraft.player.getX(), minecraft.player.getY(), minecraft.player.getZ(), sound,
+                SoundSource.AMBIENT, volume, 1.0F, false);
+    }
+
+    private static void emitMadnessCue(Minecraft minecraft, MadnessAudioCue cue, float volume) {
+        float pitch = cue == MadnessAudioCue.FATAL ? 0.86F : 1.0F;
+        minecraft.level.playLocalSound(minecraft.player.getX(), minecraft.player.getY(), minecraft.player.getZ(),
+                ModSounds.MADNESS_WHISPER.get(), SoundSource.AMBIENT, volume, pitch, false);
     }
 
     private static void emitParticles(Minecraft minecraft, ShroudParticleProfile profile, int count) {
         ParticleOptions particle = profile == ShroudParticleProfile.DEADLY
-                ? ParticleTypes.REVERSE_PORTAL
-                : ParticleTypes.ASH;
+                ? ModParticles.RED_SLUDGE.get()
+                : ModParticles.SHROUD_GROWTH.get();
         for (int index = 0; index < count; index++) {
             double x = minecraft.player.getX() + (minecraft.level.random.nextDouble() - 0.5D) * 4.0D;
             double y = minecraft.player.getY() + 0.25D + minecraft.level.random.nextDouble() * 2.0D;
@@ -130,18 +134,18 @@ public final class ShroudAmbientController {
     public static final class BudgetState {
         private long nextSoundTick = Long.MIN_VALUE;
         private long nextParticleTick = Long.MIN_VALUE;
+        private long nextMadnessSoundTick = Long.MIN_VALUE;
 
         public void reset() {
             nextSoundTick = Long.MIN_VALUE;
             nextParticleTick = Long.MIN_VALUE;
+            nextMadnessSoundTick = Long.MIN_VALUE;
         }
     }
 
     public record EmissionPlan(boolean playSound, int particleCount) {
         public EmissionPlan {
-            if (particleCount < 0) {
-                throw new IllegalArgumentException("particleCount must be >= 0");
-            }
+            if (particleCount < 0) throw new IllegalArgumentException("particleCount must be >= 0");
         }
     }
 }

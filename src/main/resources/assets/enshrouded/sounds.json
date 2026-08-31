@@ -1,20 +1,14 @@
 {
   "shroud_ambient": {
     "subtitle": "subtitles.enshrouded.shroud_ambient",
-    "sounds": [
-      {
-        "name": "enshrouded:ambient/shroud",
-        "stream": false
-      }
-    ]
+    "sounds": [{"name": "enshrouded:ambient/shroud", "stream": false}]
   },
   "deadly_shroud_ambient": {
     "subtitle": "subtitles.enshrouded.deadly_shroud_ambient",
-    "sounds": [
-      {
-        "name": "enshrouded:ambient/deadly_shroud",
-        "stream": false
-      }
-    ]
+    "sounds": [{"name": "enshrouded:ambient/deadly_shroud", "stream": false}]
+  },
+  "madness_whisper": {
+    "subtitle": "subtitles.enshrouded.madness_whisper",
+    "sounds": [{"name": "enshrouded:madness/whisper", "stream": false}]
   }
 }
