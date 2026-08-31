@@ -101,7 +101,7 @@ public final class ShroudAmbientController {
 
     private static void emitSound(Minecraft minecraft, ShroudSoundProfile profile, float volume) {
         SoundEvent sound = profile == ShroudSoundProfile.DEADLY
-                ? SoundEvents.ENDERMAN_STARE.value()
+                ? SoundEvents.ENDERMAN_STARE
                 : SoundEvents.AMBIENT_CAVE.value();
         minecraft.level.playLocalSound(
                 minecraft.player.getX(),
