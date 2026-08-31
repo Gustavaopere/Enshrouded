@@ -38,7 +38,7 @@ public final class ShroudFogController {
         float deltaTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
         STATE.advance(snapshot.severity(), snapshot.sanctuarySuppressed(), deltaTicks);
 
-        if (event.getType() != FogType.NONE || !STATE.active()) {
+        if (settings.intensity() <= 0.0D || event.getType() != FogType.NONE || !STATE.active()) {
             return;
         }
 
@@ -55,7 +55,8 @@ public final class ShroudFogController {
 
     private static void onComputeFogColor(ViewportEvent.ComputeFogColor event) {
         EnshroudedClientConfig.FogSettings settings = EnshroudedClientConfig.fogSettings();
-        if (!settings.enabled() || !STATE.active() || event.getCamera().getFluidInCamera() != FogType.NONE) {
+        if (!settings.enabled() || settings.intensity() <= 0.0D || !STATE.active()
+                || event.getCamera().getFluidInCamera() != FogType.NONE) {
             return;
         }
 
