@@ -16,6 +16,12 @@ public final class EnshroudedClientConfig {
     public static final double DEFAULT_FOG_INTENSITY = 1.0D;
     public static final double MIN_FOG_INTENSITY = 0.0D;
     public static final double MAX_FOG_INTENSITY = 1.0D;
+    public static final double DEFAULT_AUDIO_VOLUME = 0.65D;
+    public static final double MIN_AUDIO_VOLUME = 0.0D;
+    public static final double MAX_AUDIO_VOLUME = 1.0D;
+    public static final int DEFAULT_PARTICLE_COUNT = 8;
+    public static final int MIN_PARTICLE_COUNT = 0;
+    public static final int MAX_PARTICLE_COUNT = 16;
 
     public static final ModConfigSpec CLIENT_SPEC;
 
@@ -24,6 +30,10 @@ public final class EnshroudedClientConfig {
     private static final ModConfigSpec.EnumValue<HudAnchor> HUD_ANCHOR;
     private static final ModConfigSpec.BooleanValue FOG_ENABLED;
     private static final ModConfigSpec.DoubleValue FOG_INTENSITY;
+    private static final ModConfigSpec.BooleanValue AUDIO_ENABLED;
+    private static final ModConfigSpec.DoubleValue AUDIO_VOLUME;
+    private static final ModConfigSpec.BooleanValue PARTICLES_ENABLED;
+    private static final ModConfigSpec.IntValue PARTICLE_MAX_COUNT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -47,6 +57,22 @@ public final class EnshroudedClientConfig {
                 .comment("Strength of enhanced Shroud fog color and distance treatment.")
                 .defineInRange("intensity", DEFAULT_FOG_INTENSITY, MIN_FOG_INTENSITY, MAX_FOG_INTENSITY);
         builder.pop();
+        builder.push("audio");
+        AUDIO_ENABLED = builder
+                .comment("Enable local Shroud ambience. Disabling audio does not alter particles or gameplay.")
+                .define("enabled", true);
+        AUDIO_VOLUME = builder
+                .comment("Volume multiplier for Enshrouded ambient Shroud sounds.")
+                .defineInRange("volume", DEFAULT_AUDIO_VOLUME, MIN_AUDIO_VOLUME, MAX_AUDIO_VOLUME);
+        builder.pop();
+        builder.push("particles");
+        PARTICLES_ENABLED = builder
+                .comment("Enable local ambient Shroud particles. Disabling particles does not alter audio or gameplay.")
+                .define("enabled", true);
+        PARTICLE_MAX_COUNT = builder
+                .comment("Hard client-side cap on particles emitted by one Enshrouded ambient pulse.")
+                .defineInRange("maxCount", DEFAULT_PARTICLE_COUNT, MIN_PARTICLE_COUNT, MAX_PARTICLE_COUNT);
+        builder.pop();
         CLIENT_SPEC = builder.build();
     }
 
@@ -68,6 +94,14 @@ public final class EnshroudedClientConfig {
         );
     }
 
+    public static AudioSettings audioSettings() {
+        return new AudioSettings(AUDIO_ENABLED.getAsBoolean(), clampAudioVolume(AUDIO_VOLUME.getAsDouble()));
+    }
+
+    public static ParticleSettings particleSettings() {
+        return new ParticleSettings(PARTICLES_ENABLED.getAsBoolean(), clampParticleCount(PARTICLE_MAX_COUNT.getAsInt()));
+    }
+
     public static double clampHudScale(double value) {
         if (!Double.isFinite(value)) {
             return DEFAULT_HUD_SCALE;
@@ -80,6 +114,17 @@ public final class EnshroudedClientConfig {
             return DEFAULT_FOG_INTENSITY;
         }
         return Math.max(MIN_FOG_INTENSITY, Math.min(MAX_FOG_INTENSITY, value));
+    }
+
+    public static double clampAudioVolume(double value) {
+        if (!Double.isFinite(value)) {
+            return DEFAULT_AUDIO_VOLUME;
+        }
+        return Math.max(MIN_AUDIO_VOLUME, Math.min(MAX_AUDIO_VOLUME, value));
+    }
+
+    public static int clampParticleCount(int value) {
+        return Math.max(MIN_PARTICLE_COUNT, Math.min(MAX_PARTICLE_COUNT, value));
     }
 
     public enum HudAnchor {
@@ -109,6 +154,26 @@ public final class EnshroudedClientConfig {
 
         public static FogSettings defaults() {
             return new FogSettings(true, DEFAULT_FOG_INTENSITY);
+        }
+    }
+
+    public record AudioSettings(boolean enabled, double volume) {
+        public AudioSettings {
+            volume = clampAudioVolume(volume);
+        }
+
+        public static AudioSettings defaults() {
+            return new AudioSettings(true, DEFAULT_AUDIO_VOLUME);
+        }
+    }
+
+    public record ParticleSettings(boolean enabled, int maxCount) {
+        public ParticleSettings {
+            maxCount = clampParticleCount(maxCount);
+        }
+
+        public static ParticleSettings defaults() {
+            return new ParticleSettings(true, DEFAULT_PARTICLE_COUNT);
         }
     }
 }
