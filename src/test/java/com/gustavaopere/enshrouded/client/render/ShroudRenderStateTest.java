@@ -69,15 +69,24 @@ final class ShroudRenderStateTest {
     }
 
     @Test
-    void hotPathStateMathRemainsCheap() {
+    void enabledAndDisabledHotPathsRemainCheap() {
         ShroudRenderState state = new ShroudRenderState();
-        long start = System.nanoTime();
+
+        long enabledStart = System.nanoTime();
         for (int i = 0; i < 250_000; i++) {
             state.advance((i & 1) == 0 ? ShroudSeverity.SHROUD : ShroudSeverity.DEADLY, false, 0.25F);
             state.colorProfile(0.85D);
         }
-        long elapsedMillis = (System.nanoTime() - start) / 1_000_000L;
+        long enabledMillis = (System.nanoTime() - enabledStart) / 1_000_000L;
 
-        assertTrue(elapsedMillis < 1_000L, "250k render-state updates took " + elapsedMillis + " ms");
+        long disabledStart = System.nanoTime();
+        for (int i = 0; i < 250_000; i++) {
+            state.reset();
+        }
+        long disabledMillis = (System.nanoTime() - disabledStart) / 1_000_000L;
+
+        String measurements = "enabled=" + enabledMillis + "ms, disabled=" + disabledMillis + "ms for 250k iterations";
+        assertTrue(enabledMillis < 1_000L, measurements);
+        assertTrue(disabledMillis < 1_000L, measurements);
     }
 }
