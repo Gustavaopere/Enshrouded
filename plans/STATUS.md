@@ -12,7 +12,7 @@ Last structural update: 2026-08-31.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
 - [x] 06 Lich & Story — all 4 tasks verified and merged.
-- [ ] 07 Client Experience — 2/4 tasks verified and merged.
+- [ ] 07 Client Experience — 3/4 tasks verified and merged.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
 
@@ -580,7 +580,7 @@ Exact final PR-head gates passed: wrapper provenance, unit tests, frontier bench
 
 **06 Lich & Story is complete.**
 
-## 07 Client Experience — 2/4 complete
+## 07 Client Experience — 3/4 complete
 
 ### ✅ 01 Exposure HUD + shared client config
 
@@ -626,15 +626,35 @@ Interpolation advances exactly once per rendered frame through NeoForge `RenderF
 
 The feature remains physically client-only, has no mandatory Veil dependency and introduces no new cross-stage pending contract.
 
+### ✅ 03 Shroud audio and particles
+
+- Branch: `feat/07-audio-particles`.
+- Baseline asset checkpoint: `ae1562e075d57ca92dc682731768027a889b379a`; workflow `33401136621` — GREEN before the final missing contracts were added.
+- Final TDD RED contract commit: `f9368288ed8a10043c0f4141e63fbaf410a9c4f5`; workflow `33407355136` — failed at test compilation with 44 errors exclusively for deliberately absent `MadnessAudioCue`, `MadnessAudioSettings`, distance-aware `ParticleSettings` and `ShroudSourceParticlePlanner` contracts.
+- Final implementation HEAD: `13cabf913ff81addb68778e2c6257de5e0f457fb`.
+- Final push verification: workflow `33408412199`, job `99541653083` — GREEN.
+- PR: #54 — `Stage 07.03: audio and particles`.
+- Final exact PR-head verification: workflow `33410349784`, job `99548076424` — GREEN across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, 74/74 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Automated Codex review could not execute because the review service reported an account usage-limit condition; it produced no technical finding or review thread. Manual review of the authority, lifecycle, registry and bounded-sampling paths found no merge blocker.
+- Merge SHA: `6b92a99c035237e9e5bc774b20b6619440a1faa0`.
+- Post-merge `main` workflow: `33411460873`, job `99551777488` — GREEN on the implementation merge SHA across the same complete gate set.
+- Completed file: `✅-03-audio-particles.md`.
+
+Stage 07.03 consumes only synchronized server-authored exposure/Madness presentation state and the single shared Stage 07 client config. Ordinary/Deadly ambience uses bounded non-looping one-shot pulses, while Madness audio has independent enable/volume and cooldown control without owning a second Madness state.
+
+Project-owned `shroud_core`, `shroud_growth` and `red_sludge` particles are sampled only from loaded positions around the local player. Source discovery is bounded by configured distance, a 192-position candidate cap per pulse and one aggregate `maxCount` particle budget; it does not force chunks or perform global world/entity scans. Connection logout resets audio budgets and the source cursor. Sound/particle registries remain common bootstrap declarations, while providers/controllers remain physically `Dist.CLIENT`.
+
+All new audio/particle assets are original/project-owned. AmbientSounds and Particular remain optional presentation neighbors rather than required dependencies or authorities. No new cross-stage pending contract was introduced.
+
 ## Immediate next step
 
-Stage 07 is in progress at **2/4**. The next planned implementation task is **07.03 audio/particles**, but it must not be started automatically; begin it only when explicitly requested from the then-current verified `main`.
+Stage 07 is in progress at **3/4**. The next planned implementation task is **07.04 accessibility presets/validation**, but it must not be started automatically; begin it only when explicitly requested from the then-current verified `main`.
 
 Stage 07 causal implementation order:
 
 1. `✅ feat/07-hud`
 2. `✅ feat/07-fog-rendering`
-3. `⏳ 07.03 audio/particles`
+3. `✅ feat/07-audio-particles`
 4. `⏳ 07.04 accessibility presets/validation`
 
 ## Level 1 release gate
