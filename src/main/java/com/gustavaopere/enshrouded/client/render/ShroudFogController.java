@@ -35,7 +35,7 @@ public final class ShroudFogController {
         }
 
         ExposureSnapshot snapshot = exposureState.snapshot();
-        float deltaTicks = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks();
+        float deltaTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
         STATE.advance(snapshot.severity(), snapshot.sanctuarySuppressed(), deltaTicks);
 
         if (event.getType() != FogType.NONE || !STATE.active()) {
