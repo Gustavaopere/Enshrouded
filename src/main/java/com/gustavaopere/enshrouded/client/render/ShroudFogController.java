@@ -3,9 +3,9 @@ package com.gustavaopere.enshrouded.client.render;
 import com.gustavaopere.enshrouded.client.state.ClientExposureState;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
 import com.gustavaopere.enshrouded.exposure.ExposureSnapshot;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.material.FogType;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
 /** Physical-client-only Stage 07 fog projection over synchronized server-authored exposure state. */
@@ -17,11 +17,17 @@ public final class ShroudFogController {
     }
 
     public static void register(IEventBus gameBus) {
+        gameBus.addListener(ShroudFogController::onRenderFramePre);
         gameBus.addListener(ShroudFogController::onRenderFog);
         gameBus.addListener(ShroudFogController::onComputeFogColor);
     }
 
-    private static void onRenderFog(ViewportEvent.RenderFog event) {
+    /** Clears presentation-only interpolation state at client connection boundaries. */
+    public static void reset() {
+        STATE.reset();
+    }
+
+    private static void onRenderFramePre(RenderFrameEvent.Pre event) {
         EnshroudedClientConfig.FogSettings settings = EnshroudedClientConfig.fogSettings();
         if (!settings.enabled()) {
             STATE.reset();
@@ -35,10 +41,13 @@ public final class ShroudFogController {
         }
 
         ExposureSnapshot snapshot = exposureState.snapshot();
-        float deltaTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaTicks();
+        float deltaTicks = event.getPartialTick().getGameTimeDeltaTicks();
         STATE.advance(snapshot.severity(), snapshot.sanctuarySuppressed(), deltaTicks);
+    }
 
-        if (settings.intensity() <= 0.0D || event.getType() != FogType.NONE || !STATE.active()) {
+    private static void onRenderFog(ViewportEvent.RenderFog event) {
+        EnshroudedClientConfig.FogSettings settings = EnshroudedClientConfig.fogSettings();
+        if (!settings.enabled() || settings.intensity() <= 0.0D || event.getType() != FogType.NONE || !STATE.active()) {
             return;
         }
 
