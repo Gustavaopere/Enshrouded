@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.client;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.client.accessibility.AccessibilityPresetController;
 import com.gustavaopere.enshrouded.client.ambient.ShroudAmbientController;
 import com.gustavaopere.enshrouded.client.effects.ShroudParticleController;
 import com.gustavaopere.enshrouded.client.hud.ShroudHudOverlay;
@@ -18,6 +19,7 @@ import net.neoforged.neoforge.common.NeoForge;
 public final class EnshroudedClient {
     public EnshroudedClient(IEventBus modBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.CLIENT, EnshroudedClientConfig.CLIENT_SPEC);
+        AccessibilityPresetController.register(modBus);
         modBus.addListener(ShroudHudOverlay::registerGuiLayers);
         modBus.addListener(ShroudParticleController::registerParticleProviders);
         ShroudFogController.register(NeoForge.EVENT_BUS);
