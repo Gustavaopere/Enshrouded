@@ -1,6 +1,8 @@
 package com.gustavaopere.enshrouded.client;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.client.ambient.ShroudAmbientController;
+import com.gustavaopere.enshrouded.client.effects.ShroudParticleController;
 import com.gustavaopere.enshrouded.client.hud.ShroudHudOverlay;
 import com.gustavaopere.enshrouded.client.render.ShroudFogController;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
@@ -17,6 +19,9 @@ public final class EnshroudedClient {
     public EnshroudedClient(IEventBus modBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.CLIENT, EnshroudedClientConfig.CLIENT_SPEC);
         modBus.addListener(ShroudHudOverlay::registerGuiLayers);
+        modBus.addListener(ShroudParticleController::registerParticleProviders);
         ShroudFogController.register(NeoForge.EVENT_BUS);
+        ShroudAmbientController.register(NeoForge.EVENT_BUS);
+        ShroudParticleController.register(NeoForge.EVENT_BUS);
     }
 }

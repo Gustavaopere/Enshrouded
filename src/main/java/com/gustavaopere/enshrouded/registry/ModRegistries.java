@@ -8,8 +8,7 @@ import net.neoforged.bus.api.IEventBus;
 import java.util.Objects;
 
 public final class ModRegistries {
-    private ModRegistries() {
-    }
+    private ModRegistries() {}
 
     public static void register(IEventBus modBus) {
         Objects.requireNonNull(modBus, "modBus");
@@ -19,6 +18,8 @@ public final class ModRegistries {
         ModEntities.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
         ModMenus.MENUS.register(modBus);
+        ModSounds.register(modBus);
+        ModParticles.register(modBus);
         ShroudExposureAttachment.register(modBus);
         EntityCorruptionAttachment.register(modBus);
         ShroudCoreWorldgenRegistry.register(modBus);
