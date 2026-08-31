@@ -10,13 +10,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Sole authority for committing the first-manifestation reward exactly once.
  *
- * <p>Encounter validation and rewardIssued mutation execute under one story-store transaction. The
- * stored encounter owner is copied into the receipt; no owner resolver is consulted here. Physical
- * item delivery consumes the committed receipt and therefore cannot become a second reward authority.</p>
+ * <p>Encounter validation, bounded delivery and rewardIssued mutation execute under one serialized
+ * story-store transaction. The stored encounter owner is copied into the receipt; no owner resolver
+ * is consulted here. The reward flag is committed only after the delivery callback reports success,
+ * so a failed physical delivery remains retryable rather than manufacturing an issued reward.</p>
  */
 public final class LichRewardService {
     private final RewardStore store;
@@ -30,9 +32,13 @@ public final class LichRewardService {
         return new LichRewardService(new SavedDataRewardStore(StorySavedData.get(level)));
     }
 
-    /** Returns a receipt only for the single transition from reward-pending to reward-issued. */
-    public Optional<RewardReceipt> issue(UUID encounterId) {
+    /**
+     * Delivers and commits the reward once. Delivery must be bounded and must not mutate this story
+     * store; returning false leaves the reward pending so a later replay can retry safely.
+     */
+    public Optional<RewardReceipt> issue(UUID encounterId, Predicate<RewardReceipt> delivery) {
         Objects.requireNonNull(encounterId, "encounterId");
+        Objects.requireNonNull(delivery, "delivery");
         return store.transact(transaction -> {
             Optional<EncounterRecord> found = transaction.encounter(encounterId);
             if (found.isEmpty()) {
@@ -45,14 +51,19 @@ public final class LichRewardService {
                     || record.rewardIssued()) {
                 return Optional.empty();
             }
-            if (!transaction.issueReward(encounterId)) {
-                return Optional.empty();
-            }
-            return Optional.of(new RewardReceipt(
+
+            RewardReceipt receipt = new RewardReceipt(
                     record.owner(),
                     record.encounterId(),
                     record.manifestationIndex()
-            ));
+            );
+            if (!delivery.test(receipt)) {
+                return Optional.empty();
+            }
+            if (!transaction.issueReward(encounterId)) {
+                throw new IllegalStateException("reward state changed during serialized delivery commit");
+            }
+            return Optional.of(receipt);
         });
     }
 
