@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class EnshroudedClientConfigTest {
     @Test
-    void sharedClientSpecExistsWithHudAndFogDefaults() {
+    void sharedClientSpecExistsWithHudFogAndAmbientDefaults() {
         assertNotNull(EnshroudedClientConfig.CLIENT_SPEC);
 
         EnshroudedClientConfig.HudSettings hudDefaults = EnshroudedClientConfig.HudSettings.defaults();
@@ -19,6 +19,14 @@ final class EnshroudedClientConfigTest {
         EnshroudedClientConfig.FogSettings fogDefaults = EnshroudedClientConfig.FogSettings.defaults();
         assertTrue(fogDefaults.enabled());
         assertEquals(1.0D, fogDefaults.intensity(), 0.0001D);
+
+        EnshroudedClientConfig.AudioSettings audioDefaults = EnshroudedClientConfig.AudioSettings.defaults();
+        assertTrue(audioDefaults.enabled());
+        assertEquals(0.65D, audioDefaults.volume(), 0.0001D);
+
+        EnshroudedClientConfig.ParticleSettings particleDefaults = EnshroudedClientConfig.ParticleSettings.defaults();
+        assertTrue(particleDefaults.enabled());
+        assertEquals(8, particleDefaults.maxCount());
     }
 
     @Test
@@ -38,5 +46,20 @@ final class EnshroudedClientConfigTest {
 
         assertEquals(0.0D, new EnshroudedClientConfig.FogSettings(true, -2.0D).intensity(), 0.0001D);
         assertEquals(1.0D, new EnshroudedClientConfig.FogSettings(false, 2.0D).intensity(), 0.0001D);
+    }
+
+    @Test
+    void ambientSettingsSanitizeChannelsIndependently() {
+        assertEquals(0.0D, EnshroudedClientConfig.clampAudioVolume(-1.0D), 0.0001D);
+        assertEquals(1.0D, EnshroudedClientConfig.clampAudioVolume(4.0D), 0.0001D);
+        assertEquals(0.65D, EnshroudedClientConfig.clampAudioVolume(Double.NaN), 0.0001D);
+        assertEquals(0.45D, EnshroudedClientConfig.clampAudioVolume(0.45D), 0.0001D);
+
+        assertEquals(0, EnshroudedClientConfig.clampParticleCount(-5));
+        assertEquals(16, EnshroudedClientConfig.clampParticleCount(80));
+        assertEquals(6, EnshroudedClientConfig.clampParticleCount(6));
+
+        assertEquals(0.0D, new EnshroudedClientConfig.AudioSettings(false, -2.0D).volume(), 0.0001D);
+        assertEquals(16, new EnshroudedClientConfig.ParticleSettings(false, 99).maxCount());
     }
 }
