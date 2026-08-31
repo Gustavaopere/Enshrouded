@@ -63,6 +63,7 @@ There is no reverse dependency from Stage 05 to this task. Stage 06 owns the aut
 - Automated P1 review thread was answered with the delivery-aware fix and resolved before merge.
 - PR: #48 — `Stage 06.04: Lich Skull and Flame binding`.
 - Merge SHA: `368f30c710246580e47e262462118f8b9e4a03ea`.
+- Post-merge `main` verification: workflow `33349006905`, job `99358553279` — GREEN on merge SHA `368f30c710246580e47e262462118f8b9e4a03ea` with the full pipeline.
 
 ## Cross-stage closure
 
@@ -75,6 +76,7 @@ There is no reverse dependency from Stage 05 to this task. Stage 06 owns the aut
 - [x] All task-specific tests are GREEN on the final branch HEAD.
 - [x] `./gradlew test` is GREEN.
 - [x] NeoForge build, GameTests, two-boot reload and dedicated-server smoke are GREEN on the final PR HEAD.
+- [x] The implementation merge SHA completed the same full CI pipeline GREEN on `main`.
 - [x] No unresolved 06.04 cross-stage contract is hidden; `plans/PENDING.md` records the reward closure and the remaining Stage 08 ownership work.
 - [x] Implementation merged to `main` in PR #48.
 - [x] This task file is renamed with the `✅-` prefix in the documentation closeout.
