@@ -19,6 +19,7 @@ public final class ModRegistries {
         ModEntities.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
         ModMenus.MENUS.register(modBus);
+        ModSounds.register(modBus);
         ShroudExposureAttachment.register(modBus);
         EntityCorruptionAttachment.register(modBus);
         ShroudCoreWorldgenRegistry.register(modBus);

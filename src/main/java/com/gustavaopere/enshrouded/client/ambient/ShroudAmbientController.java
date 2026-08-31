@@ -3,11 +3,11 @@ package com.gustavaopere.enshrouded.client.ambient;
 import com.gustavaopere.enshrouded.client.state.ClientExposureState;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
 import com.gustavaopere.enshrouded.exposure.ExposureSnapshot;
+import com.gustavaopere.enshrouded.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -101,8 +101,8 @@ public final class ShroudAmbientController {
 
     private static void emitSound(Minecraft minecraft, ShroudSoundProfile profile, float volume) {
         SoundEvent sound = profile == ShroudSoundProfile.DEADLY
-                ? SoundEvents.ENDERMAN_STARE
-                : SoundEvents.AMBIENT_CAVE.value();
+                ? ModSounds.DEADLY_SHROUD_AMBIENT.get()
+                : ModSounds.SHROUD_AMBIENT.get();
         minecraft.level.playLocalSound(
                 minecraft.player.getX(),
                 minecraft.player.getY(),

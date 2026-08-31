@@ -1,0 +1,20 @@
+{
+  "shroud_ambient": {
+    "subtitle": "subtitles.enshrouded.shroud_ambient",
+    "sounds": [
+      {
+        "name": "enshrouded:ambient/shroud",
+        "stream": false
+      }
+    ]
+  },
+  "deadly_shroud_ambient": {
+    "subtitle": "subtitles.enshrouded.deadly_shroud_ambient",
+    "sounds": [
+      {
+        "name": "enshrouded:ambient/deadly_shroud",
+        "stream": false
+      }
+    ]
+  }
+}
