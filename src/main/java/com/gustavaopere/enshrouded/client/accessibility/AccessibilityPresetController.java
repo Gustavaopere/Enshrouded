@@ -78,12 +78,14 @@ public final class AccessibilityPresetController {
 
     private static void onConfigLoading(ModConfigEvent.Loading event) {
         if (event.getConfig().getSpec() == EnshroudedClientConfig.CLIENT_SPEC) {
+            EnshroudedClientConfig.invalidateResolvedSettings();
             resetPresentationState();
         }
     }
 
     private static void onConfigReloading(ModConfigEvent.Reloading event) {
         if (event.getConfig().getSpec() == EnshroudedClientConfig.CLIENT_SPEC) {
+            EnshroudedClientConfig.invalidateResolvedSettings();
             resetPresentationState();
         }
     }
