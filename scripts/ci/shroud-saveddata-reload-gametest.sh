@@ -16,8 +16,17 @@ command -v timeout >/dev/null 2>&1 || {
 
 mkdir -p "$BUILD_DIR"
 rm -rf "$RUN_DIR"
-mkdir -p "$RUN_DIR"
+mkdir -p "$RUN_DIR/world/serverconfig"
 printf 'eula=true\n' > "$RUN_DIR/eula.txt"
+
+# The first boot intentionally persists a mid-purification sentinel. The GameTest server keeps
+# ticking production runtimes after that individual test succeeds, so use a world-local SERVER
+# config only in this two-boot harness to prevent the sentinel from completing before shutdown.
+# This does not change production defaults or the ordinary GameTest-server CI gate.
+cat > "$RUN_DIR/world/serverconfig/enshrouded-server.toml" <<'EOF'
+[shroudCore]
+regressionWorkPerTick = 1
+EOF
 
 run_gametest_boot() {
   local log_file="$1"
@@ -43,6 +52,10 @@ run_gametest_boot() {
 }
 
 run_gametest_boot "$FIRST_LOG"
+grep -Eq '^regressionWorkPerTick[[:space:]]*=[[:space:]]*1$' "$RUN_DIR/world/serverconfig/enshrouded-server.toml" || {
+  echo 'Two-boot harness did not retain regressionWorkPerTick=1 in the world-local SERVER config' >&2
+  exit 1
+}
 grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_CREATED' "$FIRST_LOG" || {
   echo 'First GameTest boot did not create the Flame progression sentinel' >&2
   exit 1
