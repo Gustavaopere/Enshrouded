@@ -48,6 +48,23 @@ final class LichRewardContractTest {
         assertTrue(store.state().encounter(ENCOUNTER_ID).orElseThrow().rewardIssued());
     }
 
+    @Test
+    void failedDeliveryDoesNotCommitRewardAndRetryCanDeliverExactlyOnce() {
+        MemoryRewardStore store = new MemoryRewardStore(defeatedState());
+        LichRewardService service = new LichRewardService(store);
+
+        Optional<RewardReceipt> failedDelivery = service.issue(ENCOUNTER_ID, receipt -> false);
+        assertTrue(failedDelivery.isEmpty());
+        assertTrue(!store.state().encounter(ENCOUNTER_ID).orElseThrow().rewardIssued());
+
+        RewardReceipt delivered = service.issue(ENCOUNTER_ID, receipt -> true).orElseThrow();
+        Optional<RewardReceipt> replay = service.issue(ENCOUNTER_ID, receipt -> true);
+
+        assertEquals(OWNER, delivered.owner());
+        assertTrue(store.state().encounter(ENCOUNTER_ID).orElseThrow().rewardIssued());
+        assertTrue(replay.isEmpty());
+    }
+
     private static LichStoryState defeatedState() {
         return LichStoryState.empty()
                 .createEncounter(OWNER, ENCOUNTER_ID, 1).orElseThrow()
