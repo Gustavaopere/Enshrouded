@@ -12,7 +12,7 @@ Last structural update: 2026-08-31.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
 - [x] 06 Lich & Story — all 4 tasks verified and merged.
-- [ ] 07 Client Experience — 1/4 tasks verified and merged.
+- [ ] 07 Client Experience — 2/4 tasks verified and merged.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
 
@@ -580,7 +580,7 @@ Exact final PR-head gates passed: wrapper provenance, unit tests, frontier bench
 
 **06 Lich & Story is complete.**
 
-## 07 Client Experience — 1/4 complete
+## 07 Client Experience — 2/4 complete
 
 ### ✅ 01 Exposure HUD + shared client config
 
@@ -603,14 +603,37 @@ The overlay communicates Ordinary vs Deadly Shroud through semantic text/icon di
 
 No new cross-stage pending contract was introduced. Later Stage 07 tasks must extend or consume the same shared client config instead of registering parallel presentation-config containers.
 
+### ✅ 02 Shroud fog/rendering
+
+- Branch: `feat/07-fog-rendering`.
+- Structural RED: commit `516e4b002756e2949afc41e4786a23f024fe1e1d` — planned render/config APIs absent.
+- Hook-boundary RED: commit `97155c89cdf80d9e825fdc16b0db6fdef55fcffb` — 233 tests, exactly two expected hook-boundary failures.
+- Zero-intensity RED: commit `02c3d11d660675e655f52eef0b56c8f556cf3469` — 233 tests, exactly one expected compatibility failure.
+- Pre-review candidate: `dedcd67f24946eb41eebdef6d48c78455085b0c4`, workflow/job `33363850922` / `99400419223` — GREEN.
+- Automated review found two valid P2 defects: interpolation could advance more than once per rendered frame, and static fog weights could survive logout into another connection.
+- Review-regression RED: commit `73a495535d2186fcd329438e9378b5421e5d4ca0`, workflow/job `33384470174` / `99463863007` — 234 tests, exactly two failures matching the review findings.
+- Final implementation HEAD: `68aaf638a92cc775ffa30df570ef1727712c9c36`.
+- PR: #52 — `Stage 07.02: Shroud fog rendering`.
+- Final exact PR-head verification: workflow `33384653329`, job `99464456432` — GREEN across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, 74/74 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Both P2 threads were answered/resolved; fresh Codex re-review on the final HEAD returned no new suggestions.
+- Merge SHA: `08ae3e6d55db798fecd683a671f0414b2d212e2e`.
+- Post-merge `main` workflow: `33385717698` — GREEN on the implementation merge SHA.
+- Completed file: `✅-02-fog-rendering.md`.
+
+Stage 07.02 consumes the synchronized `ClientExposureState` and the single shared Stage 07 client config. `ShroudRenderState` holds only transient presentation weights; `ShroudColorProfile` projects them into bounded CLEAR/SHROUD/DEADLY fog treatment. No Exposure, Madness, progression or logical Shroud authority is owned by the renderer.
+
+Interpolation advances exactly once per rendered frame through NeoForge `RenderFrameEvent.Pre` using game-time delta. `ViewportEvent.RenderFog` and `ViewportEvent.ComputeFogColor` consume that already-advanced state. Underwater/lava/powder-snow fog is preserved, intensity `0` leaves vanilla/other-mod fog ownership untouched, Sanctuary suppression trends the presentation back to clear, and logout directly resets transient fog state to prevent cross-server leakage.
+
+The feature remains physically client-only, has no mandatory Veil dependency and introduces no new cross-stage pending contract.
+
 ## Immediate next step
 
-Stage 07 is in progress at **1/4**. The next planned implementation task is **07.02 fog/rendering**, but it must not be started automatically; begin it only when explicitly requested from the then-current verified `main`.
+Stage 07 is in progress at **2/4**. The next planned implementation task is **07.03 audio/particles**, but it must not be started automatically; begin it only when explicitly requested from the then-current verified `main`.
 
 Stage 07 causal implementation order:
 
 1. `✅ feat/07-hud`
-2. `⏳ 07.02 fog/rendering`
+2. `✅ feat/07-fog-rendering`
 3. `⏳ 07.03 audio/particles`
 4. `⏳ 07.04 accessibility presets/validation`
 

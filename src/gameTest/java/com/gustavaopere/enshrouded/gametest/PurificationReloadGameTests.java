@@ -26,7 +26,12 @@ import java.util.UUID;
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class PurificationReloadGameTests {
-    private static final UUID MID_CORE_ID = UUID.fromString("33333333-4444-5555-6666-777777777777");
+    // The two-boot harness intentionally uses regressionWorkPerTick=1. ShroudRegressionScheduler
+    // orders DESTROYED cores by UUID before spending that global budget, so this sentinel must be
+    // deterministically first even when unrelated GameTests leave another DESTROYED core in the
+    // shared world. UUID.compareTo compares the signed MSB then signed LSB; Long.MIN_VALUE in both
+    // halves is therefore the absolute first UUID and removes test-order/timing dependence.
+    private static final UUID MID_CORE_ID = UUID.fromString("80000000-0000-0000-8000-000000000000");
     private static final UUID MID_REGION_ID = UUID.fromString("44444444-5555-6666-7777-888888888888");
     private static final UUID TERMINAL_CORE_ID = UUID.fromString("55555555-6666-7777-8888-999999999999");
     private static final UUID TERMINAL_REGION_ID = UUID.fromString("66666666-7777-8888-9999-aaaaaaaaaaaa");
