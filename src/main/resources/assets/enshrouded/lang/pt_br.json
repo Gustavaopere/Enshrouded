@@ -15,5 +15,14 @@
   "item.enshrouded.lich_skull_manifestation_1.tooltip": "Troféu da primeira manifestação derrotada. Aceito pelo Altar da Chama.",
   "item.enshrouded.lich_skull_manifestation_1.authentic": "Troféu autêntico de um encontro do Enshrouded",
   "entity.enshrouded.shroud_lich": "Lich da Mortalha",
-  "death.attack.madness": "%1$s sucumbiu à Loucura da Mortalha"
+  "death.attack.madness": "%1$s sucumbiu à Loucura da Mortalha",
+  "hud.enshrouded.shroud": "Mortalha",
+  "hud.enshrouded.deadly_shroud": "Mortalha Mortal",
+  "hud.enshrouded.passage_blocked": "Passagem bloqueada",
+  "hud.enshrouded.madness": "Loucura: %s",
+  "hud.enshrouded.madness.stable": "Estável",
+  "hud.enshrouded.madness.uneasy": "Inquieta",
+  "hud.enshrouded.madness.distorted": "Distorcida",
+  "hud.enshrouded.madness.critical": "Crítica",
+  "hud.enshrouded.madness.fatal": "Fatal"
 }
