@@ -26,6 +26,8 @@ final class FogHookBoundaryTest {
         assertTrue(source.contains("getGameTimeDeltaTicks()"), "visual transition must follow game time instead of wall clock");
         assertTrue(source.contains("EnshroudedClientConfig.fogSettings()"), "runtime hook must read the shared live client config seam");
         assertTrue(source.contains("ClientExposureState.INSTANCE"), "fog target must consume synchronized server-authored state");
+        assertTrue(source.contains("settings.intensity() <= 0.0D"),
+                "zero fog intensity must leave vanilla/other-mod fog uncancelled instead of becoming an invisible override");
     }
 
     @Test
