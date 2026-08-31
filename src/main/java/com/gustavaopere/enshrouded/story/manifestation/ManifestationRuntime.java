@@ -19,8 +19,9 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
  *
  * <p>Encounter identity and story transitions remain owned by {@link ManifestationEncounterService};
  * reward authority remains owned by {@link LichRewardService}. This class composes the bounded arena
- * overlay into Exposure, routes real NeoForge death events, and physically delivers a committed
- * Enshrouded trophy without touching provider-owned loot.</p>
+ * overlay into Exposure, routes real NeoForge death events, and delivers the Enshrouded trophy without
+ * touching provider-owned loot. Reward state is committed only when the physical drop was accepted by
+ * the server level.</p>
  */
 public final class ManifestationRuntime {
     private static final FirstManifestationDefinition DEFINITION = FirstManifestationDefinition.levelOne();
@@ -58,7 +59,7 @@ public final class ManifestationRuntime {
             if (!(actor.level() instanceof ServerLevel level)) {
                 return;
             }
-            LichRewardService.forLevel(level).issue(defeat.encounterId()).ifPresent(receipt -> {
+            LichRewardService.forLevel(level).issue(defeat.encounterId(), receipt -> {
                 ItemStack skull = LichSkullItem.createAuthentic(
                         ModItems.LICH_SKULL_MANIFESTATION_1.get(),
                         receipt.encounterId(),
@@ -72,7 +73,7 @@ public final class ManifestationRuntime {
                         skull
                 );
                 drop.setDefaultPickUpDelay();
-                level.addFreshEntity(drop);
+                return level.addFreshEntity(drop);
             });
         });
     }
