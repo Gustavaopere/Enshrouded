@@ -13,12 +13,17 @@ public final class EnshroudedClientConfig {
     public static final double DEFAULT_HUD_SCALE = 1.0D;
     public static final double MIN_HUD_SCALE = 0.50D;
     public static final double MAX_HUD_SCALE = 2.00D;
+    public static final double DEFAULT_FOG_INTENSITY = 1.0D;
+    public static final double MIN_FOG_INTENSITY = 0.0D;
+    public static final double MAX_FOG_INTENSITY = 1.0D;
 
     public static final ModConfigSpec CLIENT_SPEC;
 
     private static final ModConfigSpec.BooleanValue HUD_VISIBLE;
     private static final ModConfigSpec.DoubleValue HUD_SCALE;
     private static final ModConfigSpec.EnumValue<HudAnchor> HUD_ANCHOR;
+    private static final ModConfigSpec.BooleanValue FOG_ENABLED;
+    private static final ModConfigSpec.DoubleValue FOG_INTENSITY;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -34,6 +39,14 @@ public final class EnshroudedClientConfig {
                 .comment("Screen corner used to anchor the Shroud exposure HUD.")
                 .defineEnum("anchor", HudAnchor.TOP_LEFT);
         builder.pop();
+        builder.push("fog");
+        FOG_ENABLED = builder
+                .comment("Enable enhanced client-side Shroud fog. Disabling this never changes gameplay state.")
+                .define("enabled", true);
+        FOG_INTENSITY = builder
+                .comment("Strength of enhanced Shroud fog color and distance treatment.")
+                .defineInRange("intensity", DEFAULT_FOG_INTENSITY, MIN_FOG_INTENSITY, MAX_FOG_INTENSITY);
+        builder.pop();
         CLIENT_SPEC = builder.build();
     }
 
@@ -48,11 +61,25 @@ public final class EnshroudedClientConfig {
         );
     }
 
+    public static FogSettings fogSettings() {
+        return new FogSettings(
+                FOG_ENABLED.getAsBoolean(),
+                clampFogIntensity(FOG_INTENSITY.getAsDouble())
+        );
+    }
+
     public static double clampHudScale(double value) {
         if (!Double.isFinite(value)) {
             return DEFAULT_HUD_SCALE;
         }
         return Math.max(MIN_HUD_SCALE, Math.min(MAX_HUD_SCALE, value));
+    }
+
+    public static double clampFogIntensity(double value) {
+        if (!Double.isFinite(value)) {
+            return DEFAULT_FOG_INTENSITY;
+        }
+        return Math.max(MIN_FOG_INTENSITY, Math.min(MAX_FOG_INTENSITY, value));
     }
 
     public enum HudAnchor {
@@ -72,6 +99,16 @@ public final class EnshroudedClientConfig {
 
         public static HudSettings defaults() {
             return new HudSettings(true, DEFAULT_HUD_SCALE, HudAnchor.TOP_LEFT);
+        }
+    }
+
+    public record FogSettings(boolean enabled, double intensity) {
+        public FogSettings {
+            intensity = clampFogIntensity(intensity);
+        }
+
+        public static FogSettings defaults() {
+            return new FogSettings(true, DEFAULT_FOG_INTENSITY);
         }
     }
 }
