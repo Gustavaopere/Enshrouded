@@ -1,6 +1,6 @@
 # Project Status
 
-Last structural update: 2026-08-30.
+Last structural update: 2026-08-31.
 
 ## Current checkpoint
 
@@ -11,7 +11,7 @@ Last structural update: 2026-08-30.
 - [x] 03 Exposure — all 4 tasks verified and merged.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
-- [ ] 06 Lich & Story — 3/4 tasks verified and merged; 06.01 Story State, 06.02 Boss Provider and 06.03 First Manifestation complete; 06.04 Lich Skull + Flame binding is next.
+- [x] 06 Lich & Story — all 4 tasks verified and merged.
 - [ ] 07 Client Experience — not implemented.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
@@ -461,7 +461,7 @@ Exact final PR-head gates passed: wrapper provenance, unit tests, frontier bench
 
 **05 Flame Progression is complete.**
 
-## 06 Lich & Story — in progress
+## 06 Lich & Story — complete
 
 ### ✅ 01 persistent Story State
 
@@ -539,18 +539,57 @@ The Level-1 arena is a bounded ephemeral `ShroudQuery` overlay composed into the
 
 Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR verification, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
 
+### ✅ 04 Lich Skull + Flame Binding
+
+- Branch: `feat/06-lich-skull`.
+- Initial structural RED: commit `89161fbcf714362d4e6d7ccf19407f1ddd428a71`, workflow `33341180113` — compilation failed because the planned skull/reward/ritual contracts did not yet exist.
+- Runtime reward RED: workflow `33341598157` / job `99338139040` on `4c3c21d4cf96dfdc98200aa8148143c32de26866` — unit/build/JAR were GREEN; the valid-death and defeat-to-altar GameTests failed because no physical skull was emitted.
+- Runtime integration checkpoint: workflow `33341835760` / job `99338755781` on `ce2b8a578e1b5b53e4daede80e8f7771f32e9056` — only the historical 06.03 assertion that reward issuance remained false needed updating to the now-owned 06.04 behavior.
+- Vanilla skull render-path correction: commit `e3af9171564747e348c3121ec767de7bb4edbc13`.
+- Pre-review complete GREEN: workflow `33341975198` on `e3af9171564747e348c3121ec767de7bb4edbc13`.
+- Pre-merge review identified a P1 delivery-order defect: `rewardIssued=true` could be persisted before `ServerLevel.addFreshEntity` succeeded. A dedicated RED established the missing delivery-aware contract. The final implementation commits reward state only after successful physical insertion; failed delivery remains pending and retryable.
+- The existing purification two-boot fixture exposed a separate timing race while the branch was being reverified: normal runtime regression could finish the test's `DESTROYED` sentinel between individual test success and server shutdown. The fixture was stabilized with a world-local SERVER regression budget of 1 only inside the two-boot harness; production defaults and the ordinary GameTest gate remain unchanged.
+- Final implementation HEAD: `b7a90c52c3c11b17958d83adfb5554996e29140b`.
+- PR: #48 — `Stage 06.04: Lich Skull and Flame binding`.
+- Final exact PR-head verification: workflow `33348592278`, job `99357385794` — GREEN across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, 74/74 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Automated P1 review thread was answered and resolved after the fix.
+- Merge SHA: `368f30c710246580e47e262462118f8b9e4a03ea`.
+- Completed file: `✅-04-lich-skull.md`.
+
+`LichRewardService` is the sole first-manifestation reward authority. It derives reward identity and `ProgressionOwner` from the immutable persisted encounter record rather than re-resolving ownership. Reward issuance is encounter-scoped and delivery-aware: the physical authentic skull must be successfully inserted into the server level before the persisted `rewardIssued` bit is committed, while a failed insertion can be retried without duplicating a successful delivery. External-provider loot remains untouched.
+
+`enshrouded:lich_skull_manifestation_1` uses persistent `DataComponents.CUSTOM_DATA` encoded through `LichSkullIdentity`; name/lore are presentation only. Unstamped Enshrouded stacks, vanilla skull lookalikes, malformed identities and wrong manifestation indices fail closed. The custom item follows the vanilla Wither Skeleton skull render path but refuses block placement, so authentic encounter identity cannot be discarded through placement.
+
+`LevelOneLichSkullRitual` registers `enshrouded:lich_manifestation_1` into the generic Stage 05 registry. It accepts only the authentic Level-1 trophy, consumes exactly one offering and delegates execution/idempotence/checkpoint mutation to `FlameRitualExecutor`. End-to-end GameTest evidence proves defeat -> authentic skull -> physical altar offering -> completed ritual checkpoint, with `nextLevelReady=true` while Flame Level remains 1 and Passage Level remains 1.
+
+Real two-boot evidence proves an already issued first-manifestation reward cannot replay after restart. `ENSH-L1-LICH-REWARD-001` is therefore closed. Stage 06 now also completes the encounter/defeat/reward side of `ENSH-L1-OWNER-SNAPSHOT-001`; that contract remains open only for Stage 08 FTB Teams membership-change semantics.
+
+Exact final PR-head gates passed: wrapper provenance, unit tests, frontier benchmark baseline, diff sanity, NeoForge build, production JAR verification, 74/74 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+
+## Stage 06 acceptance
+
+- [x] Story State is server-global, version-aware and fail-closed on unsupported schema.
+- [x] Boss selection is provider-neutral with a standalone native fallback and no provider actor owns progression truth.
+- [x] First manifestation encounter start/defeat uses one immutable stored `ProgressionOwner`, exact actor identity and cancellation-safe death routing.
+- [x] The Level-1 encounter arena is an ephemeral query overlay and never creates independent persistent Shroud state.
+- [x] Valid first-manifestation defeat emits one authentic persistent-identity Lich Skull without suppressing provider loot.
+- [x] Reward persistence occurs only after successful physical delivery; failed delivery remains retryable and successful replay/reload cannot duplicate the reward.
+- [x] The authentic skull is bound into the generic Stage 05 Flame ritual and cannot be replaced by lookalike or unstamped items.
+- [x] Level-1 offering records `nextLevelReady=true` while Flame Level and Passage Level remain 1.
+- [x] All four Stage 06 implementation task PRs received exact-head GREEN runtime CI before merge.
+
+**06 Lich & Story is complete.**
+
 ## Immediate next step
 
-Create `feat/06-lich-skull` from the latest verified `main` after this documentation checkpoint.
-
-Read `plans/06-lich-story/README.md`, `plans/06-lich-story/04-lich-skull.md`, `plans/06-lich-story/✅-01-story-state.md`, `plans/06-lich-story/✅-02-boss-provider.md`, `plans/06-lich-story/✅-03-first-manifestation.md`, the Stage 05 generic ritual/altar contracts and `plans/PENDING.md`. Begin 06.04 with RED coverage for authentic skull identity, exactly-once encounter-scoped reward issuance through the stored owner, external-provider defeat equivalence, invalid/duplicate skull rejection at the altar and the concrete Level-1 Flame ritual checkpoint.
+Stage 06 is closed. The next planned implementation stage is **07 Client Experience**, but it must not be started automatically; begin it only when explicitly requested from the then-current verified `main`.
 
 Stage 06 causal implementation order:
 
 1. `✅ feat/06-story-state`
 2. `✅ feat/06-boss-provider`
 3. `✅ feat/06-first-manifestation`
-4. `feat/06-lich-skull`
+4. `✅ feat/06-lich-skull`
 
 ## Level 1 release gate
 
