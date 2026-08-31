@@ -31,7 +31,13 @@ public final class PurificationReloadGameTests {
     private static final UUID TERMINAL_CORE_ID = UUID.fromString("55555555-6666-7777-8888-999999999999");
     private static final UUID TERMINAL_REGION_ID = UUID.fromString("66666666-7777-8888-9999-aaaaaaaaaaaa");
     private static final BlockPos TERMINAL_VISUAL_POS = new BlockPos(352, 96, 352);
-    private static final int MID_CELL_COUNT = 4096;
+
+    // The GameTest server continues ticking production runtimes after this test succeeds and before
+    // its final shutdown save. Keep enough logical work in the sentinel that the real bounded
+    // purification runtime cannot finish it during the remainder of the suite. At the default
+    // Level-1 decay/budget this represents 4096 server ticks of regression work, while remaining
+    // small enough for the two-boot CI fixture.
+    private static final int MID_CELL_COUNT = 32768;
 
     private PurificationReloadGameTests() {
     }
