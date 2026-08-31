@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.client.state;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.client.ambient.ShroudAmbientController;
 import com.gustavaopere.enshrouded.client.render.ShroudFogController;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -24,5 +25,6 @@ public final class ClientExposureLifecycle {
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientExposureState.INSTANCE.reset();
         ShroudFogController.reset();
+        ShroudAmbientController.reset();
     }
 }
