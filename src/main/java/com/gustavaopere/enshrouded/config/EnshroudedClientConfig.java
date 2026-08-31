@@ -45,6 +45,7 @@ public final class EnshroudedClientConfig {
     private static final ModConfigSpec.EnumValue<AccessibilityProfile> ACCESSIBILITY_PROFILE;
     private static final ModConfigSpec.DoubleValue DISTORTION_INTENSITY;
     private static final ModConfigSpec.BooleanValue REDUCE_SCREEN_FLASHES;
+    private static volatile AccessibilityPresetController.SettingsBundle cachedResolvedSettings;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -113,18 +114,33 @@ public final class EnshroudedClientConfig {
         return profile == null ? AccessibilityProfile.CUSTOM : profile;
     }
 
+    public static void invalidateResolvedSettings() {
+        cachedResolvedSettings = null;
+    }
+
     private static AccessibilityPresetController.SettingsBundle resolvedSettings() {
-        return AccessibilityPresetController.resolve(
-                accessibilityProfile(),
-                new AccessibilityPresetController.SettingsBundle(
-                        rawHudSettings(),
-                        rawFogSettings(),
-                        rawAudioSettings(),
-                        rawMadnessAudioSettings(),
-                        rawParticleSettings(),
-                        rawAccessibilitySettings()
-                )
-        );
+        AccessibilityPresetController.SettingsBundle cached = cachedResolvedSettings;
+        if (cached != null) {
+            return cached;
+        }
+        synchronized (EnshroudedClientConfig.class) {
+            cached = cachedResolvedSettings;
+            if (cached == null) {
+                cached = AccessibilityPresetController.resolve(
+                        accessibilityProfile(),
+                        new AccessibilityPresetController.SettingsBundle(
+                                rawHudSettings(),
+                                rawFogSettings(),
+                                rawAudioSettings(),
+                                rawMadnessAudioSettings(),
+                                rawParticleSettings(),
+                                rawAccessibilitySettings()
+                        )
+                );
+                cachedResolvedSettings = cached;
+            }
+            return cached;
+        }
     }
 
     private static HudSettings rawHudSettings() {
