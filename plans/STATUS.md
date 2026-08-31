@@ -12,7 +12,7 @@ Last structural update: 2026-08-31.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
 - [x] 06 Lich & Story — all 4 tasks verified and merged.
-- [ ] 07 Client Experience — not implemented.
+- [ ] 07 Client Experience — 1/4 tasks verified and merged.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
 
@@ -580,16 +580,39 @@ Exact final PR-head gates passed: wrapper provenance, unit tests, frontier bench
 
 **06 Lich & Story is complete.**
 
+## 07 Client Experience — 1/4 complete
+
+### ✅ 01 Exposure HUD + shared client config
+
+- Branch: `feat/07-hud`.
+- HUD structural RED: commit `06d139d44cc3b57fb21057238005ec08e06b5991` — `ExposureHudModel` absent.
+- Shared-config RED: commit `ab0934251a5cd2028cef2035e7c6fbb2bc5f0294`, workflow/job `33350545365` / `99362962397` — `EnshroudedClientConfig` absent.
+- Client-bootstrap RED: commit `bc55b9f64ddab102123a5b689cabda3484fdeeaa`, workflow/job `33350762986` / `99363577813` — one new boundary test failed before the physical `Dist.CLIENT` entrypoint existed.
+- Review-regression RED: commit `94232884940023450488d8c5184902604034214a`, workflow/job `33353179198` / `99370277476` — 225 tests ran with exactly two failures covering wall-clock exposure prediction and right-anchor passage-warning overflow.
+- Final implementation HEAD: `c8b6b24685c51a4ebb006bfb0a86c6877487fa21`.
+- PR: #50 — `Stage 07.01: Exposure HUD and shared client config`.
+- Final exact PR-head verification: workflow `33353296420`, job `99370594625` — GREEN across wrapper provenance, 225 unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, 74/74 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Automated review identified two valid P2 findings; both were fixed on the final HEAD, answered and resolved before merge.
+- Merge SHA: `ffc5007cc66c74cd6ae8087293955b865dc79e90`.
+- Post-merge `main` workflow: `33353628136` — GREEN on the implementation merge SHA.
+- Completed file: `✅-01-hud.md`.
+
+Stage 07.01 establishes the single shared `EnshroudedClientConfig` for later Stage 07 presentation tasks. HUD visibility, scale and anchor are presentation-only and cannot alter exposure duration, damage, progression, passage requirements or any other server-authoritative mechanic. `ExposureHudModel` consumes synchronized `ExposureSnapshot` state, and the physical client entrypoint keeps HUD/config registration out of common dedicated-server bootstrap.
+
+The overlay communicates Ordinary vs Deadly Shroud through semantic text/icon differences independent of color alone, displays the authoritative remaining reserve, Madness stage and passage warning, and hides in CLEAR/Sanctuary-suppressed state. The final renderer deliberately does not derive exposure drain from `System.nanoTime()` or wall-clock conversion: it holds the latest server-authored reserve until a newer snapshot arrives, preventing pause/low-TPS drift. Passage warnings use a dedicated word-wrapped row bounded inside the panel so right anchors do not truncate localized text.
+
+No new cross-stage pending contract was introduced. Later Stage 07 tasks must extend or consume the same shared client config instead of registering parallel presentation-config containers.
+
 ## Immediate next step
 
-Stage 06 is closed. The next planned implementation stage is **07 Client Experience**, but it must not be started automatically; begin it only when explicitly requested from the then-current verified `main`.
+Stage 07 is in progress at **1/4**. The next planned implementation task is **07.02 fog/rendering**, but it must not be started automatically; begin it only when explicitly requested from the then-current verified `main`.
 
-Stage 06 causal implementation order:
+Stage 07 causal implementation order:
 
-1. `✅ feat/06-story-state`
-2. `✅ feat/06-boss-provider`
-3. `✅ feat/06-first-manifestation`
-4. `✅ feat/06-lich-skull`
+1. `✅ feat/07-hud`
+2. `⏳ 07.02 fog/rendering`
+3. `⏳ 07.03 audio/particles`
+4. `⏳ 07.04 accessibility presets/validation`
 
 ## Level 1 release gate
 
