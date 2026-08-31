@@ -78,7 +78,8 @@ public final class StoryStateGameTests {
                     "reload must preserve the stored owner of an already-issued first-manifestation reward");
             helper.assertTrue(issuedReward.outcome() == EncounterOutcome.DEFEATED && issuedReward.rewardIssued(),
                     "already-issued first-manifestation reward must remain durably marked after reload");
-            helper.assertTrue(LichRewardService.forLevel(level).issue(REWARD_RELOAD_ENCOUNTER).isEmpty(),
+            helper.assertTrue(LichRewardService.forLevel(level)
+                            .issue(REWARD_RELOAD_ENCOUNTER, receipt -> true).isEmpty(),
                     "reloading then replaying reward issuance must not produce a second skull receipt");
             System.out.println("ENSHROUDED_LICH_REWARD_RELOADED_NO_REPLAY");
             System.out.println("ENSHROUDED_STORY_RELOADED");
