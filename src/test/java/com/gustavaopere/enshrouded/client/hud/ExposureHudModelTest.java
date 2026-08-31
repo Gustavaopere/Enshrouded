@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.client.state.ClientExposureState;
 import com.gustavaopere.enshrouded.exposure.ExposurePayload;
 import com.gustavaopere.enshrouded.exposure.ExposureSchema;
 import com.gustavaopere.enshrouded.exposure.ExposureSnapshot;
+import com.gustavaopere.enshrouded.exposure.madness.MadnessStage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,6 +58,38 @@ final class ExposureHudModelTest {
         assertFalse(ExposureHudModel.fromSnapshot(
                 snapshot(3000, ShroudSeverity.SHROUD, true, false), 0
         ).visible());
+    }
+
+    @Test
+    void synchronizedReturnToSafeStateHidesPreviouslyVisibleOverlay() {
+        assertTrue(ClientExposureState.INSTANCE.accept(ExposurePayload.fromSnapshot(
+                10L,
+                snapshot(3000, ShroudSeverity.SHROUD, false, false)
+        )));
+        assertTrue(ExposureHudModel.fromSnapshot(ClientExposureState.INSTANCE.snapshot(), 0).visible());
+
+        assertTrue(ClientExposureState.INSTANCE.accept(ExposurePayload.fromSnapshot(
+                11L,
+                snapshot(ExposureSchema.DEFAULT_MAX_RESERVE_TICKS, ShroudSeverity.CLEAR, false, false)
+        )));
+        assertFalse(ExposureHudModel.fromSnapshot(ClientExposureState.INSTANCE.snapshot(), 0).visible());
+    }
+
+    @Test
+    void madnessThresholdsMirrorAuthoritativeSnapshotStagesWithoutClientReducer() {
+        int max = ExposureSchema.DEFAULT_MAX_RESERVE_TICKS;
+        assertEquals(MadnessStage.STABLE, snapshot(max, ShroudSeverity.SHROUD, false, false).madnessStage());
+        assertEquals(MadnessStage.UNEASY, snapshot(max / 2, ShroudSeverity.SHROUD, false, false).madnessStage());
+        assertEquals(MadnessStage.DISTORTED, snapshot(max / 4, ShroudSeverity.SHROUD, false, false).madnessStage());
+        assertEquals(MadnessStage.CRITICAL, snapshot(max / 10, ShroudSeverity.SHROUD, false, false).madnessStage());
+        assertEquals(MadnessStage.FATAL, snapshot(0, ShroudSeverity.SHROUD, false, false).madnessStage());
+
+        assertEquals(MadnessStage.UNEASY,
+                ExposureHudModel.fromSnapshot(snapshot(max / 2, ShroudSeverity.SHROUD, false, false), 0).madnessStage());
+        assertEquals(MadnessStage.DISTORTED,
+                ExposureHudModel.fromSnapshot(snapshot(max / 4, ShroudSeverity.SHROUD, false, false), 0).madnessStage());
+        assertEquals(MadnessStage.CRITICAL,
+                ExposureHudModel.fromSnapshot(snapshot(max / 10, ShroudSeverity.SHROUD, false, false), 0).madnessStage());
     }
 
     @Test
