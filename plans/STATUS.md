@@ -13,7 +13,7 @@ Last structural update: 2026-09-01.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
 - [x] 06 Lich & Story — all 4 tasks verified and merged.
 - [x] 07 Client Experience — all 4 tasks verified and merged.
-- [ ] 08 Integrations — not implemented.
+- [ ] 08 Integrations — 1/5 tasks verified and merged.
 - [ ] 09 Hardening — not implemented.
 
 ## 00 Foundation — merged record
@@ -115,7 +115,7 @@ Worldgen threads do not mutate SavedData directly; ordinary loaded chunks do not
 - Merge SHA: `f398c13bac776f4f0c7b130153d69124e6970431`
 - Completed file: `✅-04-terrain-safety.md`
 
-The fail-closed `DefaultMutationAuthority` now exists before any Stage 02 block mutation sink. SAFE/AGGRESSIVE terrain tags, tri-state protection decisions, Foundation ward integration, block-entity safeguards and expert overrides are centralized behind this one authority.
+The fail-closed `DefaultMutationAuthority` now exists before any Stage 02 block mutation sink. SAFE/AGGRESSIVE terrain tags, tri-state protection decisions, block-entity safeguards and expert overrides are centralized behind this one authority.
 
 `ENSH-L1-FLAME-WARD-001` remains open for Stage 03/05 completion; the Stage 02 authority side is proven. `ENSH-L1-CLAIM-SAFETY-001` remains open only until Stage 08 real FTB Chunks/MineColonies adapters prove their side of the same `ProtectedAreaService` boundary.
 
@@ -681,16 +681,41 @@ No new cross-stage pending contract was introduced; `plans/PENDING.md` requires 
 
 **07 Client Experience is complete.**
 
+## 08 Integrations — in progress
+
+### ✅ 01 Ars Zero Lich provider
+
+- Branch: `feat/08-ars-zero`.
+- TDD RED HEAD: `a8d0bd9e2e9c86e383a2199ba60a906e55b7c387`.
+- RED workflow/job: `33503022267` / `99840500558` — `compileTestJava` failed with 20 missing-symbol errors only for the deliberately absent Stage 08.01 integration classes.
+- API correction checkpoint: `0194a2a2d301eb49be836933d49dcb45dc12d971` — replaced the unavailable later-version `EntitySpawnReason` API with the actual 1.21.1 `MobSpawnType.EVENT` path.
+- Registry-bootstrap fixture correction: JUnit-only `EntityType` initialization was moved into NeoForge GameTests rather than weakening production or manufacturing a registry bootstrap in unit tests.
+- Final implementation HEAD: `77f1b285e7ba1c2c0290c31f95873559fb599010`.
+- Final push verification: workflow/job `33503998435` / `99843629417` — GREEN.
+- PR: #59 — `Stage 08.01: integrate Ars Zero Lich provider`.
+- Final exact PR-head verification: workflow/job `33508994529` / `99859813891` — `completed/success` across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, 76/76 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Implementation merge SHA: `95b0189ca4421b688294a6cee2b9f06983159790`.
+- Independent post-merge `main` workflow/job: `33509695387` / `99862094519` — `completed/success` across the same complete gate set.
+- Completed file: `✅-01-ars-zero.md`.
+- Open verification follow-up: `ENSH-L1-ARS-ZERO-REAL-FIXTURE-001`.
+
+Stage 08.01 installs one optional registry-only `ArsZeroLichProvider` behind the already-merged Stage 06 provider abstraction. `ArsZeroCompatibilityProbe` executes once after common setup and accepts only the exact `ars_zero:lich` registry key with the expected monster category. Ars Zero absent leaves the adapter unavailable without changing standalone behavior; a loaded-but-incompatible registry contract logs one diagnostic and fails closed to the native `enshrouded:shroud_lich` provider. No Ars Zero implementation class or mandatory dependency is imported into Enshrouded.
+
+The adapter creates the resolved entity through generic Minecraft/NeoForge APIs and preserves external/native behavior and loot. `ManifestationDirector`, not the external entity, remains authority for encounter UUID/manifestation identity and bossbar ownership; the Stage 06 Story State/death/reward pipeline remains unchanged. The new `arsZeroProvider` GameTest batch uses a bootstrapped registry proxy to prove preferred-provider selection, generic living-entity spawn, encounter binding and rejection of an unrelated same-type entity without Enshrouded encounter metadata. The existing provider-neutral reward suite remains GREEN and continues to prove exactly-once authentic Lich Skull issuance and replay protection.
+
+The actual `ars_zero-1.21.1-2.0.2.jar` is not co-loaded by the current Enshrouded CI. Ars Zero 2.0.2 has a broader required Ars Nouveau/Ars Elemental runtime chain, while this repository has no optional-mod co-load profile. That limitation is explicitly recorded as `ENSH-L1-ARS-ZERO-REAL-FIXTURE-001`; it does not create a second authority or unsafe fallback, but it prevents claiming real-distribution co-load verification until a representative pack/optional integration run is added.
+
 ## Immediate next step
 
-Stage 08 Integrations remains unimplemented. Do not start it automatically; begin it only when explicitly requested from the then-current verified `main`.
+Stage 08.02 (`02-magic-systems.md`, Ars Nouveau + Iron's Spellbooks classification adapters) is the next task in the canonical Stage 08 order. Do not start it automatically; begin it only when explicitly requested from the then-current verified `main`.
 
-Stage 07 causal implementation order:
+Stage 08 causal implementation order:
 
-1. `✅ feat/07-hud`
-2. `✅ feat/07-fog-rendering`
-3. `✅ feat/07-audio-particles`
-4. `✅ feat/07-accessibility`
+1. `✅ feat/08-ars-zero`
+2. `pending feat/08-magic-systems`
+3. `pending feat/08-combat-claims-teams`
+4. `pending feat/08-journeymap`
+5. `pending feat/08-necromancy-flavor`
 
 ## Level 1 release gate
 
