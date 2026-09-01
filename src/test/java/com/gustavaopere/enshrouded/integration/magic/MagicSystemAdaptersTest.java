@@ -22,7 +22,7 @@ final class MagicSystemAdaptersTest {
     @Test
     void arsNouveauClassifiesOnlyKnownSpellDamageTypes() {
         ArsNouveauMagicAdapter adapter = new ArsNouveauMagicAdapter();
-        for (String path : List.of("spell", "cold_snap", "flare", "crush", "windshear")) {
+        for (String path : List.of("spell", "frost", "flare", "crush", "windshear")) {
             assertMagical(adapter.classifyDamageType(id("ars_nouveau", path)));
         }
 
@@ -41,7 +41,7 @@ final class MagicSystemAdaptersTest {
         }
 
         assertUnknown(adapter.classifyDamageType(id("irons_spellbooks", "heartstop")));
-        assertUnknown(adapter.classifyDamageType(id("irons_spellbooks", "cauldron")));
+        assertUnknown(adapter.classifyDamageType(id("irons_spellbooks", "blood_cauldron")));
         assertUnknown(adapter.classifyDamageType(id("irons_spellbooks", "made_up_physical")));
     }
 
@@ -49,8 +49,12 @@ final class MagicSystemAdaptersTest {
     void adaptersArePureEvidenceAndNeverReducers() {
         assertFalse(ArsNouveauMagicAdapter.class.getDeclaredMethods().length == 0);
         assertFalse(IronSpellsMagicAdapter.class.getDeclaredMethods().length == 0);
-        assertTrue(ArsNouveauMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.size() >= 5);
-        assertTrue(IronSpellsMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.size() >= 9);
+        assertEquals(5, ArsNouveauMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.size());
+        assertEquals(9, IronSpellsMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.size());
+        assertTrue(ArsNouveauMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.stream()
+                .allMatch(id -> id.getNamespace().equals("ars_nouveau")));
+        assertTrue(IronSpellsMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.stream()
+                .allMatch(id -> id.getNamespace().equals("irons_spellbooks")));
     }
 
     private static void assertMagical(MagicDamageClassification classification) {
