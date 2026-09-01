@@ -35,7 +35,7 @@
 - [x] GameTest valid marked boss defeat transitions state to `DEFEATED` exactly once.
 - [x] GameTest mutate the owner resolver/team membership after encounter start and prove defeat still targets the original stored owner exactly once; concrete reward issuance remains intentionally owned by 06.04.
 - [x] GameTest arena cleanup removes temporary encounter effects while preserving pre-existing Shroud field.
-- [x] Leave the explicit unrelated `ars_zero:lich` negative test to `08-integrations/01-ars-zero.md`, where the optional provider is actually present.
+- [x] Leave the explicit unrelated `ars_zero:lich` negative test to `08-integrations/✅-01-ars-zero.md`, where the optional provider is actually present.
 - [x] GameTest canceled `LivingDeathEvent` cannot produce a narrative defeat or arena cleanup, protecting external-provider phase transitions that cancel death.
 
 ## Merge gate
