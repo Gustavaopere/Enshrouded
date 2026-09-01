@@ -1,6 +1,6 @@
 # Project Status
 
-Last structural update: 2026-08-31.
+Last structural update: 2026-09-01.
 
 ## Current checkpoint
 
@@ -12,7 +12,7 @@ Last structural update: 2026-08-31.
 - [x] 04 Corrupted Ecology — all 4 tasks verified and merged.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
 - [x] 06 Lich & Story — all 4 tasks verified and merged.
-- [ ] 07 Client Experience — 3/4 tasks verified and merged.
+- [x] 07 Client Experience — all 4 tasks verified and merged.
 - [ ] 08 Integrations — not implemented.
 - [ ] 09 Hardening — not implemented.
 
@@ -199,7 +199,7 @@ Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff 
 
 - Branch: `feat/03-madness`
 - Structural RED: commit `86127f1eaa47b8568cd4dce4c7c54175749500c5`, workflow `33262797262`.
-- Threshold/presentation RED: commit `daf4df4c59bc32e7c9b189bba93ab66d1974f2a7`, workflow `33263055822`.
+- Threshold/presentation RED: commit `daf4df4f59bc32e7c9b189bba93ab66d1974f2a7`, workflow `33263055822`.
 - Runtime-surface RED: commit `f051b6b69b612c38d7e0223b2b56677529c1c2e5`, workflow `33263292918`.
 - Valid behavioral RED: commit `e08b713c97d9f08c25a47681de22742e3525d6c6`, workflow `33263628901` — unit/build/JAR GREEN; exactly the fatal-outcome and critical-sprint GameTests failed against the no-op runtime. The preceding `makeMockPlayer` cast failure was a fixture defect and was not counted as behavioral evidence.
 - Final implementation HEAD: `c1e4ef5e00d6d9c616cf69890556563ccb6296a8`
@@ -580,7 +580,7 @@ Exact final PR-head gates passed: wrapper provenance, unit tests, frontier bench
 
 **06 Lich & Story is complete.**
 
-## 07 Client Experience — 3/4 complete
+## 07 Client Experience — complete
 
 ### ✅ 01 Exposure HUD + shared client config
 
@@ -646,16 +646,51 @@ Project-owned `shroud_core`, `shroud_growth` and `red_sludge` particles are samp
 
 All new audio/particle assets are original/project-owned. AmbientSounds and Particular remain optional presentation neighbors rather than required dependencies or authorities. No new cross-stage pending contract was introduced.
 
+### ✅ 04 Accessibility profiles and cross-setting validation
+
+- Branch: `feat/07-accessibility`.
+- Structural TDD RED: HEAD `27d070fc885c61fdd1bf40ad75885db936381117`, workflow/job `33417094215` / `99570331965` — `compileTestJava` failed with 19 errors exclusively for deliberately absent Stage 07.04 APIs.
+- First complete implementation checkpoint: HEAD `75c16cb37052ded0aa40d574f53d584146771196`, workflow/job `33417436913` / `99571451556` — GREEN across unit tests, frontier benchmark, diff sanity, NeoForge build, JAR verification, 74/74 GameTests, SavedData two-boot reload and dedicated-server smoke.
+- Automated review identified one valid P2 hot-path allocation defect in the effective-settings getter path. A regression guard was added and the final implementation lazy-caches one resolved bundle with invalidation on CLIENT config load/reload.
+- Final implementation HEAD: `84b3d0f9d8ce25afdfa9531200a218de89546af4`.
+- PR: #56 — `Stage 07.04: accessibility profiles and validation`.
+- Final exact PR-head verification: workflow/job `33418623603` / `99575240609` — GREEN across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, 74/74 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+- The P2 review thread was answered and resolved before merge.
+- Implementation merge SHA: `29ae2d9b7a13bbdffd3291d2fe4213e0705eb8e3`.
+- First post-merge workflow `33421208877` exposed a pre-existing entity-reload fixture race after all earlier gates and 74/74 ordinary GameTests had passed. The fixed 20-tick settle delay could observe `ServerLevel.getEntity(UUID) == null` while the asynchronous entity-section manager already owned the persisted UUID, so Stage 07 closeout remained blocked instead of treating a flaky fixture as GREEN.
+- Hardening PR: #57 — `Harden entity corruption two-boot reload fixture`; final HEAD `6ab9b91c1b65dc18326ba84c063e3e160ffc71c3`, exact PR-head workflow/job `33422839116` / `99589178360` — GREEN. The test-only correction uses bounded condition polling and preserves fail-closed duplicate-UUID behavior.
+- Verified hardening merge SHA: `a08ff919463cb6ce3ea2a8eda59d74feffa6b6b2`.
+- Final independent post-merge workflow/job: `33471470436` / `99741928199` — `completed/success` across the complete gate set, including GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Completed file: `✅-04-accessibility.md`.
+
+Stage 07.04 adds `AccessibilityProfile` (`CUSTOM`, `REDUCED_SENSORY`, `MINIMAL`) and `AccessibilityPresetController` over the same single shared `EnshroudedClientConfig`. Presets coordinate HUD, fog, ambient audio, Madness audio, particle and accessibility values without registering a second config owner. `MINIMAL` disables Enshrouded sensory effects while forcing a visible readable HUD, preserving non-color semantic Deadly/passage warnings.
+
+Effective settings are cached once for hot presentation paths and invalidated on the existing CLIENT config Loading/Reloading events before transient fog/audio/particle state is reset. Accessibility settings therefore remain reload-safe and presentation-only; they cannot alter exposure duration, damage, progression, passage requirements, logical Shroud state or server authority.
+
+No new cross-stage pending contract was introduced; `plans/PENDING.md` requires no Stage 07 change.
+
+## Stage 07 acceptance
+
+- [x] One shared client config owns all Stage 07 presentation settings; no parallel client config exists.
+- [x] HUD state remains synchronized/server-authored and communicates Deadly/passage warnings without relying on color alone.
+- [x] Fog interpolation/lifecycle is bounded and respects vanilla/other-mod fog ownership.
+- [x] Audio and particle presentation is bounded, source-local and client-only.
+- [x] Accessibility presets reduce sensory/graphics intensity while keeping the lowest-effects preset mechanically readable.
+- [x] Config reload invalidates cached effective settings and resets transient fog/audio/particle state.
+- [x] All four Stage 07 task PRs received exact-head GREEN CI before merge, and the final `main` passed independent full post-merge verification after the two-boot fixture hardening.
+
+**07 Client Experience is complete.**
+
 ## Immediate next step
 
-Stage 07 is in progress at **3/4**. The next planned implementation task is **07.04 accessibility presets/validation**, but it must not be started automatically; begin it only when explicitly requested from the then-current verified `main`.
+Stage 08 Integrations remains unimplemented. Do not start it automatically; begin it only when explicitly requested from the then-current verified `main`.
 
 Stage 07 causal implementation order:
 
 1. `✅ feat/07-hud`
 2. `✅ feat/07-fog-rendering`
 3. `✅ feat/07-audio-particles`
-4. `⏳ 07.04 accessibility presets/validation`
+4. `✅ feat/07-accessibility`
 
 ## Level 1 release gate
 
