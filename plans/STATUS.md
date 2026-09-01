@@ -279,7 +279,7 @@ Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff 
 - Merge SHA: `169915a6c0d16a7e4b2fe219fc109dbb8e3f6d18`
 - Completed file: `✅-01-entity-corruption.md`
 
-Entity corruption is a version-aware persistent NeoForge attachment on eligible non-player living entities. It samples the canonical `DefaultShroudQuery`, accumulates only in effective Shroud, regresses in CLEAR/Sanctuary and removes clean state without replacing the entity. Eligibility is fail-closed through `corruptible`, `immune` and `boss_excluded` tags; players remain on the Exposure system. Cow/wolf/zombie GameTests preserve original entity type, and the tamed-wolf fixture preserves owner UUID, tame and sitting state. A real two-boot server fixture proves corruption intensity/stage persist across save/restart.
+Entity corruption is a version-aware persistent NeoForge player attachment on eligible non-player living entities. It samples the canonical `DefaultShroudQuery`, accumulates only in effective Shroud, regresses in CLEAR/Sanctuary and removes clean state without replacing the entity. Eligibility is fail-closed through `corruptible`, `immune` and `boss_excluded` tags; players remain on the Exposure system. Cow/wolf/zombie GameTests preserve original entity type, and the tamed-wolf fixture preserves owner UUID, tame and sitting state. A real two-boot server fixture proves corruption intensity/stage persist across save/restart.
 
 No new task-local pending contract was introduced. `ENSH-L1-MAGIC-CLASSIFY-001` remains open for Stage 04 Task 03 under the existing Foundation classification boundary; Flame and claim pendings remain under their canonical later-stage owners.
 
@@ -708,7 +708,7 @@ The actual `ars_zero-1.21.1-2.0.2.jar` is not co-loaded by the current Enshroude
 ### ✅ 02 Ars Nouveau + Iron's magic classification
 
 - Branch: `feat/08-magic-systems`.
-- Structural RED contract HEAD: `deab1aa1e777a73b599b53c5391bce79c3d394ff` — the test contract deliberately referenced the not-yet-created Stage 08.02 adapters. Its Actions attempts were superseded/queued before execution, so it is recorded as source-level structural RED rather than a claimed completed RED workflow.
+- Structural RED contract HEAD: `deab1aa1e777a73b599b53c5391bce79c3d394ff`; rerun workflow/job `33537531739` / `99961988664` (attempt 2) completed `failure` at `:compileTestJava` with 12 missing-package/symbol errors for the provisional Ars/Iron adapter types referenced by `MagicSystemAdaptersTest`. Later gates were skipped; final Iron adapter naming/path was aligned to `IronsSpellbooksMagicAdapter` under `integration/irons` during the subsequent contract refactor.
 - Initial GREEN implementation checkpoint: `78acc220aea5cb3387c580a17b102756c76a2a17`.
 - Contract review found one architecture mismatch before merge: composition had initially been folded into `DefaultMagicDamageClassifier`, despite Stage 04 and the Stage 08 plan requiring that type to remain the standalone baseline and `CompositeMagicDamageClassifier` to own optional evidence composition. The branch was refactored before final verification.
 - Final implementation HEAD: `85ba070753031d6b8e41351b2cdc5055a34d47d7`.
