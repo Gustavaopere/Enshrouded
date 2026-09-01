@@ -30,6 +30,20 @@ final class ArsZeroCompatibilityProbeTest {
     }
 
     @Test
+    void nonMonsterRegistryEntryFailsClosedInsteadOfBecomingTheBossProvider() {
+        ArsZeroCompatibilityProbe incompatible = ArsZeroCompatibilityProbe.inspect(
+                true,
+                id -> id.equals(ArsZeroCompatibilityProbe.LICH_ID)
+                        ? Optional.of(EntityType.ARROW)
+                        : Optional.empty()
+        );
+
+        assertFalse(incompatible.available());
+        assertEquals(ArsZeroCompatibilityProbe.Status.INCOMPATIBLE, incompatible.status());
+        assertTrue(incompatible.lichType().isEmpty());
+    }
+
+    @Test
     void exactRegistryEntryProducesOneStableReadySnapshot() {
         ArsZeroCompatibilityProbe ready = ArsZeroCompatibilityProbe.inspect(
                 true,
