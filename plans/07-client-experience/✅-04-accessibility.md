@@ -29,7 +29,7 @@
 ## TDD / verification
 
 - [x] Unit-test accessibility preset mapping plus cross-setting clamping/defaults on the existing shared config.
-- [x] Client smoke lowest-effects preset still displays timer and Deadly warning.
+- [x] Unit-level preset/HUD-model coverage proves `MINIMAL` forces a visible readable HUD and preserves explicit Deadly/passage warning translation keys; no live client-render smoke is part of the current CI.
 - [x] Config/preset reload does not leave stale render/audio state.
 - [x] Verify applying a preset does not create or persist a second configuration source.
 
@@ -50,6 +50,7 @@
 - Final implementation HEAD: `84b3d0f9d8ce25afdfa9531200a218de89546af4`.
 - PR: #56 — `Stage 07.04: accessibility profiles and validation`.
 - Final exact PR-head verification: workflow/job `33418623603` / `99575240609` — GREEN across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, 74/74 GameTests, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Accessibility verification is unit/model level for the lowest-effects presentation: `AccessibilityPresetControllerTest` asserts a visible `MINIMAL` HUD plus explicit `hud.enshrouded.deadly_shroud` and `hud.enshrouded.passage_blocked` model keys. The repository CI does not launch a live client-render smoke, so no such execution is claimed.
 - The P2 thread was answered and resolved on the final HEAD before merge.
 - Implementation merge SHA: `29ae2d9b7a13bbdffd3291d2fe4213e0705eb8e3`.
 - First post-merge workflow `33421208877` exposed a pre-existing timing race in `EntityCorruptionReloadGameTests`: the persisted entity UUID could already be owned by the asynchronous entity-section manager while `ServerLevel.getEntity(UUID)` was not yet visible after the historical fixed 20-tick settle delay. This was a test-fixture defect, not an accessibility runtime regression, and Stage 07 closeout remained blocked until it was hardened.
