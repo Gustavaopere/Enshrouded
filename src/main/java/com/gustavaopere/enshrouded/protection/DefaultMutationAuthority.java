@@ -38,6 +38,10 @@ public final class DefaultMutationAuthority implements MutationAuthority {
         this.protectedAreas = Objects.requireNonNull(protectedAreas, "protectedAreas");
     }
 
+    public static DefaultMutationAuthority fromConfig(FlameWardQuery wardQuery) {
+        return fromConfig(wardQuery, ProtectionRuntimeBindings.protectedAreas());
+    }
+
     public static DefaultMutationAuthority fromConfig(
             FlameWardQuery wardQuery,
             ProtectedAreaService protectedAreas) {
