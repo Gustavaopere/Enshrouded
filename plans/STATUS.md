@@ -67,7 +67,7 @@ Scheduler hard-enforces `maxInfluenceRadius`, uses bounded frontier capacity, re
 ### ✅ 04 canonical zone query and client sync
 
 - Branch: `feat/01-zone-query-sync`
-- RED checkpoints: `4c1dc0d44cc1dc9493c239cb70c96950c1051136`, `b071ba032f4cbc80741cb8f3c54eabe3783a933d`, `192402664738f4e400d1ff5442873e7ad87df39a`
+- RED checkpoints: `4c1dc0d44cc1dc949c239cb70c96950c1051136`, `b071ba032f4cbc80741cb8f3c54eabe3783a933d`, `192402664738f4e400d1ff5442873e7ad87df39a`
 - Final implementation HEAD: `844760a4cbc411b3cce2409fa99f4b20e19bddaa`
 - PR: #13
 - Final PR-head verification: workflow `33199383533`, job `98944636449` — GREEN
@@ -115,7 +115,7 @@ Worldgen threads do not mutate SavedData directly; ordinary loaded chunks do not
 - Merge SHA: `f398c13bac776f4f0c7b130153d69124e6970431`
 - Completed file: `✅-04-terrain-safety.md`
 
-The fail-closed `DefaultMutationAuthority` now exists before any Stage 02 block mutation sink. SAFE/AGGRESSIVE terrain tags, tri-state protection decisions, block-entity safeguards and expert overrides are centralized behind this one authority.
+The fail-closed `DefaultMutationAuthority` now exists before any Stage 02 block mutation sink. SAFE/AGGRESSIVE terrain tags, tri-state protection decisions, Foundation ward integration, block-entity safeguards and expert overrides are centralized behind this one authority.
 
 `ENSH-L1-FLAME-WARD-001` remains open for Stage 03/05 completion; the Stage 02 authority side is proven. `ENSH-L1-CLAIM-SAFETY-001` remains open only until Stage 08 real FTB Chunks/MineColonies adapters prove their side of the same `ProtectedAreaService` boundary.
 
