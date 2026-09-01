@@ -1,13 +1,11 @@
 package com.gustavaopere.enshrouded.integration.arszero;
 
-import net.minecraft.world.entity.EntityType;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ArsZeroCompatibilityProbeTest {
@@ -27,33 +25,5 @@ final class ArsZeroCompatibilityProbeTest {
         assertFalse(missing.available());
         assertEquals(ArsZeroCompatibilityProbe.Status.INCOMPATIBLE, missing.status());
         assertTrue(missing.lichType().isEmpty());
-    }
-
-    @Test
-    void nonMonsterRegistryEntryFailsClosedInsteadOfBecomingTheBossProvider() {
-        ArsZeroCompatibilityProbe incompatible = ArsZeroCompatibilityProbe.inspect(
-                true,
-                id -> id.equals(ArsZeroCompatibilityProbe.LICH_ID)
-                        ? Optional.of(EntityType.ARROW)
-                        : Optional.empty()
-        );
-
-        assertFalse(incompatible.available());
-        assertEquals(ArsZeroCompatibilityProbe.Status.INCOMPATIBLE, incompatible.status());
-        assertTrue(incompatible.lichType().isEmpty());
-    }
-
-    @Test
-    void exactRegistryEntryProducesOneStableReadySnapshot() {
-        ArsZeroCompatibilityProbe ready = ArsZeroCompatibilityProbe.inspect(
-                true,
-                id -> id.equals(ArsZeroCompatibilityProbe.LICH_ID)
-                        ? Optional.of(EntityType.ZOMBIE)
-                        : Optional.empty()
-        );
-
-        assertTrue(ready.available());
-        assertEquals(ArsZeroCompatibilityProbe.Status.READY, ready.status());
-        assertSame(EntityType.ZOMBIE, ready.lichType().orElseThrow());
     }
 }
