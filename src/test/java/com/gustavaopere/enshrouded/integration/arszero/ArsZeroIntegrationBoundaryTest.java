@@ -22,6 +22,7 @@ final class ArsZeroIntegrationBoundaryTest {
         assertFalse(probe.contains("com.github.ars_zero"));
         assertTrue(probe.contains("ars_zero"));
         assertTrue(probe.contains("lich"));
+        assertTrue(probe.contains("MobCategory.MONSTER"));
     }
 
     @Test
