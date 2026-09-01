@@ -39,7 +39,7 @@
 
 ## Verification provenance
 
-- RED contract checkpoint: `deab1aa1e777a73b599b53c5391bce79c3d394ff`. The test contract deliberately referenced the absent adapters; GitHub Actions attempts were superseded/queued before executing, so this checkpoint is structural source-level RED evidence rather than a claimed completed RED workflow.
+- RED contract checkpoint: `deab1aa1e777a73b599b53c5391bce79c3d394ff`; rerun workflow/job `33537531739` / `99961988664` (attempt 2) completed `failure` at `:compileTestJava` with 12 missing-package/symbol errors because the provisional Ars/Iron adapter types referenced by `MagicSystemAdaptersTest` did not yet exist. Later CI gates were skipped. The final Iron adapter naming/path was aligned to `IronsSpellbooksMagicAdapter` under `integration/irons` during the subsequent contract refactor.
 - Initial implementation checkpoint: `78acc220aea5cb3387c580a17b102756c76a2a17`.
 - Contract-alignment refactor restored the Stage 04 baseline and introduced the planned explicit composite before final verification.
 - Final implementation HEAD: `85ba070753031d6b8e41351b2cdc5055a34d47d7`.
