@@ -8,6 +8,7 @@ import com.gustavaopere.enshrouded.exposure.ExposureRuntime;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuntime;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionRuntime;
 import com.gustavaopere.enshrouded.flame.ward.FlameWardRuntime;
+import com.gustavaopere.enshrouded.integration.arszero.ArsZeroIntegrationRuntime;
 import com.gustavaopere.enshrouded.network.ModNetworking;
 import com.gustavaopere.enshrouded.network.ShroudSyncRuntime;
 import com.gustavaopere.enshrouded.registry.ModRegistries;
@@ -32,6 +33,7 @@ public final class Enshrouded {
 
     public Enshrouded(IEventBus modBus, ModContainer modContainer) {
         ModRegistries.register(modBus);
+        ArsZeroIntegrationRuntime.register(modBus);
         FlameAltarRuntime.registerRitual(new LevelOneLichSkullRitual());
         modBus.addListener(ModNetworking::register);
         modContainer.registerConfig(ModConfig.Type.SERVER, EnshroudedConfig.SERVER_SPEC);
