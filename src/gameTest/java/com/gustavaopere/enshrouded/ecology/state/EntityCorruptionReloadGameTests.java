@@ -22,38 +22,56 @@ public final class EntityCorruptionReloadGameTests {
     private static final int SENTINEL_CHUNK_X = SENTINEL_POS.getX() >> 4;
     private static final int SENTINEL_CHUNK_Z = SENTINEL_POS.getZ() >> 4;
     private static final float SENTINEL_INTENSITY = 0.75F;
-    private static final long ENTITY_LOAD_SETTLE_TICKS = 20L;
+    private static final long ENTITY_LOAD_POLL_INTERVAL_TICKS = 5L;
+    private static final long ENTITY_LOAD_MAX_WAIT_TICKS = 100L;
 
     private EntityCorruptionReloadGameTests() {
     }
 
-    @GameTest(template = "foundation_empty")
+    @GameTest(template = "foundation_empty", timeoutTicks = 200)
     public static void entityCorruptionAttachmentSurvivesRealServerRestart(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         level.setChunkForced(SENTINEL_CHUNK_X, SENTINEL_CHUNK_Z, true);
         level.getChunkAt(SENTINEL_POS);
-        helper.runAfterDelay(ENTITY_LOAD_SETTLE_TICKS, () -> verifyReloadOrCreate(helper, level));
+        helper.runAfterDelay(
+                ENTITY_LOAD_POLL_INTERVAL_TICKS,
+                () -> pollForReloadOrCreate(helper, level, ENTITY_LOAD_POLL_INTERVAL_TICKS));
     }
 
-    private static void verifyReloadOrCreate(GameTestHelper helper, ServerLevel level) {
+    private static void pollForReloadOrCreate(GameTestHelper helper, ServerLevel level, long waitedTicks) {
         Entity existing = level.getEntity(SENTINEL_ID);
-
-        if (existing == null) {
-            Cow cow = EntityType.COW.create(level);
-            helper.assertTrue(cow != null, "sentinel cow must be constructible");
-            cow.setUUID(SENTINEL_ID);
-            cow.moveTo(SENTINEL_POS.getX() + 0.5D, SENTINEL_POS.getY(), SENTINEL_POS.getZ() + 0.5D);
-            cow.setPersistenceRequired();
-            cow.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION.get(),
-                    new EntityCorruptionAttachment(EntityCorruptionSchema.CURRENT_VERSION, SENTINEL_INTENSITY));
-            helper.assertTrue(level.addFreshEntity(cow),
-                    "sentinel cow must enter the forced chunk; duplicate UUID means persisted entity loading was not observed");
-            GameTestBootstrap.forceSaveForReload(helper);
-            System.out.println("ENSHROUDED_ENTITY_CORRUPTION_CREATED");
-            helper.succeed();
+        if (existing != null) {
+            verifyReload(helper, level, existing);
             return;
         }
 
+        if (waitedTicks < ENTITY_LOAD_MAX_WAIT_TICKS) {
+            long remainingTicks = ENTITY_LOAD_MAX_WAIT_TICKS - waitedTicks;
+            long nextDelay = Math.min(ENTITY_LOAD_POLL_INTERVAL_TICKS, remainingTicks);
+            helper.runAfterDelay(nextDelay,
+                    () -> pollForReloadOrCreate(helper, level, waitedTicks + nextDelay));
+            return;
+        }
+
+        createSentinel(helper, level);
+    }
+
+    private static void createSentinel(GameTestHelper helper, ServerLevel level) {
+        Cow cow = EntityType.COW.create(level);
+        helper.assertTrue(cow != null, "sentinel cow must be constructible");
+        cow.setUUID(SENTINEL_ID);
+        cow.moveTo(SENTINEL_POS.getX() + 0.5D, SENTINEL_POS.getY(), SENTINEL_POS.getZ() + 0.5D);
+        cow.setPersistenceRequired();
+        cow.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION.get(),
+                new EntityCorruptionAttachment(EntityCorruptionSchema.CURRENT_VERSION, SENTINEL_INTENSITY));
+        helper.assertTrue(level.addFreshEntity(cow),
+                "sentinel cow must enter the forced chunk after the bounded entity-load deadline; duplicate UUID means persisted entity loading never became visible");
+        GameTestBootstrap.forceSaveForReload(helper);
+        System.out.println("ENSHROUDED_ENTITY_CORRUPTION_CREATED");
+        helper.succeed();
+    }
+
+    private static void verifyReload(GameTestHelper helper, ServerLevel level, Entity existing) {
         helper.assertTrue(existing instanceof Cow, "reloaded corruption sentinel must preserve entity type");
         helper.assertTrue(existing.getType() == EntityType.COW, "reloaded corruption sentinel must still be a cow");
         helper.assertTrue(SENTINEL_ID.equals(existing.getUUID()), "reloaded corruption sentinel must preserve UUID identity");
