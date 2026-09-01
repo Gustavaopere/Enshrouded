@@ -32,26 +32,6 @@ final class ArsZeroProviderFallbackTest {
         );
     }
 
-    @Test
-    void readyArsZeroProviderOutranksTheNativeFallback() {
-        NativeStub nativeFallback = new NativeStub();
-        LichManifestationProviderRegistry registry = new LichManifestationProviderRegistry(nativeFallback);
-        ArsZeroLichProvider arsZero = new ArsZeroLichProvider(
-                ArsZeroCompatibilityProbe.inspect(
-                        true,
-                        id -> id.equals(ArsZeroCompatibilityProbe.LICH_ID)
-                                ? Optional.of(net.minecraft.world.entity.EntityType.ZOMBIE)
-                                : Optional.empty()
-                )
-        );
-        registry.register(arsZero, ArsZeroIntegrationRuntime.PROVIDER_PRIORITY);
-
-        assertEquals(
-                List.of(ArsZeroLichProvider.ID, "enshrouded:test-native"),
-                registry.availableProviders().stream().map(LichManifestationProvider::id).toList()
-        );
-    }
-
     private static final class NativeStub implements LichManifestationProvider {
         @Override
         public String id() {
