@@ -15,34 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/** Standalone magic classification baseline backed by damage-type tags plus optional evidence. */
+/** Standalone magic classification baseline backed only by damage-type tags. */
 public final class DefaultMagicDamageClassifier implements MagicDamageClassifier {
     public static final TagKey<DamageType> MAGIC = tag("magic");
     public static final TagKey<DamageType> MAGIC_BYPASS = tag("magic_bypass");
 
-    private final List<MagicDamageClassifier> enrichments;
-
-    public DefaultMagicDamageClassifier() {
-        this(List.of());
-    }
-
-    public DefaultMagicDamageClassifier(List<? extends MagicDamageClassifier> enrichments) {
-        Objects.requireNonNull(enrichments, "enrichments");
-        this.enrichments = List.copyOf(enrichments);
-    }
-
     @Override
     public MagicDamageClassification classify(DamageSource source) {
         Objects.requireNonNull(source, "source");
-        MagicDamageClassification baseline = classifyTags(source.is(MAGIC), source.is(MAGIC_BYPASS));
-        if (enrichments.isEmpty() || baseline.kind() == MagicDamageKind.NON_MAGIC) {
-            return baseline;
-        }
-
-        List<MagicDamageClassification> evidence = enrichments.stream()
-                .map(classifier -> classifier.classify(source))
-                .toList();
-        return resolveEnrichments(baseline, evidence);
+        return classifyTags(source.is(MAGIC), source.is(MAGIC_BYPASS));
     }
 
     static MagicDamageClassification classifyTags(boolean magic, boolean bypass) {

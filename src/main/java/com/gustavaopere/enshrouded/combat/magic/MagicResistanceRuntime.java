@@ -6,7 +6,7 @@ import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.ecology.state.CorruptionEligibility;
 import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionAttachment;
 import com.gustavaopere.enshrouded.integration.arsnouveau.ArsNouveauMagicAdapter;
-import com.gustavaopere.enshrouded.integration.ironspells.IronSpellsMagicAdapter;
+import com.gustavaopere.enshrouded.integration.irons.IronsSpellbooksMagicAdapter;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.common.NeoForge;
@@ -16,10 +16,13 @@ import java.util.List;
 
 /** Applies the single Enshrouded corruption-magic reducer at NeoForge's mutable pre-damage phase. */
 public final class MagicResistanceRuntime {
-    private static final MagicDamageClassifier CLASSIFIER = new DefaultMagicDamageClassifier(List.of(
-            new ArsNouveauMagicAdapter(),
-            new IronSpellsMagicAdapter()
-    ));
+    private static final MagicDamageClassifier CLASSIFIER = new CompositeMagicDamageClassifier(
+            new DefaultMagicDamageClassifier(),
+            List.of(
+                    new ArsNouveauMagicAdapter(),
+                    new IronsSpellbooksMagicAdapter()
+            )
+    );
     private static boolean registered;
 
     private MagicResistanceRuntime() {

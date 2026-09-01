@@ -4,7 +4,7 @@ import com.gustavaopere.enshrouded.api.combat.MagicDamageClassification;
 import com.gustavaopere.enshrouded.api.combat.MagicDamageConfidence;
 import com.gustavaopere.enshrouded.api.combat.MagicDamageKind;
 import com.gustavaopere.enshrouded.integration.arsnouveau.ArsNouveauMagicAdapter;
-import com.gustavaopere.enshrouded.integration.ironspells.IronSpellsMagicAdapter;
+import com.gustavaopere.enshrouded.integration.irons.IronsSpellbooksMagicAdapter;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
@@ -33,27 +33,28 @@ final class MagicSystemAdaptersTest {
 
     @Test
     void ironSpellsClassifiesOnlyKnownSchoolDamageTypes() {
-        IronSpellsMagicAdapter adapter = new IronSpellsMagicAdapter();
+        IronsSpellbooksMagicAdapter adapter = new IronsSpellbooksMagicAdapter();
         for (String path : List.of(
                 "fire_magic", "ice_magic", "lightning_magic", "holy_magic", "ender_magic",
                 "blood_magic", "evocation_magic", "eldritch_magic", "nature_magic")) {
             assertMagical(adapter.classifyDamageType(id("irons_spellbooks", path)));
         }
 
-        assertUnknown(adapter.classifyDamageType(id("irons_spellbooks", "heartstop")));
-        assertUnknown(adapter.classifyDamageType(id("irons_spellbooks", "blood_cauldron")));
+        for (String path : List.of(
+                "heartstop", "blood_cauldron", "dragon_breath_pool", "fire_field", "poison_cloud")) {
+            assertUnknown(adapter.classifyDamageType(id("irons_spellbooks", path)));
+        }
         assertUnknown(adapter.classifyDamageType(id("irons_spellbooks", "made_up_physical")));
+        assertUnknown(adapter.classifyDamageType(id("minecraft", "player_attack")));
     }
 
     @Test
-    void adaptersArePureEvidenceAndNeverReducers() {
-        assertFalse(ArsNouveauMagicAdapter.class.getDeclaredMethods().length == 0);
-        assertFalse(IronSpellsMagicAdapter.class.getDeclaredMethods().length == 0);
+    void adaptersExposeOnlyExactUpstreamMagicWhitelists() {
         assertEquals(5, ArsNouveauMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.size());
-        assertEquals(9, IronSpellsMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.size());
+        assertEquals(9, IronsSpellbooksMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.size());
         assertTrue(ArsNouveauMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.stream()
                 .allMatch(id -> id.getNamespace().equals("ars_nouveau")));
-        assertTrue(IronSpellsMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.stream()
+        assertTrue(IronsSpellbooksMagicAdapter.KNOWN_MAGIC_DAMAGE_TYPES.stream()
                 .allMatch(id -> id.getNamespace().equals("irons_spellbooks")));
     }
 
