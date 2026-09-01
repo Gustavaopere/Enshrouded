@@ -4,7 +4,7 @@
 
 ## Task order
 
-1. [`01 Ars Zero Lich`](01-ars-zero.md)
+1. [`01 Ars Zero Lich`](✅-01-ars-zero.md)
 2. [`02 Ars/Iron magic`](02-magic-systems.md)
 3. [`03 Epic Fight/claims/teams`](03-combat-claims-teams.md)
 4. [`04 JourneyMap`](04-journeymap.md)
