@@ -13,7 +13,7 @@ Last structural update: 2026-09-01.
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
 - [x] 06 Lich & Story — all 4 tasks verified and merged.
 - [x] 07 Client Experience — all 4 tasks verified and merged.
-- [ ] 08 Integrations — 1/5 tasks verified and merged.
+- [ ] 08 Integrations — 2/5 tasks verified and merged.
 - [ ] 09 Hardening — not implemented.
 
 ## 00 Foundation — merged record
@@ -705,14 +705,32 @@ The adapter creates the resolved entity through generic Minecraft/NeoForge APIs 
 
 The actual `ars_zero-1.21.1-2.0.2.jar` is not co-loaded by the current Enshrouded CI. Ars Zero 2.0.2 has a broader required Ars Nouveau/Ars Elemental runtime chain, while this repository has no optional-mod co-load profile. That limitation is explicitly recorded as `ENSH-L1-ARS-ZERO-REAL-FIXTURE-001`; it does not create a second authority or unsafe fallback, but it prevents claiming real-distribution co-load verification until a representative pack/optional integration run is added.
 
+### ✅ 02 Ars Nouveau + Iron's magic classification
+
+- Branch: `feat/08-magic-systems`.
+- Structural RED contract HEAD: `deab1aa1e777a73b599b53c5391bce79c3d394ff` — the test contract deliberately referenced the not-yet-created Stage 08.02 adapters. Its Actions attempts were superseded/queued before execution, so it is recorded as source-level structural RED rather than a claimed completed RED workflow.
+- Initial GREEN implementation checkpoint: `78acc220aea5cb3387c580a17b102756c76a2a17`.
+- Contract review found one architecture mismatch before merge: composition had initially been folded into `DefaultMagicDamageClassifier`, despite Stage 04 and the Stage 08 plan requiring that type to remain the standalone baseline and `CompositeMagicDamageClassifier` to own optional evidence composition. The branch was refactored before final verification.
+- Final implementation HEAD: `85ba070753031d6b8e41351b2cdc5055a34d47d7`.
+- PR: #61 — `Stage 08.02: integrate Ars Nouveau and Iron's magic classification`.
+- Final exact PR-head verification: workflow/job `33539127624` / `99960767541` — `completed/success` across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, production JAR verification, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Implementation merge SHA: `916ccf16c10fc521c89475f7cbd67e6efbe81751`.
+- Independent post-merge `main` workflow/job: `33539723280` / `99962689287` — `completed/success` across the same complete gate set.
+- Completed file: `✅-02-magic-systems.md`.
+- Closed cross-stage contract: `ENSH-L1-MAGIC-CLASSIFY-001`.
+
+Stage 08.02 preserves the Stage 04 tag-only baseline and adds one explicit `CompositeMagicDamageClassifier`. Ars Nouveau and Iron's Spells already publish their canonical spell/school damage types through NeoForge `#neoforge:is_magic`, which remains the primary path through Enshrouded's existing `enshrouded:magic` bridge. The optional adapters provide only exact-registry-ID fallback/evidence: five current Ars spell damage IDs and nine current Iron's school damage IDs. Ars `sourceberry_bush`, Iron's non-school/effect damage and arbitrary IDs remain non-evidence instead of being labeled magical merely by namespace.
+
+Adapters import no optional-mod implementation classes, register no event hook and mutate no damage. `DefaultMagicDamageClassifier` remains standalone; explicit `magic_bypass` stays authoritative; contradictory strongest evidence fails closed. `MagicResistanceRuntime` still owns the single `LivingDamageEvent.Pre` path and invokes `MagicResistanceService` once on the one final Foundation-owned `MagicDamageClassification`. The combined Stage 04 + Stage 08.02 executable evidence therefore closes the magic-classification pending contract without creating a second authority or reducer.
+
 ## Immediate next step
 
-Stage 08.02 (`02-magic-systems.md`, Ars Nouveau + Iron's Spellbooks classification adapters) is the next task in the canonical Stage 08 order. Do not start it automatically; begin it only when explicitly requested from the then-current verified `main`.
+Stage 08.03 (`03-combat-claims-teams.md`, Epic Fight/claims/teams integration) is the next task in the canonical Stage 08 order. Do not start it automatically; begin it only when explicitly requested from the then-current verified `main`.
 
 Stage 08 causal implementation order:
 
 1. `✅ feat/08-ars-zero`
-2. `pending feat/08-magic-systems`
+2. `✅ feat/08-magic-systems`
 3. `pending feat/08-combat-claims-teams`
 4. `pending feat/08-journeymap`
 5. `pending feat/08-necromancy-flavor`
