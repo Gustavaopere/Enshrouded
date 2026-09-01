@@ -279,7 +279,7 @@ Exact final PR-head gates passed: unit tests, frontier benchmark baseline, diff 
 - Merge SHA: `169915a6c0d16a7e4b2fe219fc109dbb8e3f6d18`
 - Completed file: `✅-01-entity-corruption.md`
 
-Entity corruption is a version-aware persistent NeoForge player attachment on eligible non-player living entities. It samples the canonical `DefaultShroudQuery`, accumulates only in effective Shroud, regresses in CLEAR/Sanctuary and removes clean state without replacing the entity. Eligibility is fail-closed through `corruptible`, `immune` and `boss_excluded` tags; players remain on the Exposure system. Cow/wolf/zombie GameTests preserve original entity type, and the tamed-wolf fixture preserves owner UUID, tame and sitting state. A real two-boot server fixture proves corruption intensity/stage persist across save/restart.
+Entity corruption is a version-aware persistent NeoForge attachment on eligible non-player living entities. It samples the canonical `DefaultShroudQuery`, accumulates only in effective Shroud, regresses in CLEAR/Sanctuary and removes clean state without replacing the entity. Eligibility is fail-closed through `corruptible`, `immune` and `boss_excluded` tags; players remain on the Exposure system. Cow/wolf/zombie GameTests preserve original entity type, and the tamed-wolf fixture preserves owner UUID, tame and sitting state. A real two-boot server fixture proves corruption intensity/stage persist across save/restart.
 
 No new task-local pending contract was introduced. `ENSH-L1-MAGIC-CLASSIFY-001` remains open for Stage 04 Task 03 under the existing Foundation classification boundary; Flame and claim pendings remain under their canonical later-stage owners.
 
