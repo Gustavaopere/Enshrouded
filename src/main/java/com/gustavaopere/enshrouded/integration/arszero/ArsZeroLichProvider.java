@@ -5,10 +5,10 @@ import com.gustavaopere.enshrouded.api.story.LichManifestationProvider;
 import com.gustavaopere.enshrouded.story.boss.ManifestationDirector;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.neoforged.neoforge.event.EventHooks;
 
 import java.util.Objects;
@@ -62,7 +62,7 @@ public final class ArsZeroLichProvider implements LichManifestationProvider {
                     mob,
                     level,
                     level.getCurrentDifficultyAt(context.origin()),
-                    EntitySpawnReason.EVENT,
+                    MobSpawnType.EVENT,
                     null
             );
         }
