@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,7 +40,7 @@ public final class DefaultMutationAuthority implements MutationAuthority {
     }
 
     public static DefaultMutationAuthority fromConfig(FlameWardQuery wardQuery) {
-        return fromConfig(wardQuery, ProtectionRuntimeBindings.protectedAreas());
+        return fromConfig(wardQuery, ProtectedAreaService.none());
     }
 
     public static DefaultMutationAuthority fromConfig(
@@ -48,10 +49,17 @@ public final class DefaultMutationAuthority implements MutationAuthority {
         return new DefaultMutationAuthority(
                 EnshroudedConfig.terrainMutationMode(),
                 wardQuery,
-                protectedAreas,
+                composeProtectedAreasForConfig(protectedAreas),
                 EnshroudedConfig.terrainAllowIndeterminateProtection(),
                 EnshroudedConfig.terrainAllowBlockEntityMutation()
         );
+    }
+
+    static ProtectedAreaService composeProtectedAreasForConfig(ProtectedAreaService protectedAreas) {
+        return new CompositeProtectedAreaService(List.of(
+                Objects.requireNonNull(protectedAreas, "protectedAreas"),
+                ProtectionRuntimeBindings.protectedAreas()
+        ));
     }
 
     @Override
