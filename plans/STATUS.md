@@ -1,6 +1,6 @@
 # Project Status
 
-Last structural update: 2026-09-01.
+Last structural update: 2026-09-02.
 
 The detailed merged-task record through Stage 08.02 is preserved verbatim in [`STATUS-HISTORY-THROUGH-08.02.md`](STATUS-HISTORY-THROUGH-08.02.md). This file is the compact operational checkpoint used to determine the next task; completed-task dossiers and `plans/PENDING.md` remain the authoritative provenance for individual contracts.
 
@@ -15,7 +15,7 @@ The detailed merged-task record through Stage 08.02 is preserved verbatim in [`S
 - [x] 05 Flame Progression — all 4 tasks verified and merged.
 - [x] 06 Lich & Story — all 4 tasks verified and merged.
 - [x] 07 Client Experience — all 4 tasks verified and merged.
-- [ ] 08 Integrations — 3/5 tasks verified and merged.
+- [ ] 08 Integrations — 4/5 tasks verified and merged.
 - [ ] 09 Hardening — not implemented.
 
 ## Completed stage summary
@@ -79,22 +79,41 @@ FTB Chunks and MineColonies feed the canonical Stage 02 tri-state `ProtectedArea
 
 Final review proved that config-created mutation authorities could otherwise bypass runtime claims when callers explicitly supplied `ProtectedAreaService.none()`. The merged fix centrally composes every explicit protection service with `ProtectionRuntimeBindings`, covering worldgen and purification without adding a second mutation authority. Epic Fight remains compatibility/presence-only and owns no second damage hook or reducer. Provider class/method handles are detected once and cached outside hot loops.
 
+### ✅ 04 JourneyMap discovered-core markers
+
+- Branch: `feat/08-journeymap`.
+- Representative runtime RED: `ac9e7b967b42b803d8af5d1ce7e21b8e0d41bc29`; workflow/job `33634842638` / `100263003296` — production/test compilation succeeded and only the deliberately absent runtime contract failed.
+- JourneyMap client-boundary RED: `4c9f459272e6c59fa90ddf631144c2e68c441c3f`; workflow/job `33635654507` / `100266056178` — 301 tests ran and only the new integration contract failed.
+- Adapter smoke GREEN: `e18aeb571ba1e02d7ecd620689177c77ddc203db`; workflow/job `33636971843` / `100270513234` — `completed/success`.
+- Final implementation HEAD: `b82f43af85f56c89cec51f2de972acd32f70a3e4`.
+- PR: #66 — `Stage 08.04: JourneyMap discovered-core markers`.
+- Final exact PR-head verification: workflow/job `33650126425` / `100314955596` — `completed/success` across unit tests, frontier benchmark, diff sanity, NeoForge build, JAR verification, GameTest server, SavedData two-boot reload and dedicated-server save/reload smoke.
+- Implementation merge SHA: `a9450a9e773d9e15c1f8e2cd96b6b783d4bb9ef6`.
+- Independent post-merge `main` workflow/job: `33650826014` / `100317085835` — `completed/success` across the same complete gate set.
+- Completed file: `✅-04-journeymap.md`.
+- No new cross-stage pending contract was introduced.
+
+JourneyMap runtime `6.0.7` is a client-only presentation target through pinned API `2.0.0-1.21.1` as `compileOnly`. Enshrouded owns all discovery authority: the server reuses the exact canonical `ShroudSample.sourceId()` already sampled for presentation, performs direct core-id lookup, persists knowledge per `ProgressionOwner`, and sends complete authorized snapshots. There is no global undiscovered-core scan, no JourneyMap-backed progression state and no second Shroud query authority.
+
+Known lifecycle is explicit: ACTIVE markers are visible, DESTROYED cores remain known but hidden, and PURIFIED cores become visible again. Owner changes replace the full snapshot rather than migrating knowledge. JourneyMap waypoints are transient (`persistent=false`) and reconciled only from the authorized client snapshot. GameTests and dedicated-server save/reload run without JourneyMap runtime and remained GREEN, proving optional-mod isolation.
+
 ## Immediate next step
 
-Stage 08.04 (`04-journeymap.md`, JourneyMap integration) is the next task in the canonical Stage 08 order. Do **not** start it automatically; begin it only when explicitly requested from the then-current verified `main`.
+Stage 08.05 (`05-necromancy-flavor.md`, Goety/Malum/Eidolon flavor) is the next task in the canonical Stage 08 order. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
 
 Stage 08 causal implementation order:
 
 1. `✅ feat/08-ars-zero`
 2. `✅ feat/08-magic-systems`
 3. `✅ feat/08-combat-claims-teams`
-4. `pending feat/08-journeymap`
+4. `✅ feat/08-journeymap`
 5. `pending feat/08-necromancy-flavor`
 
 ## Open cross-stage contracts
 
 - `ENSH-L1-ARS-ZERO-REAL-FIXTURE-001` — open exactly as recorded in `plans/PENDING.md`.
 - No Stage 08.03 ownership/protection contract remains open.
+- No Stage 08.04 discovery/JourneyMap contract remains open.
 
 ## Level 1 release gate
 
