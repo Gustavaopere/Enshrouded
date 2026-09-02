@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,18 +16,13 @@ class RuntimeProtectionCompositionRedTest {
     }
 
     @Test
-    void explicitFactoryProtectionCannotBypassInstalledRuntimeProviders() throws Exception {
+    void explicitFactoryProtectionCannotBypassInstalledRuntimeProviders() {
         ProtectedAreaService runtimeProvider = (level, pos, kind) -> ProtectionDecision.PROTECTED;
         ProtectionRuntimeBindings.install(List.of(runtimeProvider));
 
-        DefaultMutationAuthority authority = DefaultMutationAuthority.fromConfig(
-                (level, pos) -> false,
+        ProtectedAreaService effective = DefaultMutationAuthority.composeProtectedAreasForConfig(
                 ProtectedAreaService.none()
         );
-
-        Field protectedAreasField = DefaultMutationAuthority.class.getDeclaredField("protectedAreas");
-        protectedAreasField.setAccessible(true);
-        ProtectedAreaService effective = (ProtectedAreaService) protectedAreasField.get(authority);
 
         assertEquals(
                 ProtectionDecision.PROTECTED,
