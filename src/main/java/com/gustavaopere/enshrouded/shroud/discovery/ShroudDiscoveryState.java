@@ -14,7 +14,7 @@ import java.util.UUID;
 
 /** Immutable owner-scoped discovery state. It never infers or migrates knowledge between owners. */
 public final class ShroudDiscoveryState {
-    private static final Comparator<DiscoveredCore> VISIBLE_ORDER = Comparator
+    private static final Comparator<DiscoveredCore> CORE_ORDER = Comparator
             .comparing(DiscoveredCore::dimensionId)
             .thenComparing(core -> core.coreId().toString());
 
@@ -110,11 +110,15 @@ public final class ShroudDiscoveryState {
         return new ShroudDiscoveryState(owners);
     }
 
-    public List<DiscoveredCore> visibleTo(ProgressionOwner owner) {
+    public List<DiscoveredCore> knownTo(ProgressionOwner owner) {
         Objects.requireNonNull(owner, "owner");
         ArrayList<DiscoveredCore> result = new ArrayList<>(byOwner.getOrDefault(owner.stableKey(), Map.of()).values());
-        result.sort(VISIBLE_ORDER);
+        result.sort(CORE_ORDER);
         return List.copyOf(result);
+    }
+
+    public List<DiscoveredCore> visibleTo(ProgressionOwner owner) {
+        return knownTo(owner).stream().filter(DiscoveredCore::markerVisible).toList();
     }
 
     public Set<String> ownerStableKeys() {
