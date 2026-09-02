@@ -83,6 +83,38 @@ class ShroudDiscoveryStateTest {
     }
 
     @Test
+    void lifecycleBroadcastUpdatesOnlyOwnersWhoAlreadyKnowTheCore() {
+        ProgressionOwner alice = ProgressionOwner.player(UUID.fromString("66666666-6666-6666-6666-666666666666"));
+        ProgressionOwner bob = ProgressionOwner.player(UUID.fromString("77777777-7777-7777-7777-777777777777"));
+        UUID coreId = UUID.fromString("12121212-1212-1212-1212-121212121212");
+        DiscoveredCore active = new DiscoveredCore(
+                coreId,
+                "minecraft:overworld",
+                new BlockPos(40, 70, 40),
+                CoreLifecycleState.ACTIVE);
+        ShroudDiscoveryState discovered = ShroudDiscoveryState.empty().discover(alice, active);
+
+        ShroudDiscoveryState destroyed = discovered.updateKnownLifecycleEverywhere(coreId, CoreLifecycleState.DESTROYED);
+        assertEquals(CoreLifecycleState.DESTROYED, destroyed.knownTo(alice).getFirst().lifecycle());
+        assertTrue(destroyed.visibleTo(alice).isEmpty());
+        assertTrue(destroyed.knownTo(bob).isEmpty(), "lifecycle updates must not discover the core for another owner");
+
+        ShroudDiscoveryState purified = destroyed.updateKnownLifecycleEverywhere(coreId, CoreLifecycleState.PURIFIED);
+        assertEquals(CoreLifecycleState.PURIFIED, purified.visibleTo(alice).getFirst().lifecycle());
+        assertTrue(purified.knownTo(bob).isEmpty());
+    }
+
+    @Test
+    void lifecycleBroadcastForUnknownCoreIsAnIdempotentNoOp() {
+        ShroudDiscoveryState empty = ShroudDiscoveryState.empty();
+        ShroudDiscoveryState unchanged = empty.updateKnownLifecycleEverywhere(
+                UUID.fromString("34343434-3434-3434-3434-343434343434"),
+                CoreLifecycleState.PURIFIED);
+        assertTrue(unchanged.ownerStableKeys().isEmpty());
+        assertEquals(empty, unchanged);
+    }
+
+    @Test
     void dormantCoreCannotBeInjectedIntoDiscoveryKnowledge() {
         ProgressionOwner owner = ProgressionOwner.player(UUID.fromString("55555555-5555-5555-5555-555555555555"));
         assertThrows(IllegalArgumentException.class, () -> new DiscoveredCore(
