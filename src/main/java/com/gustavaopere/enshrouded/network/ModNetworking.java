@@ -1,8 +1,10 @@
 package com.gustavaopere.enshrouded.network;
 
 import com.gustavaopere.enshrouded.client.state.ClientExposureState;
+import com.gustavaopere.enshrouded.client.state.ClientShroudDiscoveryState;
 import com.gustavaopere.enshrouded.client.state.ClientShroudState;
 import com.gustavaopere.enshrouded.exposure.ExposurePayload;
+import com.gustavaopere.enshrouded.shroud.discovery.ShroudDiscoveryPayload;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -26,5 +28,9 @@ public final class ModNetworking {
                 ExposurePayload.TYPE,
                 ExposurePayload.STREAM_CODEC,
                 (payload, context) -> ClientExposureState.INSTANCE.accept(payload));
+        registrar.playToClient(
+                ShroudDiscoveryPayload.TYPE,
+                ShroudDiscoveryPayload.STREAM_CODEC,
+                (payload, context) -> ClientShroudDiscoveryState.INSTANCE.accept(payload));
     }
 }
