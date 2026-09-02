@@ -50,13 +50,25 @@ Policy: isolated source adaptation is allowed only when the Apache-2.0 terms are
 
 Policy: Enshrouded does **not** copy the GPL Lich implementation into its core. Ars Zero may supply an encounter body; Enshrouded owns story identity, rewards and progression. Any proposal to incorporate GPL source requires an explicit copyleft compatibility review and derivation record before merge/release.
 
+### JourneyMap API
+
+- Provenance id: `journeymap-api-2.0.0-1.21.1`.
+- Repository: `TeamJM/journeymap-api`.
+- Audited tag: `1.21.1_2.0.0`.
+- Compile-time artifact: `info.journeymap:journeymap-api-neoforge:2.0.0-1.21.1`.
+- Current pack runtime: `journeymap-neoforge-1.21.1-6.0.7.jar`.
+- Upstream terms audited at the tag expressly allow writing independent code that uses the `journeymap.*` API as a dependency and prohibit redistribution of JourneyMap API source/classes except where separately permitted.
+- Use: optional client-only waypoint projection of Enshrouded-owned, server-authorized discovery snapshots.
+
+Policy: Enshrouded uses the JourneyMap API as a `compileOnly` dependency and does not bundle or redistribute JourneyMap API classes/source. The adapter owns no discovery authority and never reads JourneyMap as canonical gameplay state. Status: `DEPENDENCY_API / COMPATIBILITY_TARGET`; no `DERIVED_CODE` or `DERIVED_ASSET` is declared.
+
 ### Enshrouded game
 
 Gameplay concepts such as timed Shroud exposure, Deadly/Red Shroud and Flame-gated passage are design inspiration only. The commercial game's code, textures, models, audio, writing and exact maps are not source material for this repository. Status: `REFERENCE_ONLY`; any direct proprietary asset/code reuse is `PERMISSION_REQUIRED`.
 
 ## Optional integration/compatibility ledger
 
-The installed baseline comes from `docs/compat/current-pack-2026-08-26.md`.
+The installed baseline comes from `docs/compat/current-pack-2026-08-26.md`; later audited pack deltas are stated explicitly in their rows.
 
 | Target | Pack evidence | Intended use | Derivation status |
 | --- | --- | --- | --- |
@@ -68,7 +80,7 @@ The installed baseline comes from `docs/compat/current-pack-2026-08-26.md`.
 | Eidolon: Repraised | `0.5.0.2` | future occult/thematic bridge | LGPLv3 observed for current project line; exact source revision not pinned here, so derivation `REVIEW_REQUIRED` |
 | FTB Chunks | `2101.1.21` | claim/protection facts | `DEPENDENCY_API / COMPATIBILITY_TARGET`; no copied source declared; derivation requires separate audit |
 | FTB Teams | `2101.1.11` | owner/team facts | `DEPENDENCY_API / COMPATIBILITY_TARGET`; no copied source declared; derivation requires separate audit |
-| JourneyMap | `6.0.5` | map presentation | `COMPATIBILITY_TARGET`; renderer only, never state authority; any API/source use must follow the exact JourneyMap terms/version audited at implementation time |
+| JourneyMap | `6.0.7`; API `2.0.0-1.21.1` | client-only map presentation of authorized Shroud discoveries | `DEPENDENCY_API / COMPATIBILITY_TARGET`; compile-only API use, renderer only, never state authority; no copied source/assets declared |
 | MineColonies | `1.1.1374-1.21.1-snapshot` | protected-area facts | `DEPENDENCY_API / COMPATIBILITY_TARGET`; no copied source declared; derivation requires separate audit |
 | GeckoLib | `4.9.2` | optional animation implementation if selected | external dependency only; no copied assets/source declared |
 
