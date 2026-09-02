@@ -41,6 +41,10 @@ public final class ShroudDiscoverySyncTracker {
         players.remove(Objects.requireNonNull(playerId, "playerId"));
     }
 
+    public void clear() {
+        players.clear();
+    }
+
     public int trackedPlayerCount() {
         return players.size();
     }
