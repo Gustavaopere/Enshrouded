@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.discovery;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
+import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -108,6 +109,37 @@ public final class ShroudDiscoveryState {
             }
         }
         return new ShroudDiscoveryState(owners);
+    }
+
+    /**
+     * Updates lifecycle only for owners that already know the core. This never creates discovery
+     * knowledge, never moves knowledge between owners, and preserves the original dimension/position.
+     */
+    public ShroudDiscoveryState updateKnownLifecycleEverywhere(UUID coreId, CoreLifecycleState lifecycle) {
+        Objects.requireNonNull(coreId, "coreId");
+        Objects.requireNonNull(lifecycle, "lifecycle");
+        if (lifecycle == CoreLifecycleState.DORMANT) {
+            throw new IllegalArgumentException("dormant cores cannot be represented as discovery knowledge");
+        }
+
+        boolean changed = false;
+        LinkedHashMap<String, Map<UUID, DiscoveredCore>> owners = mutableCopy();
+        for (String ownerKey : List.copyOf(owners.keySet())) {
+            Map<UUID, DiscoveredCore> known = owners.get(ownerKey);
+            DiscoveredCore existing = known.get(coreId);
+            if (existing == null || existing.lifecycle() == lifecycle) {
+                continue;
+            }
+            LinkedHashMap<UUID, DiscoveredCore> cores = new LinkedHashMap<>(known);
+            cores.put(coreId, new DiscoveredCore(
+                    existing.coreId(),
+                    existing.dimensionId(),
+                    existing.pos(),
+                    lifecycle));
+            owners.put(ownerKey, cores);
+            changed = true;
+        }
+        return changed ? new ShroudDiscoveryState(owners) : this;
     }
 
     public List<DiscoveredCore> knownTo(ProgressionOwner owner) {
