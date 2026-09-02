@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.flame.state;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionRuntimeBindings;
+import com.gustavaopere.enshrouded.integration.CombatClaimsTeamsIntegrationRuntime;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
@@ -17,7 +18,7 @@ public final class FlameProgressionRuntime {
 
     static void onServerStarted(ServerStartedEvent event) {
         ProgressionRuntimeBindings.install(
-                new DefaultProgressionOwnerResolver(),
+                CombatClaimsTeamsIntegrationRuntime.ownerResolver(),
                 FlamePassageService.forServer(event.getServer())
         );
     }

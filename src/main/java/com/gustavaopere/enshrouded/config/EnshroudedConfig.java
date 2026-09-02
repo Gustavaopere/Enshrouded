@@ -34,6 +34,7 @@ public final class EnshroudedConfig {
     private static final ModConfigSpec.EnumValue<MutationSafetyMode> TERRAIN_MUTATION_MODE;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_INDETERMINATE_PROTECTION;
     private static final ModConfigSpec.BooleanValue TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION;
+    private static final ModConfigSpec.BooleanValue FTB_TEAMS_SHARED_PROGRESSION;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -163,6 +164,12 @@ public final class EnshroudedConfig {
                 .define("allowBlockEntityMutation", false);
         builder.pop();
 
+        builder.push("integrations");
+        FTB_TEAMS_SHARED_PROGRESSION = builder
+                .comment("Opt in to FTB Teams party-owned Flame progression. Disabled by default to preserve existing player-owned saves.")
+                .define("ftbTeamsSharedProgression", false);
+        builder.pop();
+
         SERVER_SPEC = builder.build();
     }
 
@@ -247,5 +254,9 @@ public final class EnshroudedConfig {
 
     public static boolean terrainAllowBlockEntityMutation() {
         return TERRAIN_ALLOW_BLOCK_ENTITY_MUTATION.getAsBoolean();
+    }
+
+    public static boolean ftbTeamsSharedProgression() {
+        return FTB_TEAMS_SHARED_PROGRESSION.getAsBoolean();
     }
 }
