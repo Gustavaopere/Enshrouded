@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Owner-scoped knowledge of a Shroud core that is safe to expose to client presentation. */
+/** Owner-scoped knowledge of a Shroud core. DESTROYED remains known but is not marker-visible. */
 public record DiscoveredCore(
         UUID coreId,
         String dimensionId,
@@ -21,9 +21,13 @@ public record DiscoveredCore(
         if (dimensionId.isBlank() || !dimensionId.equals(dimensionId.strip())) {
             throw new IllegalArgumentException("dimension id must be a non-blank canonical string");
         }
-        if (lifecycle != CoreLifecycleState.ACTIVE && lifecycle != CoreLifecycleState.PURIFIED) {
-            throw new IllegalArgumentException("only active or purified cores may be exposed as discovered knowledge");
+        if (lifecycle == CoreLifecycleState.DORMANT) {
+            throw new IllegalArgumentException("dormant cores must never enter discovered knowledge");
         }
         pos = pos.immutable();
+    }
+
+    public boolean markerVisible() {
+        return lifecycle == CoreLifecycleState.ACTIVE || lifecycle == CoreLifecycleState.PURIFIED;
     }
 }
