@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ShroudDiscoveryStateTest {
@@ -58,5 +59,36 @@ class ShroudDiscoveryStateTest {
 
         assertEquals(java.util.List.of(core), state.visibleTo(player));
         assertTrue(state.visibleTo(team).isEmpty());
+    }
+
+    @Test
+    void destroyedCoreRemainsKnownButIsHiddenUntilPurificationCompletes() {
+        ProgressionOwner owner = ProgressionOwner.player(UUID.fromString("44444444-4444-4444-4444-444444444444"));
+        UUID coreId = UUID.fromString("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        BlockPos pos = new BlockPos(16, 72, 24);
+
+        ShroudDiscoveryState active = ShroudDiscoveryState.empty().discover(owner,
+                new DiscoveredCore(coreId, "minecraft:overworld", pos, CoreLifecycleState.ACTIVE));
+        ShroudDiscoveryState destroyed = active.discover(owner,
+                new DiscoveredCore(coreId, "minecraft:overworld", pos, CoreLifecycleState.DESTROYED));
+
+        assertTrue(destroyed.visibleTo(owner).isEmpty(), "destroyed cores must not remain as active map markers");
+        assertEquals(CoreLifecycleState.DESTROYED,
+                destroyed.knownTo(owner).getFirst().lifecycle(),
+                "owner knowledge must survive the temporary destroyed lifecycle so purification can update it");
+
+        ShroudDiscoveryState purified = destroyed.discover(owner,
+                new DiscoveredCore(coreId, "minecraft:overworld", pos, CoreLifecycleState.PURIFIED));
+        assertEquals(CoreLifecycleState.PURIFIED, purified.visibleTo(owner).getFirst().lifecycle());
+    }
+
+    @Test
+    void dormantCoreCannotBeInjectedIntoDiscoveryKnowledge() {
+        ProgressionOwner owner = ProgressionOwner.player(UUID.fromString("55555555-5555-5555-5555-555555555555"));
+        assertThrows(IllegalArgumentException.class, () -> new DiscoveredCore(
+                UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+                "minecraft:overworld",
+                BlockPos.ZERO,
+                CoreLifecycleState.DORMANT));
     }
 }
