@@ -14,6 +14,7 @@ import com.gustavaopere.enshrouded.network.ModNetworking;
 import com.gustavaopere.enshrouded.network.ShroudSyncRuntime;
 import com.gustavaopere.enshrouded.registry.ModRegistries;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreRegistrationQueue;
+import com.gustavaopere.enshrouded.shroud.discovery.ShroudDiscoveryRuntime;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRuleReloadRuntime;
 import com.gustavaopere.enshrouded.story.manifestation.ManifestationRuntime;
 import com.gustavaopere.enshrouded.story.ritual.LevelOneLichSkullRitual;
@@ -41,6 +42,7 @@ public final class Enshrouded {
         modContainer.registerConfig(ModConfig.Type.SERVER, EnshroudedConfig.SERVER_SPEC);
         ShroudCoreRegistrationQueue.registerRuntime();
         ShroudCoreCommand.registerRuntime();
+        ShroudDiscoveryRuntime.register();
         ShroudSyncRuntime.register();
         FlameProgressionRuntime.register();
         StoryStateRuntime.register();

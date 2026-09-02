@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.network;
 
+import com.gustavaopere.enshrouded.shroud.discovery.ShroudDiscoveryRuntime;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,13 +28,15 @@ public final class ShroudSyncRuntime {
 
     static void onPlayerTickPost(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            SERVICE.sync(player);
+            ShroudSampleSyncService.SyncResult result = SERVICE.syncWithSample(player);
+            ShroudDiscoveryRuntime.observe(player, result.sample());
         }
     }
 
     static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             SERVICE.forget(player);
+            ShroudDiscoveryRuntime.forget(player);
         }
     }
 }

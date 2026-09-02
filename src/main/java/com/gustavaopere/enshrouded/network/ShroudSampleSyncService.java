@@ -20,19 +20,34 @@ public final class ShroudSampleSyncService {
     }
 
     public boolean sync(ServerPlayer player) {
+        return syncWithSample(player).sent();
+    }
+
+    /**
+     * Samples the canonical query exactly once, performs the presentation sync, and returns that
+     * same authoritative sample so downstream observation systems cannot diverge by querying again.
+     */
+    public SyncResult syncWithSample(ServerPlayer player) {
         Objects.requireNonNull(player, "player");
         ShroudSample sample = query.sample(player.serverLevel(), player.blockPosition(), player);
         long serverTick = player.serverLevel().getServer().getTickCount();
-        return tracker.update(player.getUUID(), serverTick, sample)
+        boolean sent = tracker.update(player.getUUID(), serverTick, sample)
                 .map(payload -> {
                     PacketDistributor.sendToPlayer(player, payload);
                     return true;
                 })
                 .orElse(false);
+        return new SyncResult(sample, sent);
     }
 
     public void forget(ServerPlayer player) {
         Objects.requireNonNull(player, "player");
         tracker.forget(player.getUUID());
+    }
+
+    public record SyncResult(ShroudSample sample, boolean sent) {
+        public SyncResult {
+            Objects.requireNonNull(sample, "sample");
+        }
     }
 }

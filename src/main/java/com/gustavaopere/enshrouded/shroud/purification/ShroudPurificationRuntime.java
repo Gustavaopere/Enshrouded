@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.protection.DefaultMutationAuthority;
 import com.gustavaopere.enshrouded.protection.ProtectedAreaService;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
+import com.gustavaopere.enshrouded.shroud.core.ShroudCorePurifiedEvent;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
 import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
@@ -12,6 +13,7 @@ import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRuleReloadListener;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +51,7 @@ public final class ShroudPurificationRuntime {
             next = regressionResult.state();
             if (!next.equals(current)) {
                 savedData.replace(next);
+                publishPurifiedTransitions(level, current, next);
             }
         }
 
@@ -71,6 +74,16 @@ public final class ShroudPurificationRuntime {
     static int pendingCleanupWork(ResourceKey<Level> dimension) {
         TerrainRestorationService service = RESTORATION.get(Objects.requireNonNull(dimension, "dimension"));
         return service == null ? 0 : service.pendingWork();
+    }
+
+    private static void publishPurifiedTransitions(ServerLevel level, ShroudWorldState before, ShroudWorldState after) {
+        before.cores().values().stream()
+                .filter(core -> core.lifecycleState() == CoreLifecycleState.DESTROYED)
+                .filter(core -> {
+                    var updated = after.cores().get(core.id());
+                    return updated != null && updated.lifecycleState() == CoreLifecycleState.PURIFIED;
+                })
+                .forEach(core -> NeoForge.EVENT_BUS.post(new ShroudCorePurifiedEvent(level, core.id())));
     }
 
     private static TerrainRestorationService restoration(ServerLevel level) {
