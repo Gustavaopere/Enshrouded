@@ -17,7 +17,7 @@ final class PerformanceCountersRedTest {
         counters.recordLocalQueries(11);
         counters.recordEntityUpdate(100, 6);
         counters.recordClientPayloads(3);
-        counters.recordClientEffects(192, 17);
+        counters.recordClientEffects(1, 8);
 
         PerformanceCounters.Snapshot snapshot = counters.snapshot();
         assertEquals(7L, snapshot.expansionAttempts());
@@ -32,8 +32,8 @@ final class PerformanceCountersRedTest {
         assertEquals(100L, snapshot.entitySamples());
         assertEquals(6L, snapshot.entityStateUpdates());
         assertEquals(3L, snapshot.clientPayloadsSent());
-        assertEquals(192L, snapshot.clientEffectSamples());
-        assertEquals(17L, snapshot.clientEffectsEmitted());
+        assertEquals(1L, snapshot.clientEffectSamples());
+        assertEquals(8L, snapshot.clientEffectsEmitted());
         assertEquals(12.0D, snapshot.clientPayloadsPerSecondOverTicks(5), 0.0001D);
 
         PerformanceCounters.Snapshot drained = counters.snapshotAndReset();
@@ -51,7 +51,8 @@ final class PerformanceCountersRedTest {
         assertThrows(IllegalArgumentException.class, () -> counters.recordRestoration(1, 2));
         assertThrows(IllegalArgumentException.class, () -> counters.recordLocalQueries(-1));
         assertThrows(IllegalArgumentException.class, () -> counters.recordEntityUpdate(2, 3));
-        assertThrows(IllegalArgumentException.class, () -> counters.recordClientEffects(2, 3));
+        assertThrows(IllegalArgumentException.class, () -> counters.recordClientEffects(-1, 0));
+        assertThrows(IllegalArgumentException.class, () -> counters.recordClientEffects(0, -1));
         assertThrows(IllegalArgumentException.class, () -> counters.snapshot().clientPayloadsPerSecondOverTicks(0));
     }
 }
