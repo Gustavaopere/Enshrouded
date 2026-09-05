@@ -130,6 +130,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf runs/gameTestServer
           mkdir -p runs/gameTestServer build
           printf 'eula=true\n' > runs/gameTestServer/eula.txt
           LOG="$PWD/build/gametest.log"
@@ -141,11 +142,13 @@ jobs:
             echo 'GameTest discovery failed: zero test functions were registered'
             exit 1
           fi
-          grep -Fq 'LevelOneScenarioGameTests' "$LOG" || {
-            echo 'LevelOneScenarioGameTests was not discovered by the canonical GameTest run'
+          if (( STATUS != 0 )); then
+            exit "$STATUS"
+          fi
+          grep -Fq 'ENSHROUDED_LEVEL_ONE_SCENARIO_PASSED' "$LOG" || {
+            echo 'Level-1 vertical scenario did not complete in the canonical GameTest run'
             exit 1
           }
-          exit "$STATUS"
 
       - name: SavedData two-boot reload GameTest
         shell: bash
@@ -155,11 +158,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p runs/arsZeroGameTestServer build
-          printf 'eula=true\n' > runs/arsZeroGameTestServer/eula.txt
+          rm -rf runs/gameTestServer
+          mkdir -p runs/gameTestServer build
+          ./gradlew --no-daemon prepareArsZeroCompatMods
+          printf 'eula=true\n' > runs/gameTestServer/eula.txt
           LOG="$PWD/build/ars-zero-real-gametest.log"
           set +e
-          ./gradlew --no-daemon runArsZeroGameTestServer 2>&1 | tee "$LOG"
+          ./gradlew --no-daemon runGameTestServer 2>&1 | tee "$LOG"
           STATUS=${PIPESTATUS[0]}
           set -e
           if grep -Fq 'No test functions were given!' "$LOG"; then
@@ -170,11 +175,13 @@ jobs:
             echo 'Ars Zero real-distribution profile ran without loading ars_zero'
             exit 1
           fi
+          if (( STATUS != 0 )); then
+            exit "$STATUS"
+          fi
           grep -Fq 'ENSHROUDED_ARS_ZERO_REAL_FIXTURE_PASSED' "$LOG" || {
             echo 'Ars Zero real-distribution fixture did not complete'
             exit 1
           }
-          exit "$STATUS"
 
       - name: Dedicated-server save/reload smoke test
         shell: bash
