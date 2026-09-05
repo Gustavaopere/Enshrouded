@@ -85,6 +85,13 @@ jobs:
       - name: NeoForge build
         run: ./gradlew --no-daemon build
 
+      - name: Compile canonical GameTest source set
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon compileGameTestJava
+          test -f build/classes/java/gameTest/com/gustavaopere/enshrouded/gametest/LevelOneScenarioGameTests.class
+
       - name: Verify built JAR
         shell: bash
         run: |
@@ -134,11 +141,40 @@ jobs:
             echo 'GameTest discovery failed: zero test functions were registered'
             exit 1
           fi
+          grep -Fq 'LevelOneScenarioGameTests' "$LOG" || {
+            echo 'LevelOneScenarioGameTests was not discovered by the canonical GameTest run'
+            exit 1
+          }
           exit "$STATUS"
 
       - name: SavedData two-boot reload GameTest
         shell: bash
         run: bash scripts/ci/shroud-saveddata-reload-gametest.sh
+
+      - name: Ars Zero 2.0.2 real-distribution GameTest profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p runs/arsZeroGameTestServer build
+          printf 'eula=true\n' > runs/arsZeroGameTestServer/eula.txt
+          LOG="$PWD/build/ars-zero-real-gametest.log"
+          set +e
+          ./gradlew --no-daemon runArsZeroGameTestServer 2>&1 | tee "$LOG"
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          if grep -Fq 'No test functions were given!' "$LOG"; then
+            echo 'Ars Zero profile GameTest discovery failed: zero test functions were registered'
+            exit 1
+          fi
+          if grep -Fq 'ENSHROUDED_ARS_ZERO_REAL_FIXTURE_SKIPPED_MOD_ABSENT' "$LOG"; then
+            echo 'Ars Zero real-distribution profile ran without loading ars_zero'
+            exit 1
+          fi
+          grep -Fq 'ENSHROUDED_ARS_ZERO_REAL_FIXTURE_PASSED' "$LOG" || {
+            echo 'Ars Zero real-distribution fixture did not complete'
+            exit 1
+          }
+          exit "$STATUS"
 
       - name: Dedicated-server save/reload smoke test
         shell: bash
