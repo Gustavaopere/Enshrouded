@@ -47,6 +47,11 @@ sourceSets {
         compileClasspath = sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath = output + compileClasspath + sourceSets.main.runtimeClasspath
     }
+    arsZeroGameTest {
+        compileClasspath = sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath = output + compileClasspath + sourceSets.main.runtimeClasspath
+        resources.srcDir('src/gameTest/resources')
+    }
 }
 
 runs {
@@ -61,6 +66,11 @@ runs {
     gameTestServer {
         systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
         modSource project.sourceSets.gameTest
+    }
+    arsZeroGameTestServer {
+        type = 'gameTestServer'
+        systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        modSource project.sourceSets.arsZeroGameTest
     }
     data {
         arguments.addAll '--mod', mod_id, '--all',
@@ -105,7 +115,7 @@ dependencies {
 
 tasks.register('prepareArsZeroCompatMods', Sync) {
     from configurations.arsZeroCompatRuntime
-    into project.layout.projectDirectory.dir('runs/gameTestServer/mods')
+    into project.layout.projectDirectory.dir('runs/arsZeroGameTestServer/mods')
 }
 
 tasks.named('test', Test).configure {
