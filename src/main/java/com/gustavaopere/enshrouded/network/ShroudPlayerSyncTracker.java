@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.network;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +37,7 @@ public final class ShroudPlayerSyncTracker {
         if (current == null) {
             ShroudSamplePayload payload = ShroudSamplePayload.fromSample(0L, sample);
             players.put(playerId, new PlayerState(gameTime, gameTime, 1L, sample));
+            PerformanceCounters.global().recordClientPayloads(1L);
             return Optional.of(payload);
         }
         if (gameTime < current.lastObservedTick()) {
@@ -57,6 +59,7 @@ public final class ShroudPlayerSyncTracker {
                 gameTime,
                 current.nextSequence() + 1L,
                 sample));
+        PerformanceCounters.global().recordClientPayloads(1L);
         return Optional.of(payload);
     }
 
