@@ -47,7 +47,7 @@ The scenario is additive: focused tests remain authoritative for individual safe
 | Core destruction | `ShroudCorePhysicalLifecycleRedGameTests`, `LevelOneScenarioGameTests` |
 | Logical regression/purification | `PurificationGameTests`, `PurificationReloadGameTests`, `LevelOneScenarioGameTests` |
 | Manifestation identity/defeat | Stage 06 manifestation GameTests + `LevelOneScenarioGameTests` |
-| Exactly-once Lich Skull | `LichSkullRewardGameTests`; Ars Zero real profile repeats the same invariant on the external actor |
+| Exactly-once Lich Skull | `LichSkullRewardGameTests`; isolated Ars Zero real profile repeats the same invariant on the external actor |
 | Skull -> altar -> Level-1 completion | `LichSkullRewardGameTests`, `FlameAltarGameTests`, `LevelOneScenarioGameTests` |
 | Production JAR excludes GameTests | CI `Verify built JAR` gate |
 | Dedicated server boots/saves/reloads | `scripts/ci/dedicated-server-reload-smoke.sh` |
@@ -79,7 +79,9 @@ The CI harness requires both the `*_CREATED` marker on boot 1 and the correspond
 
 ### Ars Zero — REAL CO-LOAD, exact current pack versions
 
-The dedicated CI profile deliberately reuses NeoGradle's registered canonical `gameTestServer` run type instead of inventing a parallel run type. Immediately before the profile it deletes the standalone run directory, resolves the external JARs with `prepareArsZeroCompatMods`, places them only in `runs/gameTestServer/mods/`, and then invokes `runGameTestServer`.
+The canonical standalone Level-1 suite remains in NeoGradle's existing `gameTest` source set and `gameTestServer` run. The external provider fixture is deliberately isolated in the explicitly registered `arsZeroGameTest` source set and `arsZeroGameTestServer` run so loading Curios/Ars cannot change the preconditions of standalone tests that intentionally exercise the provider-absent path or synthetic players.
+
+Immediately before the real-provider profile, CI deletes `runs/arsZeroGameTestServer`, resolves the external JARs with `prepareArsZeroCompatMods`, places them only in `runs/arsZeroGameTestServer/mods/`, and invokes `runArsZeroGameTestServer`. The isolated source set shares only the GameTest template resources required by the fixture and is compiled explicitly by CI. This is a registered NeoGradle run, not an alternate spelling of the canonical source set that would be ignored by discovery.
 
 Exact NeoForge 1.21.1 distribution and mandatory provider chain:
 
@@ -90,9 +92,9 @@ Exact NeoForge 1.21.1 distribution and mandatory provider chain:
 - GeckoLib `4.9.2` — official GeckoLib Maven artifact `software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.2`;
 - TerraBlender `4.1.0.8` — `940057:6054947`.
 
-The dependency-chain libraries were added after the first real-profile attempt correctly failed at NeoForge mod loading because Ars Nouveau declared Curios, GeckoLib and TerraBlender as required. They are part of the real provider fixture, not Enshrouded runtime dependencies. None of these compatibility artifacts are `implementation`, `runtimeClasspath` or packaged dependencies of Enshrouded.
+The dependency-chain libraries were added after the first real-profile attempt correctly failed at NeoForge mod loading because Ars Nouveau declared Curios, GeckoLib and TerraBlender as required. They are part of the real provider fixture, not Enshrouded runtime dependencies. None of these compatibility artifacts are `implementation`, ordinary `runtimeClasspath` or packaged dependencies of Enshrouded.
 
-`ArsZeroProviderGameTests.realDistributionUsesArsZeroLichAndKeepsRewardExactlyOnce` fails unless the real distribution:
+`src/arsZeroGameTest/java/com/gustavaopere/enshrouded/integration/arszero/ArsZeroRealDistributionGameTests.java` contains the real-distribution fixture. `realDistributionUsesArsZeroLichAndKeepsRewardExactlyOnce` fails unless the real distribution:
 
 - loads as `ars_zero`;
 - registers exact monster entity `ars_zero:lich`;
@@ -102,7 +104,9 @@ The dependency-chain libraries were added after the first real-profile attempt c
 - emits exactly one authentic Enshrouded Lich Skull on the marked defeat;
 - rejects a replayed death callback from duplicating the reward.
 
-The standalone run is allowed to print `ENSHROUDED_ARS_ZERO_REAL_FIXTURE_SKIPPED_MOD_ABSENT`. The dedicated real-distribution profile treats that same marker as a hard failure and requires `ENSHROUDED_ARS_ZERO_REAL_FIXTURE_PASSED`, so a green real-co-load gate cannot be obtained by accidentally executing only the proxy path.
+The isolated fixture fails explicitly if `ars_zero` is absent and prints `ENSHROUDED_ARS_ZERO_REAL_FIXTURE_SKIPPED_MOD_ABSENT`; CI treats that marker as a hard failure. A successful profile must print `ENSHROUDED_ARS_ZERO_REAL_FIXTURE_PASSED`, so a green real-co-load gate cannot be obtained by accidentally executing only the proxy path.
+
+The standalone `ArsZeroProviderGameTests` remains contract-only: it verifies registry precedence, encounter tagging and natural/unmarked rejection through a synthetic entity seam without claiming third-party co-load.
 
 ### Ars Nouveau / Iron's Spells — CONTRACT/API AUTOMATION
 
@@ -155,11 +159,12 @@ Stage 09.01 is not closed unless one exact PR head has all of the following gree
 - frontier benchmark baseline;
 - `./gradlew --no-daemon build`;
 - explicit `compileGameTestJava` plus presence of `LevelOneScenarioGameTests.class` in the canonical source set;
+- explicit `compileArsZeroGameTestJava` plus presence of `ArsZeroRealDistributionGameTests.class` in the isolated external-fixture source set;
 - standalone GameTest server with non-zero discovery and `ENSHROUDED_LEVEL_ONE_SCENARIO_PASSED`;
 - two-boot restart harness including expansion, exposure, purification and reward boundaries;
-- real Ars Zero 2.0.2 co-load GameTest profile;
+- isolated real Ars Zero 2.0.2 co-load GameTest profile with `ENSHROUDED_ARS_ZERO_REAL_FIXTURE_PASSED`;
 - dedicated-server save/reload smoke;
-- production JAR integrity/no GameTest leakage;
+- production JAR integrity/no GameTest leakage from either source set;
 - `git diff --check`.
 
 Final workflow/run/job IDs and exact head SHA are recorded in the task plan/`STATUS.md` only after those gates actually complete.
