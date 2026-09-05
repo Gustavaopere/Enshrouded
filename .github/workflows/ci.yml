@@ -85,12 +85,13 @@ jobs:
       - name: NeoForge build
         run: ./gradlew --no-daemon build
 
-      - name: Compile canonical GameTest source set
+      - name: Compile GameTest source sets
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon compileGameTestJava
+          ./gradlew --no-daemon compileGameTestJava compileArsZeroGameTestJava
           test -f build/classes/java/gameTest/com/gustavaopere/enshrouded/gametest/LevelOneScenarioGameTests.class
+          test -f build/classes/java/arsZeroGameTest/com/gustavaopere/enshrouded/integration/arszero/ArsZeroRealDistributionGameTests.class
 
       - name: Verify built JAR
         shell: bash
@@ -121,7 +122,9 @@ jobs:
             exit 1
           fi
 
-          if grep -Fq 'com/gustavaopere/enshrouded/gametest/' <<<"$JAR_LIST"; then
+          if grep -Fq 'com/gustavaopere/enshrouded/gametest/' <<<"$JAR_LIST" \
+              || grep -Fq 'com/gustavaopere/enshrouded/integration/arszero/ArsZeroProviderGameTests.class' <<<"$JAR_LIST" \
+              || grep -Fq 'com/gustavaopere/enshrouded/integration/arszero/ArsZeroRealDistributionGameTests.class' <<<"$JAR_LIST"; then
             echo 'GameTest-only classes leaked into the production JAR'
             exit 1
           fi
@@ -154,17 +157,17 @@ jobs:
         shell: bash
         run: bash scripts/ci/shroud-saveddata-reload-gametest.sh
 
-      - name: Ars Zero 2.0.2 real-distribution GameTest profile
+      - name: Ars Zero 2.0.2 isolated real-distribution GameTest profile
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf runs/gameTestServer
-          mkdir -p runs/gameTestServer build
+          rm -rf runs/arsZeroGameTestServer
+          mkdir -p runs/arsZeroGameTestServer build
           ./gradlew --no-daemon prepareArsZeroCompatMods
-          printf 'eula=true\n' > runs/gameTestServer/eula.txt
+          printf 'eula=true\n' > runs/arsZeroGameTestServer/eula.txt
           LOG="$PWD/build/ars-zero-real-gametest.log"
           set +e
-          ./gradlew --no-daemon runGameTestServer 2>&1 | tee "$LOG"
+          ./gradlew --no-daemon runArsZeroGameTestServer 2>&1 | tee "$LOG"
           STATUS=${PIPESTATUS[0]}
           set -e
           if grep -Fq 'No test functions were given!' "$LOG"; then
