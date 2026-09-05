@@ -55,10 +55,6 @@ runs {
         systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
         modSource project.sourceSets.gameTest
     }
-    arsZeroGameTestServer {
-        systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
-        modSource project.sourceSets.gameTest
-    }
     data {
         arguments.addAll '--mod', mod_id, '--all',
                 '--output', file('src/generated/resources/').absolutePath,
@@ -99,11 +95,7 @@ dependencies {
 
 tasks.register('prepareArsZeroCompatMods', Sync) {
     from configurations.arsZeroCompatRuntime
-    into project.layout.projectDirectory.dir('runs/arsZeroGameTestServer/mods')
-}
-
-tasks.named('runArsZeroGameTestServer').configure {
-    dependsOn tasks.named('prepareArsZeroCompatMods')
+    into project.layout.projectDirectory.dir('runs/gameTestServer/mods')
 }
 
 tasks.named('test', Test).configure {
