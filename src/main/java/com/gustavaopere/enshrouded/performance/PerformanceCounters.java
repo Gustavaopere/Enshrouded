@@ -31,25 +31,25 @@ public final class PerformanceCounters {
         return GLOBAL;
     }
 
-    public void recordExpansion(long attempts, long appliedCells) {
+    public synchronized void recordExpansion(long attempts, long appliedCells) {
         requireSuccessWithinWork("expansion", attempts, appliedCells);
         expansionAttempts.addAndGet(attempts);
         expansionAppliedCells.addAndGet(appliedCells);
     }
 
-    public void recordRegression(long workUnits, long clearedCells) {
+    public synchronized void recordRegression(long workUnits, long clearedCells) {
         requireSuccessWithinWork("regression", workUnits, clearedCells);
         regressionWorkUnits.addAndGet(workUnits);
         regressionClearedCells.addAndGet(clearedCells);
     }
 
-    public void recordMaterialization(long attempts, long successful) {
+    public synchronized void recordMaterialization(long attempts, long successful) {
         requireSuccessWithinWork("materialization", attempts, successful);
         materializationAttempts.addAndGet(attempts);
         successfulMaterializations.addAndGet(successful);
     }
 
-    public void recordRestoration(long attempts, long reverted) {
+    public synchronized void recordRestoration(long attempts, long reverted) {
         requireSuccessWithinWork("restoration", attempts, reverted);
         restorationAttempts.addAndGet(attempts);
         revertedBlocks.addAndGet(reverted);
@@ -59,7 +59,7 @@ public final class PerformanceCounters {
         localQueries.addAndGet(requireNonNegative("localQueries", count));
     }
 
-    public void recordEntityUpdate(long samples, long stateUpdates) {
+    public synchronized void recordEntityUpdate(long samples, long stateUpdates) {
         requireSuccessWithinWork("entityUpdate", samples, stateUpdates);
         entitySamples.addAndGet(samples);
         entityStateUpdates.addAndGet(stateUpdates);
@@ -70,12 +70,12 @@ public final class PerformanceCounters {
     }
 
     /** One sampled source position may emit multiple particles, so the two counts are independent. */
-    public void recordClientEffects(long samples, long emitted) {
+    public synchronized void recordClientEffects(long samples, long emitted) {
         clientEffectSamples.addAndGet(requireNonNegative("clientEffectSamples", samples));
         clientEffectsEmitted.addAndGet(requireNonNegative("clientEffectsEmitted", emitted));
     }
 
-    public Snapshot snapshot() {
+    public synchronized Snapshot snapshot() {
         return new Snapshot(
                 expansionAttempts.get(), expansionAppliedCells.get(),
                 regressionWorkUnits.get(), regressionClearedCells.get(),
@@ -86,10 +86,11 @@ public final class PerformanceCounters {
     }
 
     /**
-     * Drains every counter using atomic get-and-set operations. Concurrent increments are never
-     * lost; an increment racing a drain belongs to either the returned window or the next one.
+     * Drains every counter. Paired recorder updates and this drain share the instance monitor, so
+     * each logical pair is returned wholly in this window or the next. Independent single counters
+     * remain atomic and may land in either window when racing the drain.
      */
-    public Snapshot snapshotAndReset() {
+    public synchronized Snapshot snapshotAndReset() {
         return new Snapshot(
                 expansionAttempts.getAndSet(0L), expansionAppliedCells.getAndSet(0L),
                 regressionWorkUnits.getAndSet(0L), regressionClearedCells.getAndSet(0L),
