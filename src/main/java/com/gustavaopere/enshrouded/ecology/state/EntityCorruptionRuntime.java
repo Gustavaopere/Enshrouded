@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.ecology.state;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.ecology.combat.CorruptedCombatRuntime;
 import com.gustavaopere.enshrouded.ecology.purification.EntityPurificationService;
 import com.gustavaopere.enshrouded.performance.PerformanceCounters;
@@ -15,6 +16,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Server-only, per-entity corruption driver. No world scan or replacement conversion is performed.
@@ -31,6 +33,7 @@ public final class EntityCorruptionRuntime {
             new EntityCorruptionService(ACCUMULATION_PER_TICK, REGRESSION_PER_TICK, MAX_ELAPSED_TICKS);
 
     private static boolean registered;
+    private static EntityCorruptionTickBudget tickBudget;
 
     private EntityCorruptionRuntime() {
     }
@@ -46,11 +49,31 @@ public final class EntityCorruptionRuntime {
     private static void onEntityTickPost(EntityTickEvent.Post event) {
         Entity entity = event.getEntity();
         if (!(entity instanceof LivingEntity living)
-                || !(living.level() instanceof ServerLevel)
-                || living.tickCount % SAMPLE_INTERVAL_TICKS != 0) {
+                || !(living.level() instanceof ServerLevel level)
+                || !isSampleTick(living.tickCount, living.getUUID())) {
+            return;
+        }
+        if (!budget().tryAcquire(level.getServer().getTickCount())) {
             return;
         }
         advance(living, SAMPLE_INTERVAL_TICKS, null);
+    }
+
+    static boolean isSampleTick(int entityTickCount, UUID entityId) {
+        Objects.requireNonNull(entityId, "entityId");
+        if (entityTickCount < SAMPLE_INTERVAL_TICKS) {
+            return false;
+        }
+        return Math.floorMod(entityTickCount, SAMPLE_INTERVAL_TICKS)
+                == Math.floorMod(entityId.hashCode(), SAMPLE_INTERVAL_TICKS);
+    }
+
+    private static EntityCorruptionTickBudget budget() {
+        int configuredLimit = EnshroudedConfig.corruptionUpdatesPerTick();
+        if (tickBudget == null || tickBudget.maxPerTick() != configuredLimit) {
+            tickBudget = new EntityCorruptionTickBudget(configuredLimit);
+        }
+        return tickBudget;
     }
 
     static void advanceNow(LivingEntity entity) {
