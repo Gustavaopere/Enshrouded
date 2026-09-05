@@ -70,6 +70,11 @@ public final class TerrainRestorationService {
         this.queueCapacity = queueCapacity;
     }
 
+    /**
+     * Captures cleanup candidates from the currently loaded part of a cleared logical cell.
+     * Positions that are unloaded or cannot fit in the bounded queue are intentionally left as
+     * harmless visual leftovers rather than forcing chunk loads or unbounded memory growth.
+     */
     public int scheduleClearedCell(ServerLevel level, ShroudCellPos cell) {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(cell, "cell");
@@ -142,6 +147,11 @@ public final class TerrainRestorationService {
         return queue.size();
     }
 
+    /**
+     * Restores one exact known corrupted block or removes one native Shroud growth. Unknown current
+     * states and ambiguous reverse mappings fail closed, which preserves player edits and avoids
+     * guessing which original material existed before corruption.
+     */
     public boolean tryRestore(ServerLevel level, BlockPos pos) {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(pos, "pos");
