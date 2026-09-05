@@ -25,6 +25,7 @@ public final class EnshroudedConfig {
     private static final ModConfigSpec.IntValue EXPOSURE_EMERGENCY_WINDOW_TICKS;
     private static final ModConfigSpec.IntValue DEADLY_REQUIRED_PASSAGE_LEVEL;
     private static final ModConfigSpec.BooleanValue MADNESS_PREVENT_SPRINTING_AT_CRITICAL;
+    private static final ModConfigSpec.IntValue CORRUPTION_UPDATES_PER_TICK;
     private static final ModConfigSpec.DoubleValue CORRUPTION_TARGET_THRESHOLD;
     private static final ModConfigSpec.DoubleValue CORRUPTION_TARGET_RANGE;
     private static final ModConfigSpec.DoubleValue CORRUPTION_MAX_HEALTH_CAP;
@@ -138,6 +139,9 @@ public final class EnshroudedConfig {
         builder.pop();
 
         builder.push("corruptedEcology");
+        CORRUPTION_UPDATES_PER_TICK = builder
+                .comment("Maximum sampled entity-corruption updates admitted globally per server tick. Excess eligible entities defer to a later sampling opportunity.")
+                .defineInRange("updatesPerTick", 256, 1, 4096);
         CORRUPTION_TARGET_THRESHOLD = builder
                 .comment("Corruption intensity at or above which passive/neutral mobs may acquire a nearby survival player target.")
                 .defineInRange("targetThreshold", 0.50D, 0.0D, 1.0D);
@@ -227,6 +231,10 @@ public final class EnshroudedConfig {
 
     public static boolean madnessPreventSprintingAtCritical() {
         return MADNESS_PREVENT_SPRINTING_AT_CRITICAL.getAsBoolean();
+    }
+
+    public static int corruptionUpdatesPerTick() {
+        return CORRUPTION_UPDATES_PER_TICK.getAsInt();
     }
 
     public static double corruptionTargetThreshold() {
