@@ -79,15 +79,18 @@ The CI harness requires both the `*_CREATED` marker on boot 1 and the correspond
 
 ### Ars Zero — REAL CO-LOAD, exact current pack versions
 
-The dedicated CI profile deliberately reuses NeoGradle's registered canonical `gameTestServer` run type instead of inventing a parallel run type. Immediately before the profile it deletes the standalone run directory, resolves the exact external JARs with `prepareArsZeroCompatMods`, places them only in `runs/gameTestServer/mods/`, and then invokes `runGameTestServer`.
+The dedicated CI profile deliberately reuses NeoGradle's registered canonical `gameTestServer` run type instead of inventing a parallel run type. Immediately before the profile it deletes the standalone run directory, resolves the external JARs with `prepareArsZeroCompatMods`, places them only in `runs/gameTestServer/mods/`, and then invokes `runGameTestServer`.
 
-Exact NeoForge 1.21.1 files:
+Exact NeoForge 1.21.1 distribution and mandatory provider chain:
 
 - Ars Zero `2.0.2` — CurseForge project/file `1377482:8703997`;
 - Ars Nouveau `5.13.1` — `401955:8721482`;
-- Ars Elemental `0.7.10.1` — `561470:8399862` (its published embedded library remains provider-owned).
+- Ars Elemental `0.7.10.1` — `561470:8399862` (its published embedded library remains provider-owned);
+- Curios API `9.5.1+1.21.1` — `309927:6529130`;
+- GeckoLib `4.9.2` — official GeckoLib Maven artifact `software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.2`;
+- TerraBlender `4.1.0.8` — `940057:6054947`.
 
-They are not `implementation`, `runtimeClasspath` or packaged dependencies of Enshrouded.
+The dependency-chain libraries were added after the first real-profile attempt correctly failed at NeoForge mod loading because Ars Nouveau declared Curios, GeckoLib and TerraBlender as required. They are part of the real provider fixture, not Enshrouded runtime dependencies. None of these compatibility artifacts are `implementation`, `runtimeClasspath` or packaged dependencies of Enshrouded.
 
 `ArsZeroProviderGameTests.realDistributionUsesArsZeroLichAndKeepsRewardExactlyOnce` fails unless the real distribution:
 
