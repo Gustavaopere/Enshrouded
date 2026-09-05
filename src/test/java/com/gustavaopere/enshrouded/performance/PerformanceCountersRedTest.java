@@ -11,20 +11,26 @@ final class PerformanceCountersRedTest {
         PerformanceCounters counters = new PerformanceCounters();
 
         counters.recordExpansion(7, 3);
+        counters.recordRegression(6, 2);
         counters.recordMaterialization(5, 2);
-        counters.recordRevertedBlocks(4);
-        counters.recordEntityScan(100, 6);
+        counters.recordRestoration(8, 4);
+        counters.recordLocalQueries(11);
+        counters.recordEntityUpdate(100, 6);
         counters.recordClientPayloads(3);
         counters.recordClientEffects(192, 17);
 
         PerformanceCounters.Snapshot snapshot = counters.snapshot();
         assertEquals(7L, snapshot.expansionAttempts());
         assertEquals(3L, snapshot.expansionAppliedCells());
+        assertEquals(6L, snapshot.regressionWorkUnits());
+        assertEquals(2L, snapshot.regressionClearedCells());
         assertEquals(5L, snapshot.materializationAttempts());
         assertEquals(2L, snapshot.successfulMaterializations());
+        assertEquals(8L, snapshot.restorationAttempts());
         assertEquals(4L, snapshot.revertedBlocks());
-        assertEquals(100L, snapshot.entityScans());
-        assertEquals(6L, snapshot.entityConversions());
+        assertEquals(11L, snapshot.localQueries());
+        assertEquals(100L, snapshot.entitySamples());
+        assertEquals(6L, snapshot.entityStateUpdates());
         assertEquals(3L, snapshot.clientPayloadsSent());
         assertEquals(192L, snapshot.clientEffectSamples());
         assertEquals(17L, snapshot.clientEffectsEmitted());
@@ -42,7 +48,9 @@ final class PerformanceCountersRedTest {
         assertThrows(IllegalArgumentException.class, () -> counters.recordExpansion(-1, 0));
         assertThrows(IllegalArgumentException.class, () -> counters.recordExpansion(1, 2));
         assertThrows(IllegalArgumentException.class, () -> counters.recordMaterialization(1, 2));
-        assertThrows(IllegalArgumentException.class, () -> counters.recordEntityScan(2, 3));
+        assertThrows(IllegalArgumentException.class, () -> counters.recordRestoration(1, 2));
+        assertThrows(IllegalArgumentException.class, () -> counters.recordLocalQueries(-1));
+        assertThrows(IllegalArgumentException.class, () -> counters.recordEntityUpdate(2, 3));
         assertThrows(IllegalArgumentException.class, () -> counters.recordClientEffects(2, 3));
         assertThrows(IllegalArgumentException.class, () -> counters.snapshot().clientPayloadsPerSecondOverTicks(0));
     }
