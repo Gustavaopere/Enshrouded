@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,6 +50,23 @@ final class PerformanceHotPathInstrumentationRedTest {
         assertTrue(source.contains("recordClientEffects(visitedSamples, emittedParticles)"),
                 "client pulse must publish actually visited source samples and emitted particles");
         assertTrue(source.contains("MAX_SAMPLES_PER_PULSE = 192"), "particle sampling hard cap must remain explicit");
+    }
+
+    @Test
+    void boundedRuntimeOwnersDoNotEnumerateWorldOrForceChunks() throws IOException {
+        for (String relative : List.of(
+                "shroud/expansion/ShroudExpansionScheduler.java",
+                "shroud/purification/ShroudRegressionScheduler.java",
+                "shroud/terrain/ShroudMaterializationService.java",
+                "shroud/purification/TerrainRestorationService.java",
+                "shroud/query/DefaultShroudQuery.java",
+                "ecology/state/EntityCorruptionRuntime.java")) {
+            String source = source(relative);
+            assertFalse(source.contains("getAllChunks"), relative + " must not enumerate all chunks");
+            assertFalse(source.contains("getChunks()"), relative + " must not enumerate loaded chunks");
+            assertFalse(source.contains("getAllEntities"), relative + " must not enumerate all entities");
+            assertFalse(source.contains("getChunk("), relative + " must not force a chunk load");
+        }
     }
 
     private static String source(String relative) throws IOException {
