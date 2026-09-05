@@ -4,7 +4,7 @@ import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionAttachment;
-import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionRuntime;
+import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionGameTestAccess;
 import com.gustavaopere.enshrouded.exposure.DeadlyExposurePolicy;
 import com.gustavaopere.enshrouded.exposure.ExposureSchema;
 import com.gustavaopere.enshrouded.exposure.ExposureService;
@@ -40,11 +40,11 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -52,6 +52,8 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +120,7 @@ public final class LevelOneScenarioGameTests {
             }
             cow.moveTo(coreAbsolute.getX() + 0.5D, coreAbsolute.getY(), coreAbsolute.getZ() + 0.5D);
             helper.assertTrue(level.addFreshEntity(cow), "corruption target must enter the server level");
-            EntityCorruptionRuntime.advanceNow(cow);
+            EntityCorruptionGameTestAccess.advanceNow(cow);
             helper.assertTrue(cow.getData(EntityCorruptionAttachment.ENTITY_CORRUPTION.get()).intensity() > 0.0F,
                     "mob inside the same canonical Shroud field must gain corruption");
             cow.discard();
@@ -197,6 +199,7 @@ public final class LevelOneScenarioGameTests {
             if (!active.entity().isRemoved()) {
                 active.entity().discard();
             }
+            System.out.println("ENSHROUDED_LEVEL_ONE_SCENARIO_PASSED");
             helper.succeed();
         });
     }
@@ -239,7 +242,7 @@ public final class LevelOneScenarioGameTests {
 
         ShroudExpansionScheduler scheduler = new ShroudExpansionScheduler(
                 GEOMETRY,
-                ShroudPropagationPolicy.levelOne(),
+                ShroudPropagationPolicy.terrainNeutral(),
                 256
         );
         ShroudExpansionScheduler.TickResult advanced = scheduler.tick(
@@ -267,16 +270,16 @@ public final class LevelOneScenarioGameTests {
         var attachmentType = ShroudExposureAttachment.PLAYER_EXPOSURE.get();
         ShroudExposureAttachment sentinel = new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, 4321);
 
+        level.getServer().getPlayerList().load(player);
         if (!player.hasData(attachmentType)) {
             player.setData(attachmentType, sentinel);
-            level.getServer().getPlayerList().save(player);
+            savePlayerForRestart(level, player);
             GameTestBootstrap.forceSaveForReload(helper);
             System.out.println("ENSHROUDED_EXPOSURE_MID_CREATED");
             helper.succeed();
             return;
         }
 
-        level.getServer().getPlayerList().load(player);
         helper.assertTrue(player.hasData(attachmentType),
                 "second boot must load the persisted player exposure attachment from playerdata");
         ShroudExposureAttachment restored = player.getData(attachmentType);
@@ -295,5 +298,15 @@ public final class LevelOneScenarioGameTests {
                 "post-restart exposure must continue draining from persisted reserve");
         System.out.println("ENSHROUDED_EXPOSURE_MID_RELOADED");
         helper.succeed();
+    }
+
+    private static void savePlayerForRestart(ServerLevel level, ServerPlayer player) {
+        try {
+            Method save = PlayerList.class.getDeclaredMethod("save", ServerPlayer.class);
+            save.setAccessible(true);
+            save.invoke(level.getServer().getPlayerList(), player);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
+            throw new AssertionError("unable to persist GameTest playerdata through the vanilla PlayerList boundary", exception);
+        }
     }
 }
