@@ -69,28 +69,20 @@ public final class PerformanceCounters {
         clientPayloadsSent.addAndGet(requireNonNegative("clientPayloadsSent", sent));
     }
 
+    /** One sampled source position may emit multiple particles, so the two counts are independent. */
     public void recordClientEffects(long samples, long emitted) {
-        requireSuccessWithinWork("clientEffects", samples, emitted);
-        clientEffectSamples.addAndGet(samples);
-        clientEffectsEmitted.addAndGet(emitted);
+        clientEffectSamples.addAndGet(requireNonNegative("clientEffectSamples", samples));
+        clientEffectsEmitted.addAndGet(requireNonNegative("clientEffectsEmitted", emitted));
     }
 
     public Snapshot snapshot() {
         return new Snapshot(
-                expansionAttempts.get(),
-                expansionAppliedCells.get(),
-                regressionWorkUnits.get(),
-                regressionClearedCells.get(),
-                materializationAttempts.get(),
-                successfulMaterializations.get(),
-                restorationAttempts.get(),
-                revertedBlocks.get(),
-                localQueries.get(),
-                entitySamples.get(),
-                entityStateUpdates.get(),
-                clientPayloadsSent.get(),
-                clientEffectSamples.get(),
-                clientEffectsEmitted.get());
+                expansionAttempts.get(), expansionAppliedCells.get(),
+                regressionWorkUnits.get(), regressionClearedCells.get(),
+                materializationAttempts.get(), successfulMaterializations.get(),
+                restorationAttempts.get(), revertedBlocks.get(), localQueries.get(),
+                entitySamples.get(), entityStateUpdates.get(), clientPayloadsSent.get(),
+                clientEffectSamples.get(), clientEffectsEmitted.get());
     }
 
     /**
@@ -99,20 +91,12 @@ public final class PerformanceCounters {
      */
     public Snapshot snapshotAndReset() {
         return new Snapshot(
-                expansionAttempts.getAndSet(0L),
-                expansionAppliedCells.getAndSet(0L),
-                regressionWorkUnits.getAndSet(0L),
-                regressionClearedCells.getAndSet(0L),
-                materializationAttempts.getAndSet(0L),
-                successfulMaterializations.getAndSet(0L),
-                restorationAttempts.getAndSet(0L),
-                revertedBlocks.getAndSet(0L),
-                localQueries.getAndSet(0L),
-                entitySamples.getAndSet(0L),
-                entityStateUpdates.getAndSet(0L),
-                clientPayloadsSent.getAndSet(0L),
-                clientEffectSamples.getAndSet(0L),
-                clientEffectsEmitted.getAndSet(0L));
+                expansionAttempts.getAndSet(0L), expansionAppliedCells.getAndSet(0L),
+                regressionWorkUnits.getAndSet(0L), regressionClearedCells.getAndSet(0L),
+                materializationAttempts.getAndSet(0L), successfulMaterializations.getAndSet(0L),
+                restorationAttempts.getAndSet(0L), revertedBlocks.getAndSet(0L), localQueries.getAndSet(0L),
+                entitySamples.getAndSet(0L), entityStateUpdates.getAndSet(0L), clientPayloadsSent.getAndSet(0L),
+                clientEffectSamples.getAndSet(0L), clientEffectsEmitted.getAndSet(0L));
     }
 
     public void reset() {
