@@ -68,7 +68,7 @@ runs {
         modSource project.sourceSets.gameTest
     }
     arsZeroGameTestServer {
-        type = 'gameTestServer'
+        runType 'gameTestServer'
         systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
         modSource project.sourceSets.arsZeroGameTest
     }
