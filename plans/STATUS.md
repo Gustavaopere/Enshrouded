@@ -1,6 +1,6 @@
 # Project Status
 
-Last structural update: 2026-09-02.
+Last structural update: 2026-09-05.
 
 The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HISTORY-THROUGH-08.02.md`](STATUS-HISTORY-THROUGH-08.02.md). Completed-task dossiers and `plans/PENDING.md` remain the authoritative provenance for individual contracts.
 
@@ -16,7 +16,7 @@ The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HIS
 - [x] 06 Lich & Story — 4/4 verified and merged.
 - [x] 07 Client Experience — 4/4 verified and merged.
 - [x] 08 Integrations — 5/5 reviewed, verified and merged.
-- [ ] 09 Hardening — not implemented.
+- [ ] 09 Hardening — 1/5 verified and merged.
 
 ## 08 Integrations — complete
 
@@ -29,7 +29,7 @@ The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HIS
 - Merge SHA: `95b0189ca4421b688294a6cee2b9f06983159790`.
 - Post-merge `main` workflow/job: `33509695387` / `99862094519` — `completed/success`.
 - Completed file: `✅-01-ars-zero.md`.
-- Open verification limitation: `ENSH-L1-ARS-ZERO-REAL-FIXTURE-001` remains exactly as recorded in `plans/PENDING.md`.
+- Former verification limitation `ENSH-L1-ARS-ZERO-REAL-FIXTURE-001` is closed by Stage 09.01; full provenance is recorded in `plans/PENDING.md` and `plans/09-hardening/✅-01-test-matrix.md`.
 
 ### ✅ 02 Ars Nouveau + Iron's magic classification
 
@@ -97,20 +97,33 @@ Goety souls/rituals/summons, Malum spirit arcana and Eidolon occult/ritual resou
 4. `✅ feat/08-journeymap`
 5. `✅ feat/08-necromancy-flavor` — intentional no-op after value review
 
+## 09 Hardening — in progress
+
+### ✅ 01 Level 1 test matrix
+
+- Implementation branch: `feat/09-test-matrix`.
+- Final implementation HEAD: `2db41c3569409beec11a6509c2c39fbfc7810a83`.
+- PR: #70 — `Stage 09.01 — Level 1 test matrix and real Ars Zero co-load`.
+- Exact PR-head workflow/job: `33986822592` / `101361842946` — `completed/success` across wrapper provenance, unit tests, frontier benchmark, diff sanity, NeoForge build, canonical + external GameTest compilation, JAR integrity, standalone GameTests, SavedData two-boot reload, isolated real Ars Zero profile and dedicated-server save/reload smoke.
+- Implementation merge SHA: `6e957bd0592723cc4849f2a4606222ad564c2aa4`.
+- Independent post-merge `main` workflow/job: `33989419851` / `101368854913` — `completed/success` across the same complete gate set.
+- Post-merge verified `main`: `6e957bd0592723cc4849f2a4606222ad564c2aa4`.
+- Completed file: `✅-01-test-matrix.md`.
+- Closed cross-stage contract: `ENSH-L1-ARS-ZERO-REAL-FIXTURE-001`.
+
+Stage 09.01 provides the canonical standalone Level-1 vertical scenario, real two-boot mid-expansion/mid-exposure restart evidence and an isolated real-distribution Ars Zero 2.0.2 co-load profile. Optional provider JARs remain fixture-only and do not leak into the production dependency/runtime surface.
+
 ## Open cross-stage contracts
 
-- `ENSH-L1-ARS-ZERO-REAL-FIXTURE-001` — open exactly as recorded in `plans/PENDING.md`.
-- No Stage 08.03 ownership/protection contract remains open.
-- No Stage 08.04 discovery/JourneyMap contract remains open.
-- No Stage 08.05 necromancy-flavor contract was introduced.
+- No cross-stage contract currently remains open in `plans/PENDING.md`.
 
 ## Immediate next step
 
-Stage 09.01 (`plans/09-hardening/01-test-matrix.md`) is the next canonical task. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
+Stage 09.02 (`plans/09-hardening/02-performance.md`) is the next canonical task. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
 
 ## Level 1 release gate
 
-Level 1 is not complete until every Level-1-required task under Stage 09 has verified GREEN implementation and is renamed with the `✅-` prefix after merge. The intentional Stage 08.05 no-op is complete because its acceptance criterion explicitly permits closing without adapters when no concrete gameplay value survives review.
+Level 1 is not complete. Stage 09.02 Performance, Stage 09.03 World Upgrade, Stage 09.05 Third-Party Licenses/Provenance and Stage 09.04 Release Checklist remain in causal order. Every Level-1-required Stage 09 task must reach verified GREEN implementation and receive its `✅-` closeout before release completion can be declared.
 
 ## Rules for updating this file
 
