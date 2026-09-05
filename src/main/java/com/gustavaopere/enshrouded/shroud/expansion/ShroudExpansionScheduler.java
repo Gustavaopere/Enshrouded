@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.shroud.expansion;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellState;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCoreState;
@@ -110,6 +111,7 @@ public final class ShroudExpansionScheduler {
             nextCoreHint = activeCoreIds.get(index);
         }
 
+        PerformanceCounters.global().recordExpansion(processedEntries, appliedCells);
         if (appliedCells == 0) {
             return new TickResult(state, processedEntries, 0, processedPerCore);
         }
