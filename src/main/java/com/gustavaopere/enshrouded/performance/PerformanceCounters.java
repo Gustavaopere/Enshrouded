@@ -18,9 +18,11 @@ public final class PerformanceCounters {
     private final AtomicLong regressionClearedCells = new AtomicLong();
     private final AtomicLong materializationAttempts = new AtomicLong();
     private final AtomicLong successfulMaterializations = new AtomicLong();
+    private final AtomicLong restorationAttempts = new AtomicLong();
     private final AtomicLong revertedBlocks = new AtomicLong();
-    private final AtomicLong entityScans = new AtomicLong();
-    private final AtomicLong entityConversions = new AtomicLong();
+    private final AtomicLong localQueries = new AtomicLong();
+    private final AtomicLong entitySamples = new AtomicLong();
+    private final AtomicLong entityStateUpdates = new AtomicLong();
     private final AtomicLong clientPayloadsSent = new AtomicLong();
     private final AtomicLong clientEffectSamples = new AtomicLong();
     private final AtomicLong clientEffectsEmitted = new AtomicLong();
@@ -47,18 +49,20 @@ public final class PerformanceCounters {
         successfulMaterializations.addAndGet(successful);
     }
 
-    public void recordRevertedBlocks(long count) {
-        revertedBlocks.addAndGet(requireNonNegative("revertedBlocks", count));
+    public void recordRestoration(long attempts, long reverted) {
+        requireSuccessWithinWork("restoration", attempts, reverted);
+        restorationAttempts.addAndGet(attempts);
+        revertedBlocks.addAndGet(reverted);
     }
 
-    public void recordEntityScan(long scans, long conversions) {
-        requireSuccessWithinWork("entityScan", scans, conversions);
-        entityScans.addAndGet(scans);
-        entityConversions.addAndGet(conversions);
+    public void recordLocalQueries(long count) {
+        localQueries.addAndGet(requireNonNegative("localQueries", count));
     }
 
-    public void recordEntityConversions(long conversions) {
-        entityConversions.addAndGet(requireNonNegative("entityConversions", conversions));
+    public void recordEntityUpdate(long samples, long stateUpdates) {
+        requireSuccessWithinWork("entityUpdate", samples, stateUpdates);
+        entitySamples.addAndGet(samples);
+        entityStateUpdates.addAndGet(stateUpdates);
     }
 
     public void recordClientPayloads(long sent) {
@@ -79,9 +83,11 @@ public final class PerformanceCounters {
                 regressionClearedCells.get(),
                 materializationAttempts.get(),
                 successfulMaterializations.get(),
+                restorationAttempts.get(),
                 revertedBlocks.get(),
-                entityScans.get(),
-                entityConversions.get(),
+                localQueries.get(),
+                entitySamples.get(),
+                entityStateUpdates.get(),
                 clientPayloadsSent.get(),
                 clientEffectSamples.get(),
                 clientEffectsEmitted.get());
@@ -99,9 +105,11 @@ public final class PerformanceCounters {
                 regressionClearedCells.getAndSet(0L),
                 materializationAttempts.getAndSet(0L),
                 successfulMaterializations.getAndSet(0L),
+                restorationAttempts.getAndSet(0L),
                 revertedBlocks.getAndSet(0L),
-                entityScans.getAndSet(0L),
-                entityConversions.getAndSet(0L),
+                localQueries.getAndSet(0L),
+                entitySamples.getAndSet(0L),
+                entityStateUpdates.getAndSet(0L),
                 clientPayloadsSent.getAndSet(0L),
                 clientEffectSamples.getAndSet(0L),
                 clientEffectsEmitted.getAndSet(0L));
@@ -133,9 +141,11 @@ public final class PerformanceCounters {
             long regressionClearedCells,
             long materializationAttempts,
             long successfulMaterializations,
+            long restorationAttempts,
             long revertedBlocks,
-            long entityScans,
-            long entityConversions,
+            long localQueries,
+            long entitySamples,
+            long entityStateUpdates,
             long clientPayloadsSent,
             long clientEffectSamples,
             long clientEffectsEmitted) {
@@ -146,16 +156,18 @@ public final class PerformanceCounters {
             requireNonNegative("regressionClearedCells", regressionClearedCells);
             requireNonNegative("materializationAttempts", materializationAttempts);
             requireNonNegative("successfulMaterializations", successfulMaterializations);
+            requireNonNegative("restorationAttempts", restorationAttempts);
             requireNonNegative("revertedBlocks", revertedBlocks);
-            requireNonNegative("entityScans", entityScans);
-            requireNonNegative("entityConversions", entityConversions);
+            requireNonNegative("localQueries", localQueries);
+            requireNonNegative("entitySamples", entitySamples);
+            requireNonNegative("entityStateUpdates", entityStateUpdates);
             requireNonNegative("clientPayloadsSent", clientPayloadsSent);
             requireNonNegative("clientEffectSamples", clientEffectSamples);
             requireNonNegative("clientEffectsEmitted", clientEffectsEmitted);
         }
 
         public static Snapshot empty() {
-            return new Snapshot(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L);
+            return new Snapshot(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L);
         }
 
         /** Rate for a caller-supplied server-tick observation window; no wall-clock timer is owned here. */
