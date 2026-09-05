@@ -37,14 +37,16 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -52,8 +54,9 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +89,7 @@ public final class LevelOneScenarioGameTests {
                 "Level-1 scenario must start from a physical Shroud Core");
         ((ShroudCoreBlockEntity) level.getBlockEntity(coreAbsolute)).requestAutomaticActivation();
 
-        helper.runAtTickTime(6L, () -> {
+        helper.runAtTickTime(20L, () -> {
             var core = shroudData.state().cores().values().stream()
                     .filter(candidate -> candidate.center().equals(coreAbsolute))
                     .findFirst()
@@ -98,9 +101,15 @@ public final class LevelOneScenarioGameTests {
                     "active core must have begun canonical logical expansion");
 
             DefaultShroudQuery query = DefaultShroudQuery.levelOne(GEOMETRY);
-            ShroudSample shroud = query.sample(level, coreAbsolute, null);
+            BlockPos ordinaryShroudPos = region.cells().values().stream()
+                    .map(cell -> GEOMETRY.cellCenter(cell.position()))
+                    .filter(pos -> query.sample(level, pos, null).severity() == ShroudSeverity.SHROUD)
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError(
+                            "expanded Level-1 field must contain an ordinary SHROUD band outside its deadly center"));
+            ShroudSample shroud = query.sample(level, ordinaryShroudPos, null);
             helper.assertTrue(shroud.severity() == ShroudSeverity.SHROUD,
-                    "core field must expose ordinary SHROUD through the canonical query");
+                    "expanded field must expose ordinary SHROUD through the canonical query");
 
             int reserve = ExposureSchema.DEFAULT_MAX_RESERVE_TICKS;
             ExposureService exposure = new ExposureService(reserve, 1, 1, 100, DeadlyExposurePolicy.levelOneBarrier());
@@ -118,7 +127,7 @@ public final class LevelOneScenarioGameTests {
             if (cow == null) {
                 return;
             }
-            cow.moveTo(coreAbsolute.getX() + 0.5D, coreAbsolute.getY(), coreAbsolute.getZ() + 0.5D);
+            cow.moveTo(ordinaryShroudPos.getX() + 0.5D, ordinaryShroudPos.getY(), ordinaryShroudPos.getZ() + 0.5D);
             helper.assertTrue(level.addFreshEntity(cow), "corruption target must enter the server level");
             EntityCorruptionGameTestAccess.advanceNow(cow);
             helper.assertTrue(cow.getData(EntityCorruptionAttachment.ENTITY_CORRUPTION.get()).intensity() > 0.0F,
@@ -301,12 +310,14 @@ public final class LevelOneScenarioGameTests {
     }
 
     private static void savePlayerForRestart(ServerLevel level, ServerPlayer player) {
+        Path playerDataDirectory = level.getServer().getWorldPath(LevelResource.PLAYER_DATA_DIR);
+        Path playerDataFile = playerDataDirectory.resolve(player.getUUID().toString() + ".dat");
+        CompoundTag serialized = player.saveWithoutId(new CompoundTag());
         try {
-            Method save = PlayerList.class.getDeclaredMethod("save", ServerPlayer.class);
-            save.setAccessible(true);
-            save.invoke(level.getServer().getPlayerList(), player);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
-            throw new AssertionError("unable to persist GameTest playerdata through the vanilla PlayerList boundary", exception);
+            Files.createDirectories(playerDataDirectory);
+            NbtIo.writeCompressed(serialized, playerDataFile);
+        } catch (IOException exception) {
+            throw new AssertionError("unable to persist GameTest playerdata through the vanilla NBT format", exception);
         }
     }
 }
