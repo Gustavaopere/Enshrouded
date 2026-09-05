@@ -21,6 +21,13 @@ repositories {
         name = 'New JourneyMap Maven'
         url = 'https://maven.blamejared.com'
     }
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com/'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -48,6 +55,10 @@ runs {
         systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
         modSource project.sourceSets.gameTest
     }
+    arsZeroGameTestServer {
+        systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        modSource project.sourceSets.gameTest
+    }
     data {
         arguments.addAll '--mod', mod_id, '--all',
                 '--output', file('src/generated/resources/').absolutePath,
@@ -66,6 +77,10 @@ tasks.withType(JavaExec).configureEach {
 
 configurations {
     runtimeClasspath.extendsFrom localRuntime
+    arsZeroCompatRuntime {
+        canBeConsumed = false
+        canBeResolved = true
+    }
 }
 
 dependencies {
@@ -74,6 +89,21 @@ dependencies {
     testImplementation group: 'info.journeymap', name: 'journeymap-api-neoforge', version: '2.0.0-1.21.1'
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Exact current-pack NeoForge 1.21.1 distribution for the Stage 09.01 real co-load gate.
+    // These JARs are resolved only for the dedicated compatibility run and are never bundled.
+    arsZeroCompatRuntime 'curse.maven:ars-zero-1377482:8703997'
+    arsZeroCompatRuntime 'curse.maven:ars-nouveau-401955:8721482'
+    arsZeroCompatRuntime 'curse.maven:ars-elemental-561470:8399862'
+}
+
+tasks.register('prepareArsZeroCompatMods', Sync) {
+    from configurations.arsZeroCompatRuntime
+    into project.layout.projectDirectory.dir('runs/arsZeroGameTestServer/mods')
+}
+
+tasks.named('runArsZeroGameTestServer').configure {
+    dependsOn tasks.named('prepareArsZeroCompatMods')
 }
 
 tasks.named('test', Test).configure {
