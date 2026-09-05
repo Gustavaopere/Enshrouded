@@ -138,7 +138,7 @@ final class PerformanceBudgetMatrixRedTest {
 
     private static void writeEvidence(String label, long nanos, int work, int globalBudget, int perCoreBudget)
             throws IOException {
-        Path report = Path.of("build", "reports", "level1-performance-benchmark.txt");
+        Path report = Path.of("build", "reports", "performance-budget-matrix-benchmark.txt");
         Files.createDirectories(report.getParent());
         Files.writeString(report, String.format(
                 "%s%njava=%s%nwork=%d%nwall-nanos=%d%nwall-ms=%.3f%nglobal-budget=%d%nper-core-budget=%d%n",
