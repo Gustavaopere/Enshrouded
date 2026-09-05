@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.shroud.purification;
 
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreService;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
@@ -92,6 +93,8 @@ public final class ShroudRegressionScheduler {
             }
         }
 
+        long cleared = regressed.stream().filter(RegressedCell::cleared).count();
+        PerformanceCounters.global().recordRegression(regressed.size(), cleared);
         return new TickResult(current, regressed);
     }
 

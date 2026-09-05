@@ -4,6 +4,7 @@ import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.ecology.combat.CorruptedCombatRuntime;
 import com.gustavaopere.enshrouded.ecology.purification.EntityPurificationService;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
 import net.minecraft.server.level.ServerLevel;
@@ -67,18 +68,22 @@ public final class EntityCorruptionRuntime {
         if (!(entity.level() instanceof ServerLevel level)) {
             return;
         }
+
+        EntityCorruptionAttachment existing = entity.getExistingDataOrNull(EntityCorruptionAttachment.ENTITY_CORRUPTION);
         if (!CorruptionEligibility.isEligible(entity)) {
+            boolean stateUpdated = existing != null && existing.intensity() > 0.0F;
             EntityPurificationService.purify(entity);
+            recordEntitySample(stateUpdated);
             return;
         }
 
-        EntityCorruptionAttachment existing = entity.getExistingDataOrNull(EntityCorruptionAttachment.ENTITY_CORRUPTION);
         ShroudSample sample = SHROUD_QUERY.sample(level, entity.blockPosition(), entity);
         boolean effectiveUnsafe = !sample.sanctuarySuppressed()
                 && sample.severity() != ShroudSeverity.CLEAR
                 && sample.intensity() > 0.0F;
         if (existing == null && !effectiveUnsafe) {
             CorruptedCombatRuntime.clearIfActive(entity);
+            recordEntitySample(false);
             return;
         }
 
@@ -87,10 +92,14 @@ public final class EntityCorruptionRuntime {
                 : existing;
         EntityCorruptionAttachment next = SERVICE.tick(current, sample, elapsedTicks);
         if (next.intensity() <= 0.0F) {
+            boolean stateUpdated = existing != null && existing.intensity() > 0.0F;
             EntityPurificationService.purify(entity);
+            recordEntitySample(stateUpdated);
             return;
         }
-        if (!next.equals(existing)) {
+
+        boolean stateUpdated = !next.equals(existing);
+        if (stateUpdated) {
             entity.setData(EntityCorruptionAttachment.ENTITY_CORRUPTION, next);
         }
         if (candidateOverride == null) {
@@ -98,5 +107,10 @@ public final class EntityCorruptionRuntime {
         } else {
             CorruptedCombatRuntime.synchronize(entity, next.intensity(), candidateOverride);
         }
+        recordEntitySample(stateUpdated);
+    }
+
+    private static void recordEntitySample(boolean stateUpdated) {
+        PerformanceCounters.global().recordEntityUpdate(1L, stateUpdated ? 1L : 0L);
     }
 }

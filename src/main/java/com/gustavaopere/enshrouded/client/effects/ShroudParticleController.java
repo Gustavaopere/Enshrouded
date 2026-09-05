@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.client.effects;
 
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.registry.ModParticles;
 import net.minecraft.client.Minecraft;
@@ -58,9 +59,12 @@ public final class ShroudParticleController {
         int samples = Math.min(MAX_SAMPLES_PER_PULSE, totalPositions);
         int start = Math.floorMod(sampleCursor, totalPositions);
         int remainingBudget = particles.maxCount();
+        int visitedSamples = 0;
+        int emittedParticles = 0;
         BlockPos center = minecraft.player.blockPosition();
 
         for (int sample = 0; sample < samples && remainingBudget > 0; sample++) {
+            visitedSamples++;
             int flat = (start + sample) % totalPositions;
             int dx = flat % side - radius;
             int yz = flat / side;
@@ -80,9 +84,11 @@ public final class ShroudParticleController {
             if (count <= 0) continue;
             ParticleOptions type = particleFor(kind);
             emitAtSource(minecraft, type, pos, count);
+            emittedParticles += count;
             remainingBudget -= count;
         }
 
+        PerformanceCounters.global().recordClientEffects(visitedSamples, emittedParticles);
         sampleCursor = (start + samples) % totalPositions;
     }
 

@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.api.shroud.MutationKind;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -51,10 +52,6 @@ public final class ShroudMaterializationService {
         this.growthQueueCapacity = queueCapacity;
     }
 
-    /**
-     * Samples one already-loaded world position and queues the first matching enabled rule.
-     * The method never forces a chunk load and never mutates the world directly.
-     */
     public boolean schedule(ServerLevel level, BlockPos pos, ShroudSample sample) {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(pos, "pos");
@@ -98,6 +95,7 @@ public final class ShroudMaterializationService {
                 mutations++;
             }
         }
+        PerformanceCounters.global().recordMaterialization(jobs.size(), mutations);
         return mutations;
     }
 
@@ -105,10 +103,6 @@ public final class ShroudMaterializationService {
         return queue.size();
     }
 
-    /**
-     * Queues a decorative growth request for an already-loaded support position.
-     * Logical Shroud state is deliberately not captured here; it is re-sampled at apply time.
-     */
     public boolean scheduleGrowth(
             ServerLevel level,
             BlockPos supportPos,
@@ -143,10 +137,6 @@ public final class ShroudMaterializationService {
         return true;
     }
 
-    /**
-     * Applies bounded growth-placement work without forcing chunks. Budgets count attempted jobs,
-     * so stale or denied candidates cannot consume unbounded server time by retrying forever.
-     */
     public int tickGrowths(ServerLevel level, int globalBudget, int perChunkBudget) {
         Objects.requireNonNull(level, "level");
         if (globalBudget < 0 || perChunkBudget < 0) {
