@@ -8,6 +8,7 @@ FIRST_LOG="$BUILD_DIR/shroud-saveddata-first.log"
 RELOAD_LOG="$BUILD_DIR/shroud-saveddata-reload.log"
 BOOT_TIMEOUT_SECONDS=240
 KILL_AFTER_SECONDS=15
+EXPOSURE_PLAYER_UUID='71090101-0000-4000-8000-000000000003'
 
 command -v timeout >/dev/null 2>&1 || {
   echo 'GNU timeout is required for SavedData reload verification' >&2
@@ -82,30 +83,29 @@ grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_CREATED' "$FIRST_LOG" || {
   echo 'First GameTest boot did not create the entity corruption sentinel' >&2
   exit 1
 }
-if grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_RELOADED' "$FIRST_LOG"; then
-  echo 'First GameTest boot unexpectedly loaded pre-existing Flame progression' >&2
+grep -Fq 'ENSHROUDED_EXPANSION_MID_CREATED' "$FIRST_LOG" || {
+  echo 'First GameTest boot did not create the mid-expansion sentinel' >&2
   exit 1
-fi
-if grep -Fq 'ENSHROUDED_STORY_RELOADED' "$FIRST_LOG"; then
-  echo 'First GameTest boot unexpectedly loaded pre-existing Story State' >&2
+}
+grep -Fq 'ENSHROUDED_EXPOSURE_MID_CREATED' "$FIRST_LOG" || {
+  echo 'First GameTest boot did not create the player exposure sentinel' >&2
   exit 1
-fi
-if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_RELOADED' "$FIRST_LOG"; then
-  echo 'First GameTest boot unexpectedly loaded pre-existing Shroud SavedData' >&2
-  exit 1
-fi
-if grep -Fq 'ENSHROUDED_GROWTH_BLOCK_RELOADED' "$FIRST_LOG"; then
-  echo 'First GameTest boot unexpectedly reported a reloaded Shroud growth block' >&2
-  exit 1
-fi
-if grep -Fq 'ENSHROUDED_PURIFICATION_MID_RELOADED' "$FIRST_LOG"; then
-  echo 'First GameTest boot unexpectedly reported reloaded mid-purification state' >&2
-  exit 1
-fi
-if grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_RELOADED' "$FIRST_LOG"; then
-  echo 'First GameTest boot unexpectedly reported reloaded entity corruption state' >&2
-  exit 1
-fi
+}
+
+for unexpected in \
+  ENSHROUDED_FLAME_PROGRESSION_RELOADED \
+  ENSHROUDED_STORY_RELOADED \
+  ENSHROUDED_SHROUD_SAVEDDATA_RELOADED \
+  ENSHROUDED_GROWTH_BLOCK_RELOADED \
+  ENSHROUDED_PURIFICATION_MID_RELOADED \
+  ENSHROUDED_ENTITY_CORRUPTION_RELOADED \
+  ENSHROUDED_EXPANSION_MID_RELOADED \
+  ENSHROUDED_EXPOSURE_MID_RELOADED; do
+  if grep -Fq "$unexpected" "$FIRST_LOG"; then
+    echo "First GameTest boot unexpectedly reported reload marker: $unexpected" >&2
+    exit 1
+  fi
+done
 
 mapfile -t FLAME_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_flame_progression.dat' -print)
 if (( ${#FLAME_DATA_FILES[@]} != 1 )); then
@@ -125,6 +125,13 @@ mapfile -t SHROUD_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_shrou
 if (( ${#SHROUD_DATA_FILES[@]} != 1 )); then
   echo "Expected exactly one dimension-local enshrouded_shroud.dat after first boot, found ${#SHROUD_DATA_FILES[@]}" >&2
   printf '%s\n' "${SHROUD_DATA_FILES[@]:-}"
+  exit 1
+fi
+
+mapfile -t EXPOSURE_PLAYER_DATA_FILES < <(find "$RUN_DIR" -type f -name "${EXPOSURE_PLAYER_UUID}.dat" -print)
+if (( ${#EXPOSURE_PLAYER_DATA_FILES[@]} != 1 )); then
+  echo "Expected exactly one exposure playerdata file after first boot, found ${#EXPOSURE_PLAYER_DATA_FILES[@]}" >&2
+  printf '%s\n' "${EXPOSURE_PLAYER_DATA_FILES[@]:-}"
   exit 1
 fi
 
@@ -161,30 +168,29 @@ grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_RELOADED' "$RELOAD_LOG" || {
   echo 'Second GameTest boot did not reload the persisted entity corruption attachment' >&2
   exit 1
 }
-if grep -Fq 'ENSHROUDED_FLAME_PROGRESSION_CREATED' "$RELOAD_LOG"; then
-  echo 'Second GameTest boot recreated Flame progression instead of loading it' >&2
+grep -Fq 'ENSHROUDED_EXPANSION_MID_RELOADED' "$RELOAD_LOG" || {
+  echo 'Second GameTest boot did not rebuild and resume the persisted expansion frontier' >&2
   exit 1
-fi
-if grep -Fq 'ENSHROUDED_STORY_CREATED' "$RELOAD_LOG"; then
-  echo 'Second GameTest boot recreated Story State instead of loading it' >&2
+}
+grep -Fq 'ENSHROUDED_EXPOSURE_MID_RELOADED' "$RELOAD_LOG" || {
+  echo 'Second GameTest boot did not reload and continue the player exposure reserve' >&2
   exit 1
-fi
-if grep -Fq 'ENSHROUDED_SHROUD_SAVEDDATA_CREATED' "$RELOAD_LOG"; then
-  echo 'Second GameTest boot recreated Shroud SavedData instead of loading it' >&2
-  exit 1
-fi
-if grep -Fq 'ENSHROUDED_GROWTH_BLOCK_CREATED' "$RELOAD_LOG"; then
-  echo 'Second GameTest boot recreated the Shroud growth block instead of loading it' >&2
-  exit 1
-fi
-if grep -Fq 'ENSHROUDED_PURIFICATION_MID_CREATED' "$RELOAD_LOG"; then
-  echo 'Second GameTest boot recreated mid-purification state instead of loading it' >&2
-  exit 1
-fi
-if grep -Fq 'ENSHROUDED_ENTITY_CORRUPTION_CREATED' "$RELOAD_LOG"; then
-  echo 'Second GameTest boot recreated the entity corruption sentinel instead of loading it' >&2
-  exit 1
-fi
+}
+
+for unexpected in \
+  ENSHROUDED_FLAME_PROGRESSION_CREATED \
+  ENSHROUDED_STORY_CREATED \
+  ENSHROUDED_SHROUD_SAVEDDATA_CREATED \
+  ENSHROUDED_GROWTH_BLOCK_CREATED \
+  ENSHROUDED_PURIFICATION_MID_CREATED \
+  ENSHROUDED_ENTITY_CORRUPTION_CREATED \
+  ENSHROUDED_EXPANSION_MID_CREATED \
+  ENSHROUDED_EXPOSURE_MID_CREATED; do
+  if grep -Fq "$unexpected" "$RELOAD_LOG"; then
+    echo "Second GameTest boot recreated persisted state instead of loading it: $unexpected" >&2
+    exit 1
+  fi
+done
 
 mapfile -t FLAME_RELOAD_DATA_FILES < <(find "$RUN_DIR" -type f -name 'enshrouded_flame_progression.dat' -print)
 if (( ${#FLAME_RELOAD_DATA_FILES[@]} != 1 )); then
@@ -210,4 +216,16 @@ if [[ "${STORY_RELOAD_DATA_FILES[0]}" != "${STORY_DATA_FILES[0]}" ]]; then
   exit 1
 fi
 
-echo "Flame progression, Story State, exactly-once Lich reward, Shroud SavedData, growth block, purification and entity corruption two-boot reload GameTest: PASS (Flame: ${FLAME_DATA_FILES[0]}; Story: ${STORY_DATA_FILES[0]}; Shroud: ${SHROUD_DATA_FILES[0]})"
+mapfile -t EXPOSURE_RELOAD_PLAYER_DATA_FILES < <(find "$RUN_DIR" -type f -name "${EXPOSURE_PLAYER_UUID}.dat" -print)
+if (( ${#EXPOSURE_RELOAD_PLAYER_DATA_FILES[@]} != 1 )); then
+  echo "Expected exactly one exposure playerdata file after reload, found ${#EXPOSURE_RELOAD_PLAYER_DATA_FILES[@]}" >&2
+  printf '%s\n' "${EXPOSURE_RELOAD_PLAYER_DATA_FILES[@]:-}"
+  exit 1
+fi
+if [[ "${EXPOSURE_RELOAD_PLAYER_DATA_FILES[0]}" != "${EXPOSURE_PLAYER_DATA_FILES[0]}" ]]; then
+  echo 'Exposure playerdata file moved between boots instead of reloading in place' >&2
+  printf 'first: %s\nsecond: %s\n' "${EXPOSURE_PLAYER_DATA_FILES[0]}" "${EXPOSURE_RELOAD_PLAYER_DATA_FILES[0]}" >&2
+  exit 1
+fi
+
+echo "Flame progression, Story State, exactly-once Lich reward, Shroud SavedData, growth block, mid-expansion frontier, player exposure, purification and entity corruption two-boot reload GameTest: PASS (Flame: ${FLAME_DATA_FILES[0]}; Story: ${STORY_DATA_FILES[0]}; Shroud: ${SHROUD_DATA_FILES[0]}; Exposure playerdata: ${EXPOSURE_PLAYER_DATA_FILES[0]})"

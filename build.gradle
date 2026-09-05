@@ -21,6 +21,20 @@ repositories {
         name = 'New JourneyMap Maven'
         url = 'https://maven.blamejared.com'
     }
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroup 'software.bernie.geckolib'
+        }
+    }
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com/'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -32,6 +46,11 @@ sourceSets {
     gameTest {
         compileClasspath = sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath = output + compileClasspath + sourceSets.main.runtimeClasspath
+    }
+    arsZeroGameTest {
+        compileClasspath = sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath = output + compileClasspath + sourceSets.main.runtimeClasspath
+        resources.srcDir('src/gameTest/resources')
     }
 }
 
@@ -47,6 +66,11 @@ runs {
     gameTestServer {
         systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
         modSource project.sourceSets.gameTest
+    }
+    arsZeroGameTestServer {
+        runType 'gameTestServer'
+        systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        modSource project.sourceSets.arsZeroGameTest
     }
     data {
         arguments.addAll '--mod', mod_id, '--all',
@@ -66,6 +90,10 @@ tasks.withType(JavaExec).configureEach {
 
 configurations {
     runtimeClasspath.extendsFrom localRuntime
+    arsZeroCompatRuntime {
+        canBeConsumed = false
+        canBeResolved = true
+    }
 }
 
 dependencies {
@@ -74,6 +102,20 @@ dependencies {
     testImplementation group: 'info.journeymap', name: 'journeymap-api-neoforge', version: '2.0.0-1.21.1'
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Exact current-pack NeoForge 1.21.1 distribution for the Stage 09.01 real co-load gate.
+    // These JARs are resolved only for the dedicated compatibility run and are never bundled.
+    arsZeroCompatRuntime 'curse.maven:ars-zero-1377482:8703997'
+    arsZeroCompatRuntime 'curse.maven:ars-nouveau-401955:8721482'
+    arsZeroCompatRuntime 'curse.maven:ars-elemental-561470:8399862'
+    arsZeroCompatRuntime 'curse.maven:curios-309927:6529130'
+    arsZeroCompatRuntime 'software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.2'
+    arsZeroCompatRuntime 'curse.maven:terrablender-neoforge-940057:6054947'
+}
+
+tasks.register('prepareArsZeroCompatMods', Sync) {
+    from configurations.arsZeroCompatRuntime
+    into project.layout.projectDirectory.dir('runs/arsZeroGameTestServer/mods')
 }
 
 tasks.named('test', Test).configure {
