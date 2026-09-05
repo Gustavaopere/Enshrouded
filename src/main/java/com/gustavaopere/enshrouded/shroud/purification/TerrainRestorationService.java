@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.shroud.purification;
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.MutationAuthority;
 import com.gustavaopere.enshrouded.api.shroud.MutationKind;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.state.ShroudCellPos;
 import com.gustavaopere.enshrouded.shroud.terrain.CorruptionRule;
@@ -138,6 +139,7 @@ public final class TerrainRestorationService {
                 queue.addLast(pos);
             }
         }
+        PerformanceCounters.global().recordRestoration(attempted, mutations);
         return mutations;
     }
 

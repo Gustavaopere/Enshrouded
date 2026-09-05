@@ -73,17 +73,21 @@ public final class ShroudExpansionRuntime {
             return false;
         }
 
-        int workPerTick = EnshroudedConfig.coreGrowthWorkPerTick();
-        ShroudExpansionScheduler.TickResult result = scheduler(level).tick(
-                current,
-                new ShroudWorkBudget(workPerTick, workPerTick)
+        ShroudWorkBudget budget = growthBudget(
+                EnshroudedConfig.coreGrowthGlobalWorkPerTick(),
+                EnshroudedConfig.coreGrowthWorkPerTick()
         );
+        ShroudExpansionScheduler.TickResult result = scheduler(level).tick(current, budget);
         if (result.state().equals(current)) {
             return false;
         }
 
         savedData.replace(result.state());
         return true;
+    }
+
+    static ShroudWorkBudget growthBudget(int globalWorkPerTick, int perCoreWorkPerTick) {
+        return new ShroudWorkBudget(globalWorkPerTick, perCoreWorkPerTick);
     }
 
     public static void clear() {

@@ -63,12 +63,23 @@ jobs:
       - name: Unit tests
         run: ./gradlew --no-daemon test
 
-      - name: Frontier benchmark baseline
+      - name: Performance benchmark baselines
         shell: bash
         run: |
           set -euo pipefail
           test -s build/reports/frontier-expansion-benchmark.txt
+          test -s build/reports/level1-performance-benchmark.txt
+          grep -Fx 'stage=09.02' build/reports/level1-performance-benchmark.txt
+          grep -Fx 'core-scenario=1' build/reports/level1-performance-benchmark.txt
+          grep -Fx 'core-scenario=10' build/reports/level1-performance-benchmark.txt
+          grep -Fx 'core-scenario=50' build/reports/level1-performance-benchmark.txt
+          grep -Fx 'entity-samples=10000' build/reports/level1-performance-benchmark.txt
+          grep -Fx 'persistence-cores=50' build/reports/level1-performance-benchmark.txt
+          grep -Fx 'persistence-cells=3200' build/reports/level1-performance-benchmark.txt
+          echo '--- synthetic frontier baseline ---'
           cat build/reports/frontier-expansion-benchmark.txt
+          echo '--- Level-1 Stage 09.02 baseline ---'
+          cat build/reports/level1-performance-benchmark.txt
 
       - name: Diff sanity
         shell: bash
@@ -91,6 +102,7 @@ jobs:
           set -euo pipefail
           ./gradlew --no-daemon compileGameTestJava compileArsZeroGameTestJava
           test -f build/classes/java/gameTest/com/gustavaopere/enshrouded/gametest/LevelOneScenarioGameTests.class
+          test -f build/classes/java/gameTest/com/gustavaopere/enshrouded/gametest/PerformanceGameTests.class
           test -f build/classes/java/arsZeroGameTest/com/gustavaopere/enshrouded/integration/arszero/ArsZeroRealDistributionGameTests.class
 
       - name: Verify built JAR
@@ -150,6 +162,10 @@ jobs:
           fi
           grep -Fq 'ENSHROUDED_LEVEL_ONE_SCENARIO_PASSED' "$LOG" || {
             echo 'Level-1 vertical scenario did not complete in the canonical GameTest run'
+            exit 1
+          }
+          grep -Fq 'ENSHROUDED_LEVEL1_SERVER_PERF_PASSED' "$LOG" || {
+            echo 'Level-1 server performance stress scenario did not complete'
             exit 1
           }
 

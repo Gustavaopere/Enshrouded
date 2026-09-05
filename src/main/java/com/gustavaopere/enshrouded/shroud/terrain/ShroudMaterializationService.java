@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.api.shroud.MutationKind;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import com.gustavaopere.enshrouded.protection.MutationSafetyMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -98,6 +99,7 @@ public final class ShroudMaterializationService {
                 mutations++;
             }
         }
+        PerformanceCounters.global().recordMaterialization(jobs.size(), mutations);
         return mutations;
     }
 

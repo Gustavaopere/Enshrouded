@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.network;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.client.state.ClientShroudState;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -46,6 +47,7 @@ class ShroudSampleSyncRedTest {
 
     @Test
     void trackerIsChangeDrivenRateLimitedAndStillSendsClearTransitions() {
+        PerformanceCounters.global().reset();
         ShroudPlayerSyncTracker tracker = new ShroudPlayerSyncTracker(5L);
         ShroudSample clear = ShroudSample.clear();
         ShroudSample shroud = new ShroudSample(0.40f, ShroudSeverity.SHROUD, Optional.of(SOURCE), false);
@@ -60,6 +62,9 @@ class ShroudSampleSyncRedTest {
         assertTrue(tracker.update(PLAYER, 111L, clear).isEmpty());
         assertEquals(3L, tracker.update(PLAYER, 115L, clear).orElseThrow().sequence());
         assertTrue(tracker.update(PLAYER, 116L, clear).isEmpty());
+
+        assertEquals(4L, PerformanceCounters.global().snapshot().clientPayloadsSent());
+        PerformanceCounters.global().reset();
     }
 
     @Test

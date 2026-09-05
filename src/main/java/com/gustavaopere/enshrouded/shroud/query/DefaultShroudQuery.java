@@ -5,6 +5,7 @@ import com.gustavaopere.enshrouded.api.shroud.FlameWardRuntimeBindings;
 import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
+import com.gustavaopere.enshrouded.performance.PerformanceCounters;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSavedData;
 import com.gustavaopere.enshrouded.shroud.state.ShroudWorldState;
@@ -59,6 +60,7 @@ public final class DefaultShroudQuery implements ShroudQuery {
     public ShroudSample sample(ServerLevel level, BlockPos pos, @Nullable Entity entity) {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(pos, "pos");
+        PerformanceCounters.global().recordLocalQueries(1L);
 
         ShroudWorldState state = ShroudSavedData.get(level).state();
         ShroudSpatialIndex index = indexFor(level, state);
