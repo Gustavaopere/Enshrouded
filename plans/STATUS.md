@@ -16,7 +16,7 @@ The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HIS
 - [x] 06 Lich & Story — 4/4 verified and merged.
 - [x] 07 Client Experience — 4/4 verified and merged.
 - [x] 08 Integrations — 5/5 reviewed, verified and merged.
-- [ ] 09 Hardening — 1/5 verified and merged.
+- [ ] 09 Hardening — 2/5 verified and merged.
 
 ## 08 Integrations — complete
 
@@ -113,17 +113,31 @@ Goety souls/rituals/summons, Malum spirit arcana and Eidolon occult/ritual resou
 
 Stage 09.01 provides the canonical standalone Level-1 vertical scenario, real two-boot mid-expansion/mid-exposure restart evidence and an isolated real-distribution Ars Zero 2.0.2 co-load profile. Optional provider JARs remain fixture-only and do not leak into the production dependency/runtime surface.
 
+### ✅ 02 Performance and budgets
+
+- Implementation branch: `feat/09-performance`.
+- Final implementation HEAD: `224fe45b644990af9e636151e13b7192f7f9c9d4`.
+- PR: #72 — `Stage 09.02 — Performance hardening and Level 1 baseline`.
+- Exact final PR-head workflow/job: `33998728399` / `101393675566` — `completed/success` across wrapper provenance, unit tests, performance benchmark baselines, diff sanity, NeoForge build, canonical + external GameTest compilation, JAR integrity, standalone GameTests, SavedData two-boot reload, isolated real Ars Zero profile and dedicated-server save/reload smoke.
+- Implementation merge SHA: `aac30dadcf0c31c1cfddba5ad66e8df281e33923`.
+- Independent post-merge `main` workflow/job: `33999268064` / `101395101323` — `completed/success` across the same complete gate set.
+- Post-merge verified implementation `main`: `aac30dadcf0c31c1cfddba5ad66e8df281e33923`.
+- Completed file: `✅-02-performance.md`.
+- New cross-stage pending contracts: none.
+
+Stage 09.02 adds passive observability plus explicit bounded-work evidence without creating a second gameplay authority. Logical Shroud expansion is capped globally and per core; entity-corruption sampling is UUID-staggered and globally admitted before canonical queries; materialization/restoration remain loaded-chunk-only and bounded; networking/client effects remain rate/sample capped. The committed Level-1 baseline stresses 1/10/50-core scheduler loads, entity reducer work and representative persistence, while timing observations remain explicitly non-portable and are not production TPS/MSPT guarantees. The only automated review P2 — paired performance counters splitting across drain windows — was corrected in final HEAD `224fe45b...` and protected by regression coverage before merge.
+
 ## Open cross-stage contracts
 
 - No cross-stage contract currently remains open in `plans/PENDING.md`.
 
 ## Immediate next step
 
-Stage 09.02 (`plans/09-hardening/02-performance.md`) is the next canonical task. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
+Stage 09.03 (`plans/09-hardening/03-world-upgrade.md`) is the next canonical task. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
 
 ## Level 1 release gate
 
-Level 1 is not complete. Stage 09.02 Performance, Stage 09.03 World Upgrade, Stage 09.05 Third-Party Licenses/Provenance and Stage 09.04 Release Checklist remain in causal order. Every Level-1-required Stage 09 task must reach verified GREEN implementation and receive its `✅-` closeout before release completion can be declared.
+Level 1 is not complete. Stage 09.03 World Upgrade, Stage 09.05 Third-Party Licenses/Provenance and Stage 09.04 Release Checklist remain in causal order. Every Level-1-required Stage 09 task must reach verified GREEN implementation and receive its `✅-` closeout before release completion can be declared.
 
 ## Rules for updating this file
 
