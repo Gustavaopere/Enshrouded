@@ -1,40 +1,46 @@
 # Source provenance
 
-This file indexes third-party projects used by Enshrouded as architectural references, gameplay inspiration, optional providers or compatibility targets.
+This file indexes third-party projects used by Enshrouded as architectural references, gameplay inspiration, runtime providers or compatibility targets. The machine-readable authority is [`provenance/third-party-provenance.json`](provenance/third-party-provenance.json).
 
-**A source link, installed mod or observed behavior is not a license grant.** Before copying/adapting source or assets, consult [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and [`plans/09-hardening/05-third-party-licenses-provenance.md`](plans/09-hardening/05-third-party-licenses-provenance.md). Actual derivation requires exact source revision/file provenance and applicable rights.
+**A source link, installed mod or observed behavior is not a license grant.** No source/assets may be copied or adapted unless the ledger contains an approved material entry with exact local-file mapping and immutable upstream provenance.
 
-## Primary references
+## Stage 09.05 audited baseline
 
-| Source | Enshrouded use | Compliance posture |
+- repository audit baseline: `main@cd6850abdabc016136368fd2b6a9decfa6e1df51`;
+- pack authority: 607-entry `modlist.txt` snapshot supplied 2026-09-05;
+- detailed audit: [`docs/compat/third-party-provenance-audit-2026-09-05.md`](docs/compat/third-party-provenance-audit-2026-09-05.md);
+- current material derivations: **none**.
+
+## Current direct integration targets
+
+| Target | Current evidence | Posture |
 | --- | --- | --- |
-| [Sculk Horde](https://github.com/TeamPeril/Sculk-Horde) | architectural/algorithmic reference for persistent infestation and bounded frontier work | pinned Apache-2.0 source snapshot `491aaa7e3c8c01eff0a7859ccfe2a62500ed15bc`; any actual adaptation must be registered file-by-file |
-| Ars Zero | optional runtime provider for a Lich manifestation body | pinned source snapshot `9478291a9f331ee2b4a391c4581a342d342ac7dc`, GPLv3; provider integration only, no GPL implementation copied into core |
-| *Enshrouded* game | design inspiration for timed Shroud, Deadly Shroud and Flame-gated passage | proprietary `REFERENCE_ONLY`; no game code, assets, audio or maps may be imported |
+| Ars Nouveau | `5.13.1` | independent API/compatibility code; no assets/source copied |
+| Ars Zero | `2.0.2`; audited source `9478291a9f331ee2b4a391c4581a342d342ac7dc` | provider/API only; no GPL implementation copied |
+| Epic Fight | `21.17.3.1` | API/compatibility only |
+| FTB Chunks | `2101.1.22` | API/claims facts only; upstream source is visible-source/ARR |
+| FTB Teams | `2101.1.11` | API/team facts only; ARR |
+| Iron's Spells 'n Spellbooks | `3.16.3` | addon/API use under upstream terms; no source/assets copied |
+| JourneyMap | runtime `6.0.7`; API `2.0.0-1.21.1` | compile-only API, client presentation only |
+| MineColonies | `1.1.1376-1.21.1-snapshot` | API/protected-area facts only |
 
-## Current-pack optional integration candidates
+## Mandatory inspected/runtime/reference set
 
-The exact pack baseline is recorded in [`docs/compat/current-pack-2026-08-26.md`](docs/compat/current-pack-2026-08-26.md).
-
-| Target | Pack baseline | Planned role |
-| --- | --- | --- |
-| Ars Nouveau | `5.13.0` | magic-damage/content bridge |
-| Iron's Spells 'n Spellbooks | `3.16.3` | magic-damage/content bridge |
-| Epic Fight | `21.17.3.1` | boss-combat compatibility |
-| Goety | `3.1.4` | necromancy/lore flavour |
-| Malum | `1.8.2` | thematic/spirit compatibility |
-| Eidolon: Repraised | `0.5.0.2` | occult/thematic compatibility |
-| FTB Chunks | `2101.1.21` | claim/protected-area facts |
-| FTB Teams | `2101.1.11` | team/progression-owner facts |
-| JourneyMap | `6.0.5` | optional map presentation |
-| MineColonies | `1.1.1374-1.21.1-snapshot` | protected-area facts |
-| GeckoLib | `4.9.2` | optional animation implementation if explicitly selected |
-
-AmbientSounds and Particular Reforged are presentation neighbours only and are not Enshrouded authorities.
+The ledger also records GeckoLib `4.9.2`, Goety `3.1.4`, Malum `1.8.2`, Eidolon: Repraised `0.5.0.2`, Sculk Horde, The Forest public alpha, Minecraft Dungeons and the commercial Enshrouded game. These entries do not declare copied material.
 
 ## Explicit exclusions
 
-- Spore 2.2.0j
-- Infnexus 2.0.4
+- Spore
+- Infnexus
 
-They may exist in a development pack but no Enshrouded runtime feature, acceptance criterion or compatibility adapter may depend on them.
+Their presence in the development pack does not make either project an Enshrouded provider or source. Production references are rejected by the provenance gate.
+
+## Material reuse convention
+
+When actual source-level material is incorporated, the local source carries:
+
+```text
+// UPSTREAM-DERIVED: provenance-id
+```
+
+and the same provenance id must be a `copied`, `derived` or `vendored` ledger entry mapping that exact local file. Restricted, unknown, `REVIEW_REQUIRED` or `PERMISSION_REQUIRED` material is not mergeable/releasable.
