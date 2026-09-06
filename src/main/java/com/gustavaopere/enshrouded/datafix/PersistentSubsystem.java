@@ -10,7 +10,7 @@ import com.gustavaopere.enshrouded.story.state.StorySchema;
 public enum PersistentSubsystem {
     SHROUD("shroud", ShroudSchema.FIRST_VERSION, ShroudSchema.CURRENT_VERSION),
     EXPOSURE("exposure", ExposureSchema.FIRST_VERSION, ExposureSchema.CURRENT_VERSION),
-    ENTITY_CORRUPTION("entity_corruption", EntityCorruptionSchema.FIRST_VERSION, EntityCorruptionSchema.CURRENT_VERSION),
+    ENTITY_CORRUPTION("entity corruption", EntityCorruptionSchema.FIRST_VERSION, EntityCorruptionSchema.CURRENT_VERSION),
     FLAME_PROGRESSION("flame_progression", FlameProgressionSchema.FIRST_VERSION, FlameProgressionSchema.CURRENT_VERSION),
     STORY("story", StorySchema.FIRST_VERSION, StorySchema.CURRENT_VERSION);
 
