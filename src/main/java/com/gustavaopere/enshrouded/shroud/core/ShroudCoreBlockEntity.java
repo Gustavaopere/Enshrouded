@@ -32,9 +32,21 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level instanceof ServerLevel serverLevel) {
-            enqueueRegistration(serverLevel, autoActivate);
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
         }
+
+        ensureLocalIdentity();
+        ShroudCoreRegistrationQueue.enqueue(
+                serverLevel,
+                worldPosition,
+                coreId,
+                regionId,
+                LEVEL_ONE_TIER,
+                EnshroudedConfig.coreMaxInfluenceRadius(),
+                expansionSeed(coreId),
+                autoActivate
+        );
     }
 
     /**
