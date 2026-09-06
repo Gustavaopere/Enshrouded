@@ -7,7 +7,7 @@ REQUIRED_ROOT = (
     "LICENSE",
     "SOURCES.md",
     "THIRD_PARTY_NOTICES.md",
-    "third-party-provenance.json",
+    "provenance/third-party-provenance.json",
 )
 
 PREREQUISITES = {
