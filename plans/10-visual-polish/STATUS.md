@@ -1,11 +1,11 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.02 TECHNICAL IMPLEMENTATION COMPLETE / PR #83 — FINAL CI REQUIRED BEFORE MERGE / P0 IN-GAME ART REVIEW STILL REQUIRED
+**State:** 10.02 TECHNICAL IMPLEMENTATION COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
 **10.01 closeout PR:** #82 — MERGED
-**10.02 implementation PR:** #83 — `Stage 10.02 — Flame Altar Hero Asset` — OPEN AT THIS CHECKPOINT
+**10.02 implementation PR:** #83 — `Stage 10.02 — Flame Altar Hero Asset` — MERGED as `00edf323936f6559c40f30b354ce57d64db152fe`
 
 ## Planning checkpoint
 
@@ -42,7 +42,7 @@
 - [x] Post-merge Level 1 Release Readiness `34049961298` passed.
 - [x] Post-merge Enshrouded CI `34049961432 / 101531662766` passed the full matrix, including Stage 10 visual-stack contract, NeoForge build, GameTests, two-boot SavedData reload, real Ars Zero 2.0.2 profile and dedicated-server save/reload smoke.
 
-## 10.02 — Flame Altar hero asset — TECHNICAL IMPLEMENTATION COMPLETE
+## 10.02 — Flame Altar hero asset — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
 
 ### Runtime and authority
 
@@ -69,7 +69,10 @@
 - [x] Initial Stage 10.02 RED intentionally failed for missing hero-asset pieces before implementation.
 - [x] Authority/presentation RED commit `93d2a941b558c842af894f9e00ad1e3124d95dda` failed exactly at the Stage 10 visual-stack contract before authoritative trigger wiring existed.
 - [x] Pre-polish implementation HEAD `ffa824256ebb45e06b1c49e4b6412539a23c8996` passed Level 1 Release Readiness and the complete Enshrouded CI matrix including dedicated-server save/reload smoke.
-- [ ] Final PR #83 HEAD must pass both workflows after the material/source/authority hardening before merge.
+- [x] Final PR #83 HEAD `6d55a14d1715bf569c6e2dc73ef472e39003f859` passed Level 1 Release Readiness `34057379811 / 101551634235` and Enshrouded CI `34057379719 / 101551633757`.
+- [x] PR #83 merged to `main` as `00edf323936f6559c40f30b354ce57d64db152fe`.
+- [x] Post-merge Level 1 Release Readiness `34058152231 / 101553745612` passed.
+- [x] Post-merge Enshrouded CI `34058152183 / 101553745486` passed the complete matrix: Stage 10 contract, wrapper provenance, unit tests, performance baselines, diff sanity, NeoForge build, GameTests, two-boot SavedData reload, real Ars Zero 2.0.2 profile and dedicated-server save/reload smoke.
 
 ### Visual/manual acceptance still open
 
