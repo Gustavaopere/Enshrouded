@@ -1,8 +1,8 @@
 # Stage 10 — Art Direction, 3D Assets, Animation, VFX and Visual Polish
 
-**Milestone:** Post-Level-1 visual production pass.  
-**Repository baseline:** Level 1 / Enshrouded 1.0.0 is functionally closed on `main`; this stage must not redesign or bypass the gameplay authority already proven by Stages 00–09.  
-**Stage state:** PLANNED — runtime implementation has not started.  
+**Milestone:** Post-Level-1 visual production pass.
+**Repository baseline:** Level 1 / Enshrouded 1.0.0 is functionally closed on `main`; this stage must not redesign or bypass the gameplay authority already proven by Stages 00–09.
+**Stage state:** PLANNED — runtime implementation has not started.
 **Target platform:** Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
 
 ## 1. Purpose
