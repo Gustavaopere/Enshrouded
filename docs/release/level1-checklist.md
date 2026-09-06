@@ -7,34 +7,42 @@
 - NeoForge 1.21.1 (`21.1.248`).
 - Java 21.
 - License: BSD-2-Clause.
-- Release identity is the exact recorded Git HEAD that passes the implementation PR CI and the independent post-merge `main` CI; Stage 09.04 does not invent an unverified tag.
+- Recorded implementation release checkpoint: `main@47189826fe03cb633d32fd8eb695f275f4aaa96f`.
+- No unverified release tag is invented by this checklist.
 
 ## Prerequisite hardening
 
-The following prerequisite closeouts must already exist and remain green before this checklist can pass:
+All Hardening closeouts are required by the release validator:
 
-- 09.01 — Level 1 test matrix and real Ars Zero co-load.
-- 09.02 — performance budgets/observability.
-- 09.03 — world upgrade and recovery.
-- 09.05 — third-party licenses and provenance.
+- [x] 09.01 — Level 1 test matrix and real Ars Zero co-load.
+- [x] 09.02 — performance budgets/observability.
+- [x] 09.03 — world upgrade and recovery.
+- [x] 09.04 — Level 1 release checklist closeout.
+- [x] 09.05 — third-party licenses and provenance.
 
 ## Automated release gates
 
-The repository release gate must pass all of the following on the exact candidate HEAD:
+The repository release gate passed all of the following on the final implementation HEAD and independently on merged `main`:
 
-- Gradle wrapper provenance and wrapper validation.
-- Third-party provenance contract tests and fail-closed repository provenance validation.
-- Level 1 release-readiness contract tests and fail-closed repository release validation.
-- Unit tests.
-- Performance benchmark baselines.
-- Diff sanity.
-- NeoForge build.
-- Canonical and external GameTest source-set compilation.
-- Production-JAR integrity, including `LICENSE` and `THIRD_PARTY_NOTICES.md`.
-- Standalone canonical GameTests.
-- SavedData two-boot restart/reload GameTests.
-- Isolated real Ars Zero 2.0.2 distribution profile.
-- Dedicated-server save/reload smoke.
+- [x] Gradle wrapper provenance and wrapper validation.
+- [x] Third-party provenance contract tests and fail-closed repository provenance validation.
+- [x] Level 1 release-readiness contract tests and fail-closed repository release validation.
+- [x] Unit tests.
+- [x] Performance benchmark baselines.
+- [x] Diff sanity.
+- [x] NeoForge build.
+- [x] Canonical and external GameTest source-set compilation.
+- [x] Production-JAR integrity, including `LICENSE` and `THIRD_PARTY_NOTICES.md`.
+- [x] Standalone canonical GameTests.
+- [x] SavedData two-boot restart/reload GameTests.
+- [x] Isolated real Ars Zero 2.0.2 distribution profile.
+- [x] Dedicated-server save/reload smoke.
+
+Final implementation HEAD `4c983331d8d9b5310376254fd3e20fad27604fab` passed PR-head `Level 1 Release Readiness` workflow/job `34031623079 / 101482073832` and `Enshrouded CI` workflow/job `34031623105 / 101482073811`.
+
+PR #78 merged as `47189826fe03cb633d32fd8eb695f275f4aaa96f`. Independent push validation on that exact `main` passed `Enshrouded CI` `34033865386 / 101488274386` and `Level 1 Release Readiness` `34033865468 / 101488268597`.
+
+Closeout review then hardened the release contract itself: removing `plans/09-hardening/✅-04-release-checklist.md` must fail. RED evidence is `329ce91ce9d1b116762080fbc39e1091b371079e` with workflow/job `34035071072 / 101491523337`; corrected head `fff7471e16aa95384f37b941ddab16322f5bbcd0` passed `Level 1 Release Readiness` `34035319418 / 101492195887` and full `Enshrouded CI` `34035319414 / 101492222107`.
 
 ## Current-pack profile
 
@@ -46,16 +54,16 @@ The repository does not contain the complete 607-JAR pack distribution, so GitHu
 
 ## Config, language and resources
 
-- No public NeoForge `ModConfigSpec`/`registerConfig` surface exists in the current Level 1 code, so there is no generated Enshrouded config file whose defaults can drift independently. Gameplay defaults remain code/data-owned and regression-tested.
-- `en_us.json` and `pt_br.json` must both parse and have identical key sets.
-- Production resources remain subject to the first-party/third-party binary classification gate from 09.05.
-- The built JAR must contain project license and third-party notices.
+- [x] No public NeoForge `ModConfigSpec`/`registerConfig` surface exists in the current Level 1 code, so there is no generated Enshrouded config file whose defaults can drift independently. Gameplay defaults remain code/data-owned and regression-tested.
+- [x] `en_us.json` and `pt_br.json` parse and have identical key sets under the release validator.
+- [x] Production resources remain subject to the first-party/third-party binary classification gate from 09.05.
+- [x] The built JAR contains project license and third-party notices.
 
 ## Persistence and breaking-change review
 
-- Stage 09.03 is the canonical world-upgrade/recovery contract.
-- Supported v1 persisted stores migrate deterministically to v2; malformed, pre-versioned/unsupported and unknown-future schema states fail closed instead of silently resetting progression.
-- Core/ritual/reward idempotence and SavedData reload behavior remain covered by CI.
+- [x] Stage 09.03 remains the canonical world-upgrade/recovery contract.
+- [x] Supported v1 persisted stores migrate deterministically to v2; malformed, pre-versioned/unsupported and unknown-future schema states fail closed instead of silently resetting progression.
+- [x] Core/ritual/reward idempotence and SavedData reload behavior remain covered by CI.
 - Any future schema or provider-authority change requires a new reviewed migration/release decision rather than silent compatibility assumptions.
 
 ## Optional integrations
@@ -69,9 +77,19 @@ The repository does not contain the complete 607-JAR pack distribution, so GitHu
 
 ## Blockers
 
-- No unresolved P0/P1 release blockers are recorded in `plans/PENDING.md` at this checkpoint.
-- Any unresolved legal/provenance decision, failed release-readiness validation, failed required CI gate, unknown authority regression or unsupported persistence migration blocks public release.
+- [x] No unresolved P0/P1 release blocker is recorded in `plans/PENDING.md`.
+- [x] Review P1 #1 — real Markdown compatibility-table parsing — was corrected and regression-tested before implementation merge.
+- [x] Review P1 #2 — the release validator did not require its own 09.04 closeout — was reproduced RED and corrected so deleting `✅-04-release-checklist.md` fails closed.
+- Any future unresolved legal/provenance decision, failed release-readiness validation, failed required CI gate, unknown authority regression or unsupported persistence migration blocks a later release.
 
 ## Acceptance
 
-Stage 09.04 implementation is mergeable only when both `Enshrouded CI` and `Level 1 Release Readiness` are green on the exact PR HEAD. Final Level 1 closure additionally requires independent green push runs on the exact merged `main`, a documentation closeout, green post-closeout `main`, and canonical Notion synchronization.
+- [x] Stage 09.04 implementation PR-head `Enshrouded CI` is GREEN.
+- [x] Stage 09.04 implementation PR-head `Level 1 Release Readiness` is GREEN.
+- [x] Implementation PR #78 is merged.
+- [x] Independent post-merge `main` `Enshrouded CI` is GREEN.
+- [x] Independent post-merge `main` `Level 1 Release Readiness` is GREEN.
+- [x] Stage 09.04 closeout is now itself a fail-closed prerequisite of the release validator.
+- [x] Stage 09.04 documentation closeout is prepared with the exact evidence above.
+
+With this closeout merged and independently GREEN, Stage 09 is 5/5 and the repository Level 1 milestone is complete. The surrounding full modpack still requires `MANUAL_CURRENT_PACK_SMOKE_REQUIRED` before pack distribution.

@@ -4,9 +4,11 @@ Enshrouded is a standalone **Minecraft 1.21.1 / NeoForge 21.1.248 / Java 21** mo
 
 The design takes inspiration from the survival/exploration structure of the game *Enshrouded*, but this repository does not import proprietary game code, assets, audio or maps. The Minecraft implementation is server-authoritative and remains functional without the optional providers used by the surrounding modpack.
 
-## Level 1 release candidate
+## Level 1 — complete repository milestone
 
-`1.0.0` is the Level 1 release-candidate version. The authoritative implementation ledger is [`plans/STATUS.md`](plans/STATUS.md). At the start of Stage 09.04, Foundation through Stage 08 are complete and Hardening 09.01, 09.02, 09.03 and 09.05 are verified/merged. Stage **09.04 — Release Checklist** is the final Level 1 gate and is not complete until its exact implementation and closeout heads pass the required CI and post-merge validation.
+`1.0.0` is the completed Level 1 repository milestone. Foundation through Stage 08 are complete and **Stage 09 Hardening is 5/5**. The recorded implementation release checkpoint is `main@47189826fe03cb633d32fd8eb695f275f4aaa96f`, independently GREEN in both `Enshrouded CI` and `Level 1 Release Readiness`. The authoritative implementation/evidence ledger is [`plans/STATUS.md`](plans/STATUS.md).
+
+The surrounding 607-mod pack is not vendored in this repository. Before distributing that full modpack, perform the external/manual complete-pack smoke required by [`docs/release/level1-checklist.md`](docs/release/level1-checklist.md); repository CI does not pretend to be a literal 607-JAR boot.
 
 Level 1 includes:
 
@@ -29,7 +31,7 @@ Sanctuary is a protection overlay over the logical field rather than a second Sh
 
 ## Optional integrations — current pack baseline
 
-The current release-candidate profile is [`docs/compat/current-pack-2026-09-06.md`](docs/compat/current-pack-2026-09-06.md), reconciled against the user-supplied 607-entry modlist. Key installed targets include:
+The current release profile is [`docs/compat/current-pack-2026-09-06.md`](docs/compat/current-pack-2026-09-06.md), reconciled against the user-supplied 607-entry modlist. Key installed targets include:
 
 - Ars Nouveau `5.13.1` and Ars Zero `2.0.2`;
 - Iron's Spells `3.16.3`;
@@ -48,7 +50,7 @@ The repository does not vendor all 607 third-party pack JARs. CI therefore does 
 
 Stage 09.03 owns explicit world schema migration/recovery. Supported persisted v1 state migrates deterministically to v2; malformed, unsupported/pre-versioned and unknown-future schemas fail closed rather than silently resetting progression. Core/ritual/reward idempotence and real two-boot reload behavior are covered by CI.
 
-Third-party provenance is machine-enforced through [`provenance/third-party-provenance.json`](provenance/third-party-provenance.json) and [`scripts/verify_third_party_provenance.py`](scripts/verify_third_party_provenance.py). Stage 09.04 adds [`scripts/verify_level1_release.py`](scripts/verify_level1_release.py) and the `Level 1 Release Readiness` workflow so public release acceptance fails closed on missing release evidence or unresolved blockers.
+Third-party provenance is machine-enforced through [`provenance/third-party-provenance.json`](provenance/third-party-provenance.json) and [`scripts/ci/verify_third_party_provenance.py`](scripts/ci/verify_third_party_provenance.py). Stage 09.04 provides [`scripts/verify_level1_release.py`](scripts/verify_level1_release.py) and the `Level 1 Release Readiness` workflow so public release acceptance fails closed on missing release evidence or unresolved blockers.
 
 ## Localization and configuration
 
@@ -59,7 +61,7 @@ Level 1 ships `en_us` and `pt_br` language resources with release-time key-parit
 ```bash
 ./gradlew test
 ./gradlew build
-python3 scripts/verify_third_party_provenance.py
+python3 scripts/ci/verify_third_party_provenance.py
 python3 scripts/verify_level1_release.py
 ```
 
