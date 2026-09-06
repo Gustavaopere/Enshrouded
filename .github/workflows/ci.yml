@@ -57,6 +57,9 @@ jobs:
           grep -Fx 'distributionSha256Sum=61ad310d3c7d3e5da131b76bbf22b5a4c0786e9d892dae8c1658d4b484de3caa' gradle/wrapper/gradle-wrapper.properties
           test -x gradlew
 
+      - name: Third-party provenance contract tests
+        run: python3 -m unittest scripts/ci/test_third_party_provenance.py
+
       - name: Verify Gradle wrapper
         run: ./gradlew --no-daemon --version
 
