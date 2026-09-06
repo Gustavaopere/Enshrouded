@@ -12,10 +12,12 @@ class Level1ReleaseContractTest(unittest.TestCase):
         (root / "plans/09-hardening").mkdir(parents=True)
         (root / "docs/release").mkdir(parents=True)
         (root / "docs/compat").mkdir(parents=True)
+        (root / "provenance").mkdir(parents=True)
         (root / "src/main/resources/assets/enshrouded/lang").mkdir(parents=True)
         (root / "src/main/resources/META-INF").mkdir(parents=True)
-        for name in ("LICENSE", "SOURCES.md", "THIRD_PARTY_NOTICES.md", "third-party-provenance.json"):
+        for name in ("LICENSE", "SOURCES.md", "THIRD_PARTY_NOTICES.md"):
             (root / name).write_text("ok\n", encoding="utf-8")
+        (root / "provenance/third-party-provenance.json").write_text("{}\n", encoding="utf-8")
         for name in ("✅-01-test-matrix.md", "✅-02-performance.md", "✅-03-world-upgrade.md", "✅-05-third-party-licenses-provenance.md"):
             (root / "plans/09-hardening" / name).write_text("closed\n", encoding="utf-8")
         (root / "docs/release/level1-checklist.md").write_text(
