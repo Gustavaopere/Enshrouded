@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.shroud.state;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentDataValidation;
 import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
 import com.gustavaopere.enshrouded.datafix.UnsupportedPersistentSchemaException;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
@@ -52,8 +53,18 @@ public final class ShroudStateCodec {
             throw new UnsupportedShroudSchemaException(failure.schemaVersion());
         }
 
-        Map<UUID, ShroudCoreState> cores = decodeCores(current.getList("cores", CompoundTag.TAG_COMPOUND));
-        Map<UUID, ShroudRegionState> regions = decodeRegions(current.getList("regions", CompoundTag.TAG_COMPOUND));
+        Map<UUID, ShroudCoreState> cores = decodeCores(PersistentDataValidation.requireList(
+                current,
+                "cores",
+                CompoundTag.TAG_COMPOUND,
+                PersistentSubsystem.SHROUD
+        ));
+        Map<UUID, ShroudRegionState> regions = decodeRegions(PersistentDataValidation.requireList(
+                current,
+                "regions",
+                CompoundTag.TAG_COMPOUND,
+                PersistentSubsystem.SHROUD
+        ));
         return new ShroudWorldState(ShroudSchema.CURRENT_VERSION, cores, regions);
     }
 
@@ -117,7 +128,12 @@ public final class ShroudStateCodec {
             CompoundTag tag = list.getCompound(index);
             UUID id = parseUuid(tag.getString("id"), "region id");
             UUID coreId = parseUuid(tag.getString("core_id"), "region core id");
-            Map<ShroudCellPos, ShroudCellState> cells = decodeCells(tag.getList("cells", CompoundTag.TAG_COMPOUND));
+            Map<ShroudCellPos, ShroudCellState> cells = decodeCells(PersistentDataValidation.requireList(
+                    tag,
+                    "cells",
+                    CompoundTag.TAG_COMPOUND,
+                    PersistentSubsystem.SHROUD
+            ));
             ShroudRegionState state = new ShroudRegionState(id, coreId, cells);
             if (result.put(id, state) != null) {
                 throw new IllegalArgumentException("duplicate region id: " + id);
