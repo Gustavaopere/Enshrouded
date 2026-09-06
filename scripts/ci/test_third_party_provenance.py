@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import copy
+import json
 import sys
 import tempfile
 import unittest
@@ -7,7 +8,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from verify_third_party_provenance import validate_manifest_document, validate_repository
+from verify_third_party_provenance import (
+    load_manifest,
+    validate_manifest_document,
+    validate_repository,
+)
 
 
 BASE_ENTRY = {
@@ -23,15 +28,27 @@ BASE_ENTRY = {
     },
     "usage_kind": "runtime_provided",
     "files": [],
+    "integration_paths": [],
     "notice_required": True,
     "notes": "Runtime-provided only; no source or assets are redistributed."
 }
 
 
 def manifest_with(entry):
+    required_entries = []
+    for required_id in (
+        "endnight-the-forest-alpha", "minecraft-dungeons", "enshrouded-game",
+        "epic-fight", "ftb-chunks", "ftb-teams", "journeymap", "minecolonies",
+        "geckolib", "ars-nouveau", "ars-zero", "irons-spellbooks", "goety",
+        "malum", "eidolon-repraised",
+    ):
+        required = copy.deepcopy(BASE_ENTRY)
+        required["id"] = required_id
+        required["name"] = required_id
+        required_entries.append(required)
     return {
         "schema_version": 1,
-        "entries": [entry],
+        "entries": required_entries + [entry],
         "excluded_provider_ids": ["spore", "infnexus"]
     }
 
@@ -104,6 +121,12 @@ class ProvenanceRepositoryContractTests(unittest.TestCase):
             entry["files"] = ["src/main/resources/assets/example/registered.json"]
             errors = validate_repository(root, manifest_with(entry))
             self.assertFalse(any("registered.json" in error and "unregistered" in error.lower() for error in errors), errors)
+
+    def test_actual_repository_ledger_passes(self):
+        root = Path(__file__).resolve().parents[2]
+        document = load_manifest(root / "provenance/third-party-provenance.json")
+        errors = validate_manifest_document(document) + validate_repository(root, document)
+        self.assertEqual([], errors)
 
 
 if __name__ == "__main__":
