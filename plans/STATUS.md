@@ -170,11 +170,13 @@ Stage 09.05 establishes a machine-readable provenance ledger and makes release a
 - Independent post-merge Enshrouded CI workflow/job: `34033865386` / `101488274386` — `completed/success` across the complete runtime/build gate set.
 - Independent post-merge Level 1 Release Readiness workflow/job: `34033865468` / `101488268597` — `completed/success` across provenance and release-readiness contracts.
 - Completed file: `✅-04-release-checklist.md`.
-- Automated review: one P1 for compatibility-table parsing; corrected by validating provider name/version on the same logical line and using a real Markdown-table fixture before final GREEN.
+- Automated review P1 #1: compatibility-table parsing was corrected by validating provider name/version on the same logical line and using a real Markdown-table fixture before implementation merge.
+- Closeout review P1 #2: the release validator originally did not require its own `✅-04-release-checklist.md`; RED head `329ce91ce9d1b116762080fbc39e1091b371079e` failed workflow/job `34035071072` / `101491523337`, then corrected head `fff7471e16aa95384f37b941ddab16322f5bbcd0` passed release-readiness `34035319418` / `101492195887` and full CI `34035319414` / `101492222107`.
+- Documentation closeout PR: #79 — `Stage 09.04 — Close Level 1 release checkpoint`.
 - No public NeoForge `ModConfigSpec`/`registerConfig` surface exists in the current Level 1 implementation.
 - New cross-stage pending contracts: none.
 
-Stage 09.04 establishes Enshrouded `1.0.0` release metadata, an independent fail-closed release-readiness workflow, final release/checklist notes, language-key parity validation and the current 607-entry compatibility profile. It does not claim a literal 607-JAR CI boot because the complete pack distribution is not stored in the repository. `MANUAL_CURRENT_PACK_SMOKE_REQUIRED` remains an explicit external distribution gate before shipping the surrounding modpack.
+Stage 09.04 establishes Enshrouded `1.0.0` release metadata, an independent fail-closed release-readiness workflow, final release/checklist notes, language-key parity validation and the current 607-entry compatibility profile. The final release validator requires all five Hardening closeouts, including 09.04 itself. It does not claim a literal 607-JAR CI boot because the complete pack distribution is not stored in the repository. `MANUAL_CURRENT_PACK_SMOKE_REQUIRED` remains an explicit external distribution gate before shipping the surrounding modpack.
 
 ## Open cross-stage contracts
 
@@ -186,7 +188,7 @@ There is no remaining Level-1-required implementation task. Do **not** start a f
 
 ## Level 1 release gate
 
-The **repository Level 1 milestone is complete at the implementation checkpoint** `main@47189826fe03cb633d32fd8eb695f275f4aaa96f`, with both independent post-merge workflows GREEN. This documentation checkpoint marks Stage 09 as 5/5; after it is merged and independently GREEN, the repository closeout is final.
+The **repository Level 1 milestone is complete at the implementation checkpoint** `main@47189826fe03cb633d32fd8eb695f275f4aaa96f`, with both independent post-merge workflows GREEN. This documentation checkpoint marks Stage 09 as 5/5; after PR #79 is merged and the exact resulting `main` passes both workflows independently, the repository closeout is final.
 
 The surrounding 607-mod pack still requires the explicitly documented external/manual full-pack smoke before modpack distribution. That distribution smoke is not represented as completed GitHub Actions evidence.
 
