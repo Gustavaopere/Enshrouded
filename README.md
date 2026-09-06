@@ -50,7 +50,7 @@ The repository does not vendor all 607 third-party pack JARs. CI therefore does 
 
 Stage 09.03 owns explicit world schema migration/recovery. Supported persisted v1 state migrates deterministically to v2; malformed, unsupported/pre-versioned and unknown-future schemas fail closed rather than silently resetting progression. Core/ritual/reward idempotence and real two-boot reload behavior are covered by CI.
 
-Third-party provenance is machine-enforced through [`provenance/third-party-provenance.json`](provenance/third-party-provenance.json) and [`scripts/verify_third_party_provenance.py`](scripts/verify_third_party_provenance.py). Stage 09.04 provides [`scripts/verify_level1_release.py`](scripts/verify_level1_release.py) and the `Level 1 Release Readiness` workflow so public release acceptance fails closed on missing release evidence or unresolved blockers.
+Third-party provenance is machine-enforced through [`provenance/third-party-provenance.json`](provenance/third-party-provenance.json) and [`scripts/ci/verify_third_party_provenance.py`](scripts/ci/verify_third_party_provenance.py). Stage 09.04 provides [`scripts/verify_level1_release.py`](scripts/verify_level1_release.py) and the `Level 1 Release Readiness` workflow so public release acceptance fails closed on missing release evidence or unresolved blockers.
 
 ## Localization and configuration
 
@@ -61,7 +61,7 @@ Level 1 ships `en_us` and `pt_br` language resources with release-time key-parit
 ```bash
 ./gradlew test
 ./gradlew build
-python3 scripts/verify_third_party_provenance.py
+python3 scripts/ci/verify_third_party_provenance.py
 python3 scripts/verify_level1_release.py
 ```
 
