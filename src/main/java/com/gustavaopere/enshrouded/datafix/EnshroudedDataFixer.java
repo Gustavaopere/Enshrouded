@@ -76,6 +76,7 @@ public final class EnshroudedDataFixer {
         EnumMap<PersistentSubsystem, Map<Integer, MigrationStep>> bySubsystem =
                 new EnumMap<>(PersistentSubsystem.class);
         register(bySubsystem, PersistentSubsystem.SHROUD, 1, 2, EnshroudedDataFixer::versionBumpToTwo);
+        register(bySubsystem, PersistentSubsystem.SHROUD_DISCOVERY, 1, 2, EnshroudedDataFixer::versionBumpToTwo);
         register(bySubsystem, PersistentSubsystem.EXPOSURE, 1, 2, EnshroudedDataFixer::versionBumpToTwo);
         register(bySubsystem, PersistentSubsystem.ENTITY_CORRUPTION, 1, 2, EnshroudedDataFixer::versionBumpToTwo);
         register(bySubsystem, PersistentSubsystem.FLAME_PROGRESSION, 1, 2, EnshroudedDataFixer::flameOneToTwo);
