@@ -2,107 +2,78 @@
 
 Enshrouded is a standalone **Minecraft 1.21.1 / NeoForge 21.1.248 / Java 21** mod centered on an expanding magical **Shroud**: persistent corruption regions, reversible terrain infestation, timed exposure and Madness, corrupted ecology, Flame-based progression and a recurring Lich storyline.
 
-The design takes inspiration from the survival/exploration structure of the game *Enshrouded*, but this repository does not import proprietary game code, assets, audio or maps. The Minecraft implementation is server-authoritative and designed to function without the optional magic/content mods used by the surrounding modpack.
+The design takes inspiration from the survival/exploration structure of the game *Enshrouded*, but this repository does not import proprietary game code, assets, audio or maps. The Minecraft implementation is server-authoritative and remains functional without the optional providers used by the surrounding modpack.
 
-## Current implementation on `main`
+## Level 1 release candidate
 
-The implementation ledger lives in [`plans/STATUS.md`](plans/STATUS.md); source/tests and merged PR evidence remain authoritative when that ledger is between closeout updates. At this repository checkpoint:
+`1.0.0` is the Level 1 release-candidate version. The authoritative implementation ledger is [`plans/STATUS.md`](plans/STATUS.md). At the start of Stage 09.04, Foundation through Stage 08 are complete and Hardening 09.01, 09.02, 09.03 and 09.05 are verified/merged. Stage **09.04 — Release Checklist** is the final Level 1 gate and is not complete until its exact implementation and closeout heads pass the required CI and post-merge validation.
 
-- **00 Foundation — complete.** Build/CI, persistence/networking contracts, test infrastructure and provenance rules.
-- **01 Shroud Field — complete.** Persistent per-dimension Shroud state, core lifecycle, bounded frontier expansion, indexed querying/sync and deterministic new-terrain core seeding.
-- **02 Terrain Corruption — complete.** Fail-closed mutation authority, bounded/reversible materialization, corruption growths and purification/regression.
-- **03 Exposure — complete.** Server-owned exposure reserve/timer, Madness, Deadly Shroud progression barrier and Red Sludge hazard.
-- **04 Corrupted Ecology — complete.** Persistent creature corruption, hostility/buffs, magic-resistance classification and reversible visual/drop behavior.
-- **05 Flame Progression — complete (4/4).** Persistent Flame state, provider-neutral ritual execution, Flame Altar and Sanctuary are canonical.
-- **06 Lich & Story — active (1/4 canonical).** Persistent owner-scoped Story State is merged; boss-provider integration, first manifestation and Lich Skull/reward binding remain.
-- **07 Client Experience — planned.** HUD, fog, sound/particles and accessibility controls driven only by synchronized server state.
-- **08 Optional Integrations — planned.** Ars Zero, Ars Nouveau, Iron's, Epic Fight, claims/teams, JourneyMap and necromancy-flavour providers.
-- **09 Hardening — planned.** Full test matrix, performance, world upgrades and release/provenance closure.
+Level 1 includes:
 
-Because implementation branches may advance while this README is being read, inspect the latest merged source/tests and `plans/STATUS.md` before starting new work.
+- persistent bounded Shroud fields and deterministic core lifecycle;
+- reversible terrain corruption behind `MutationAuthority`;
+- server-authoritative Exposure, Madness, Deadly/Red Shroud and Red Sludge;
+- persistent corrupted ecology and canonical magic-resistance reduction;
+- owner-scoped Flame progression, Flame Altar, Sanctuary and ritual progression;
+- persistent recurring Lich story/manifestation/reward contracts with exactly-once reward semantics;
+- synchronized HUD, fog, audio/particles and accessibility presentation;
+- optional Ars Zero, Ars Nouveau, Iron's Spells, Epic Fight, FTB Teams, FTB Chunks, MineColonies and JourneyMap boundaries;
+- intentional Level 1 no-op/flavour boundaries for Goety, Malum and Eidolon: Repraised;
+- migration/recovery, performance, provenance and release-readiness hardening.
 
-## Level 1 gameplay model
+## Gameplay and authority model
 
-### Shroud cores and persistent regions
+Shroud state, Exposure, Flame progression, Story/rewards and terrain mutation are server authoritative. Logical Shroud state persists independently of chunk load state and expands through bounded work without global world scans or chunk forcing. Loaded terrain materialization/purification is reversible and passes through fail-closed mutation/protection decisions.
 
-Shroud cores own persistent logical regions. The logical field exists independently of chunk load state, is scoped per dimension and expands through bounded deterministic frontier work. Enshrouded does not scan or force-load the entire world merely to advance corruption.
+Sanctuary is a protection overlay over the logical field rather than a second Shroud authority. Optional providers may supply bounded facts, classification or presentation bodies; they do not silently acquire Enshrouded progression/state authority.
 
-Destroying a core stops expansion and starts regression/purification. Visual leftovers never become the source of truth for Shroud state.
+## Optional integrations — current pack baseline
 
-### Reversible terrain corruption
+The current release-candidate profile is [`docs/compat/current-pack-2026-09-06.md`](docs/compat/current-pack-2026-09-06.md), reconciled against the user-supplied 607-entry modlist. Key installed targets include:
 
-Loaded terrain can materialize the logical Shroud through data-driven corruption rules and native growths under strict world-mutation budgets. Unknown/protected/player-modified blocks fail closed rather than being overwritten blindly.
+- Ars Nouveau `5.13.1` and Ars Zero `2.0.2`;
+- Iron's Spells `3.16.3`;
+- Epic Fight `21.17.3.1`;
+- FTB Chunks `2101.1.22` and FTB Teams `2101.1.11`;
+- JourneyMap `6.0.7`;
+- MineColonies `1.1.1376`;
+- Goety `3.1.4`, Malum `1.8.2`, Eidolon: Repraised `0.5.0.2`;
+- GeckoLib `4.9.2` as an audited compatibility/reference target.
 
-Every destructive mutation routes through a shared `MutationAuthority`, allowing Sanctuary, claims and other protection providers to converge on one safety boundary. Purification is independently bounded and does not resurrect Shroud state from visual remnants.
+**Spore and Infnexus are not supported Enshrouded integrations.** Their presence in a development pack is not a source/provider grant.
 
-### Exposure, Madness and Deadly Shroud
+The repository does not vendor all 607 third-party pack JARs. CI therefore does not claim a literal complete-pack boot; the required external/manual distribution smoke is documented in [`docs/release/level1-checklist.md`](docs/release/level1-checklist.md).
 
-Players inside ordinary Shroud consume a server-authoritative exposure reserve. When that reserve is exhausted, Madness produces the lethal outcome. Client HUD/effects may communicate the state but never decide remaining time or death.
+## Persistence and release safety
 
-Deadly/Red Shroud is a progression barrier controlled through the Flame Passage contract rather than a simple fixed-damage zone. **Red Sludge** is a concentrated lethal hazard associated with the Deadly Shroud rules.
+Stage 09.03 owns explicit world schema migration/recovery. Supported persisted v1 state migrates deterministically to v2; malformed, unsupported/pre-versioned and unknown-future schemas fail closed rather than silently resetting progression. Core/ritual/reward idempotence and real two-boot reload behavior are covered by CI.
 
-### Corrupted ecology
+Third-party provenance is machine-enforced through [`provenance/third-party-provenance.json`](provenance/third-party-provenance.json) and [`scripts/verify_third_party_provenance.py`](scripts/verify_third_party_provenance.py). Stage 09.04 adds [`scripts/verify_level1_release.py`](scripts/verify_level1_release.py) and the `Level 1 Release Readiness` workflow so public release acceptance fails closed on missing release evidence or unresolved blockers.
 
-Living entities can become persistently corrupted while preserving their original identity where possible. Corruption can turn normally passive creatures hostile, strengthen corrupted hostiles, apply configurable magic-resistance behavior while retaining physical counterplay, and expose reversible presentation without blindly rewriting third-party AI internals.
+## Localization and configuration
 
-### Flame progression and Sanctuary
+Level 1 ships `en_us` and `pt_br` language resources with release-time key-parity validation. The current Level 1 code does not export a NeoForge `ModConfigSpec` surface; gameplay defaults remain code/data-owned and regression-tested.
 
-Flame progression is owner-scoped and persists independently of altar block survival. A provider-neutral ritual engine validates and executes progression rituals; the **Flame Altar** is the physical interaction/UI adapter over that engine.
-
-**Sanctuary is implemented and canonical.** Altar-backed wards are indexed per dimension, activate without global altar scans, reconstruct through normal block-entity lifecycle, and suppress effective Shroud danger without erasing the underlying logical field. The same ward boundary feeds exposure and central mutation safety: corruption/core placement are vetoed inside Sanctuary while safe purification can proceed when all other protection rules permit it.
-
-### Recurring Lich story
-
-The first Stage 06 contract is implemented: Enshrouded owns a persistent, owner-scoped Story State with stable encounter identity, one-way encounter transitions, idempotent defeat/reward bookkeeping and restart reconciliation. A physical boss entity UUID is runtime presence, not narrative identity.
-
-The remaining Level 1 Lich work adds the optional boss-provider body, first manifestation encounter behavior and the unique Lich Skull reward/Flame ritual binding. An external mod may provide the physical Lich entity body, but Enshrouded remains authority for encounter identity, story state, progression and rewards.
-
-### Client presentation — roadmap
-
-The planned client layer includes a clear exposure HUD, severity-aware fog/rendering, audio and particles, plus accessibility/performance presets. All presentation consumes synchronized server facts. Client configuration cannot weaken server-authoritative survival rules.
-
-## Optional integrations
-
-The standalone core cannot depend on these providers. Adapters must be isolated and fail safely if an installed version changes or disappears.
-
-- **Ars Zero 2.0.2:** preferred optional Lich manifestation body for the current pack; never story/progression authority.
-- **Ars Nouveau 5.13.0 / Iron's Spells 'n Spellbooks 3.16.3:** optional magic classification/content bridges.
-- **Epic Fight 21.17.3.1:** optional boss-combat compatibility.
-- **FTB Chunks / FTB Teams / MineColonies:** optional protection/ownership facts behind provider-neutral Enshrouded contracts.
-- **JourneyMap 6.0.5:** optional presentation only; never authoritative Shroud storage.
-- **Goety / Malum / Eidolon: Repraised:** optional future necromancy/thematic bridges, not Shroud authorities.
-- **GeckoLib:** possible animation implementation option only if explicitly selected later.
-
-**Spore** and **Infnexus** are explicitly excluded from the architecture. Enshrouded is intended to replace their infestation role in this pack rather than depend on them.
-
-## Engineering invariants
-
-- Server authority for Shroud, exposure, Flame, rewards and terrain mutation.
-- No global loaded-chunk scan every tick.
-- No chunk force-loading just to spread/purify the Shroud.
-- Versioned persistent data and migration-aware world state.
-- Bounded mutation/scheduler work.
-- Optional integrations behind Enshrouded-owned interfaces.
-- Fail-closed behavior for unknown protection/provider/API states.
-- Dedicated-server/GameTest verification for world, persistence and networking behavior before task completion.
-
-## Build
+## Build and verification
 
 ```bash
 ./gradlew test
 ./gradlew build
+python3 scripts/verify_third_party_provenance.py
+python3 scripts/verify_level1_release.py
 ```
 
-The project uses Java 21. CI also exercises the applicable NeoForge GameTests, production-JAR checks and dedicated-server save/reload smoke gates.
+`Enshrouded CI` covers wrapper provenance, unit tests, performance baselines, NeoForge build, JAR integrity, canonical GameTests, SavedData two-boot reload, an isolated real Ars Zero 2.0.2 profile and dedicated-server save/reload. `Level 1 Release Readiness` independently enforces provenance plus the final release contract.
 
-## Plans and project memory
+## Release documents
 
-The full Level 1 design and implementation sequence live in [`plans/`](plans/README.md). New implementation work should read `plans/README.md`, `plans/STATUS.md`, `plans/DECISIONS.md`, `plans/PENDING.md`, then the active stage/task files. Deliberately deferred progression beyond Level 1 is recorded in [`plans/FUTURE-LEVELS.md`](plans/FUTURE-LEVELS.md).
+- [`docs/release/level1-checklist.md`](docs/release/level1-checklist.md)
+- [`docs/release/level1-release-notes.md`](docs/release/level1-release-notes.md)
+- [`plans/STATUS.md`](plans/STATUS.md)
+- [`plans/PENDING.md`](plans/PENDING.md)
 
 ## License and provenance
 
-Enshrouded is licensed under the **BSD 2-Clause License**; see [`LICENSE`](LICENSE).
+Enshrouded is licensed under the **BSD 2-Clause License**; see [`LICENSE`](LICENSE). Third-party dependencies/references are indexed in [`SOURCES.md`](SOURCES.md) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). `LICENSE` and third-party notices are packaged in the production JAR.
 
-Third-party dependencies and references are indexed in [`SOURCES.md`](SOURCES.md) and governed by [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). The build packages the project license and third-party notices into the distributed JAR.
-
-A gameplay idea, compatibility target or inspected external project is not permission to copy its code/assets. Any substantial source/asset derivation must be tied to an exact upstream revision, local files and applicable license/permission before release.
+A gameplay idea, compatibility target or installed/inspected project is not permission to copy its code or assets. Actual source/asset reuse must be tied to an exact approved provenance record before release.
