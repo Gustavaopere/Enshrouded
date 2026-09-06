@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -20,6 +21,11 @@ import org.jetbrains.annotations.Nullable;
 public final class FlameAltarBlock extends Block implements EntityBlock {
     public FlameAltarBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
@@ -44,8 +50,6 @@ public final class FlameAltarBlock extends Block implements EntityBlock {
             ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level instanceof ServerLevel serverLevel) {
-            // onPlace is the immediate authority. This idempotent refresh also covers custom
-            // placement paths that may replace the same Flame Altar block state in-place.
             FlameWardRuntime.onAltarLoaded(serverLevel, pos);
         }
     }
