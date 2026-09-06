@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.03 TECHNICALLY COMPLETE / MERGED / POST-MERGE CI GREEN / RELEASE READINESS RECHECK PENDING / P0 IN-GAME ART REVIEW STILL REQUIRED
+**State:** 10.03 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -8,6 +8,7 @@
 **10.02 implementation PR:** #83 — `Stage 10.02 — Flame Altar Hero Asset` — MERGED as `00edf323936f6559c40f30b354ce57d64db152fe`
 **10.02 closeout PR:** #84 — MERGED; final verified baseline before 10.03: `main@ccd003cec3cee5e652729fe9225d61ed5f08b54e`
 **10.03 implementation PR:** #85 — `Stage 10.03 — Shroud Core Hero Asset` — MERGED as `aa3f96eaa387c49c286d0cf8978554fbd56067c5`
+**10.03 closeout PR:** #86 — records final technical/post-merge verification only; no runtime changes.
 
 ## Planning checkpoint
 
@@ -83,7 +84,7 @@
 - [ ] Full 607-mod-pack visual smoke remains an external/manual gate because the complete pack is not vendored into CI.
 - [ ] Technical merge does **not** waive the later 3×3/5×5 multiblock formation requirement.
 
-## 10.03 — Shroud Core hero asset — TECHNICALLY COMPLETE / MERGED / RELEASE READINESS RECHECK PENDING
+## 10.03 — Shroud Core hero asset — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
 
 ### TDD and authority
 
@@ -112,7 +113,7 @@
 - [x] Final PR #85 HEAD passed the full Enshrouded CI matrix in `34065429077 / 101573262686`, including provenance, unit/contract tests, NeoForge build, GameTests, two-boot reload, real Ars Zero profile and dedicated-server smoke.
 - [x] PR #85 merged to `main` as `aa3f96eaa387c49c286d0cf8978554fbd56067c5`.
 - [x] Post-merge Enshrouded CI `34065822861 / 101574272097` passed the complete matrix on `main@aa3f96eaa387c49c286d0cf8978554fbd56067c5`.
-- [ ] Post-merge Level 1 Release Readiness `34065822757` is still queued; do not mark 10.03 POST-MERGE VERIFIED until it closes `success`.
+- [x] Post-merge Level 1 Release Readiness `34065822757 / 101574271832` passed on the same `main@aa3f96eaa387c49c286d0cf8978554fbd56067c5` baseline.
 - [ ] P0 **ART APPROVED** still requires in-game screenshots for Ordinary and Deadly at realistic FOV/distance, reduced-effects readability and external full 607-mod-pack visual smoke.
 
 ## Multiblock boundary carried forward
