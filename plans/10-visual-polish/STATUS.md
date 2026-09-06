@@ -1,9 +1,9 @@
 # Stage 10 — Visual Polish Status
 
-**State:** PLANNING COMPLETE / PR OPEN / IMPLEMENTATION NOT STARTED
+**State:** 10.01 IMPLEMENTATION IN PROGRESS
 
-**Branch:** `plan/stage-10-visual-direction`
-**Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish`
+**Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
+**Implementation branch:** `feat/10-01-visual-stack`
 
 ## Planning checkpoint
 
@@ -27,8 +27,22 @@
 - [x] Manual full 607-mod pack smoke retained as an external release gate.
 - [x] Canonical implementation sequence 10.01 → 10.10 defined.
 
-## Deliberate stop
+## 10.01 — Visual Bible + dependency ADR
 
-This PR is planning/documentation only. It introduces no Stage 10 runtime Java, production 3D models, production textures or dependency changes.
+- [x] Reconciled implementation start against current 607-mod pack and Notion Enshrouded dossier.
+- [x] Promoted GeckoLib `4.9.2` from compatibility-fixture-only usage to the Enshrouded primary production animation runtime.
+- [x] Declared GeckoLib as a required external NeoForge dependency with accepted range `[4.9.2,5.0.0)`; it is not shaded into the Enshrouded JAR.
+- [x] Reused the same version property for the Ars Zero real-distribution fixture to prevent dependency drift.
+- [x] Kept Fusion soft/optional: no compile/runtime dependency and no gameplay authority.
+- [x] Added CI contract tests for GeckoLib versioning, metadata, external provenance and Fusion softness.
+- [ ] PR CI green.
+- [ ] Merge to `main` and post-merge CI green.
 
-Do **not** begin Stage 10 implementation automatically. Wait for explicit user instruction.
+## Hard boundaries carried into implementation
+
+- GeckoLib receives presentation state only; animation completion never mutates gameplay authority.
+- AzureLib remains intentionally unused by Enshrouded unless a future ADR replaces the current decision.
+- Fusion may improve environmental materials only when a valid base/fallback resource path exists.
+- Lodestone, OctoLib and Player Animator remain task-gated rather than automatic dependencies.
+- Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
+- Manual full 607-mod pack smoke remains an external release gate before distribution.
