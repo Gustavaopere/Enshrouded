@@ -15,6 +15,7 @@ PREREQUISITES = {
     "09.01": "plans/09-hardening/✅-01-test-matrix.md",
     "09.02": "plans/09-hardening/✅-02-performance.md",
     "09.03": "plans/09-hardening/✅-03-world-upgrade.md",
+    "09.04": "plans/09-hardening/✅-04-release-checklist.md",
     "09.05": "plans/09-hardening/✅-05-third-party-licenses-provenance.md",
 }
 
