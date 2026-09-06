@@ -97,7 +97,7 @@ public final class WorldUpgradeGameTests {
 
     private static CompoundTag legacyShroud() {
         CompoundTag root = new CompoundTag();
-        root.putInt("schema_version", 0);
+        root.putInt("schema_version", 1);
 
         CompoundTag core = new CompoundTag();
         core.putString("id", CORE_ID.toString());
@@ -135,14 +135,14 @@ public final class WorldUpgradeGameTests {
 
     private static CompoundTag legacyExposure() {
         CompoundTag tag = new CompoundTag();
-        tag.putInt("schema_version", 0);
+        tag.putInt("schema_version", 1);
         tag.putInt("remaining_ticks", 4321);
         return tag;
     }
 
     private static CompoundTag legacyEntityCorruption() {
         CompoundTag tag = new CompoundTag();
-        tag.putInt("schema_version", 0);
+        tag.putInt("schema_version", 1);
         tag.putFloat("intensity", 0.625F);
         return tag;
     }
@@ -165,7 +165,7 @@ public final class WorldUpgradeGameTests {
 
     private static CompoundTag legacyStory() {
         CompoundTag root = new CompoundTag();
-        root.putInt("schema_version", 0);
+        root.putInt("schema_version", 1);
         String ownerKey = ProgressionOwner.player(OWNER_ID).stableKey();
 
         CompoundTag manifestation = new CompoundTag();
