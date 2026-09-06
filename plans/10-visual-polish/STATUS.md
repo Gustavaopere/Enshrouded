@@ -2,7 +2,7 @@
 
 **State:** PLANNING COMPLETE / PR OPEN / IMPLEMENTATION NOT STARTED
 
-**Branch:** `plan/stage-10-visual-direction`  
+**Branch:** `plan/stage-10-visual-direction`
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish`
 
 ## Planning checkpoint
