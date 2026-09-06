@@ -1,6 +1,9 @@
 package com.gustavaopere.enshrouded.story.state;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
+import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
+import com.gustavaopere.enshrouded.datafix.UnsupportedPersistentSchemaException;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
@@ -38,11 +41,15 @@ public final class StoryCodec {
     }
 
     public static LichStoryState decode(CompoundTag root) {
-        int schemaVersion = root.getInt("schema_version");
-        StorySchema.requireSupported(schemaVersion);
+        CompoundTag current;
+        try {
+            current = EnshroudedDataFixer.migrate(PersistentSubsystem.STORY, root);
+        } catch (UnsupportedPersistentSchemaException failure) {
+            throw new UnsupportedStorySchemaException(failure.schemaVersion());
+        }
 
         LinkedHashMap<ProgressionOwner, ManifestationRecord> manifestations = new LinkedHashMap<>();
-        ListTag encodedManifestations = root.getList("manifestations", CompoundTag.TAG_COMPOUND);
+        ListTag encodedManifestations = current.getList("manifestations", CompoundTag.TAG_COMPOUND);
         for (int index = 0; index < encodedManifestations.size(); index++) {
             CompoundTag tag = encodedManifestations.getCompound(index);
             ProgressionOwner owner = parseOwner(tag.getString("owner"));
@@ -57,7 +64,7 @@ public final class StoryCodec {
         }
 
         LinkedHashMap<UUID, EncounterRecord> encounters = new LinkedHashMap<>();
-        ListTag encodedEncounters = root.getList("encounters", CompoundTag.TAG_COMPOUND);
+        ListTag encodedEncounters = current.getList("encounters", CompoundTag.TAG_COMPOUND);
         for (int index = 0; index < encodedEncounters.size(); index++) {
             EncounterRecord record = decodeEncounter(encodedEncounters.getCompound(index));
             if (encounters.put(record.encounterId(), record) != null) {
