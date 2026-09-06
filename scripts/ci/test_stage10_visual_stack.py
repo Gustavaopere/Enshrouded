@@ -115,6 +115,19 @@ class Stage10VisualStackContractTests(unittest.TestCase):
         self.assertEqual("Flame Altar", source["name"])
         self.assertEqual("geometry.flame_altar", source["model_identifier"])
 
+    def test_flame_altar_presentation_is_downstream_of_authoritative_result(self):
+        menu = (ROOT / "src/main/java/com/gustavaopere/enshrouded/flame/altar/FlameAltarMenu.java").read_text(encoding="utf-8")
+        block_entity = (ROOT / "src/main/java/com/gustavaopere/enshrouded/flame/altar/FlameAltarBlockEntity.java").read_text(encoding="utf-8")
+
+        self.assertIn("int flameLevelBefore = flameLevel();", menu)
+        self.assertIn("result.status() == FlameAltarService.Status.APPLIED", menu)
+        self.assertIn("altar.triggerAuthoritativePresentation(flameLevel() > flameLevelBefore);", menu)
+        self.assertIn("void triggerAuthoritativePresentation(boolean levelTransition)", block_entity)
+        self.assertIn(
+            'triggerAnim("flame_altar", levelTransition ? "level_transition" : "ritual_success")',
+            block_entity,
+        )
+
     def test_flame_altar_no_longer_uses_vanilla_placeholder_model(self):
         block_model = (ROOT / "src/main/resources/assets/enshrouded/models/block/flame_altar.json").read_text(encoding="utf-8")
         item_model = (ROOT / "src/main/resources/assets/enshrouded/models/item/flame_altar.json").read_text(encoding="utf-8")
