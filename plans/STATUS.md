@@ -16,7 +16,7 @@ The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HIS
 - [x] 06 Lich & Story — 4/4 verified and merged.
 - [x] 07 Client Experience — 4/4 verified and merged.
 - [x] 08 Integrations — 5/5 reviewed, verified and merged.
-- [ ] 09 Hardening — 2/5 verified and merged.
+- [ ] 09 Hardening — 3/5 verified and merged.
 
 ## 08 Integrations — complete
 
@@ -127,17 +127,32 @@ Stage 09.01 provides the canonical standalone Level-1 vertical scenario, real tw
 
 Stage 09.02 adds passive observability plus explicit bounded-work evidence without creating a second gameplay authority. Logical Shroud expansion is capped globally and per core; entity-corruption sampling is UUID-staggered and globally admitted before canonical queries; materialization/restoration remain loaded-chunk-only and bounded; networking/client effects remain rate/sample capped. The committed Level-1 baseline stresses 1/10/50-core scheduler loads, entity reducer work and representative persistence, while timing observations remain explicitly non-portable and are not production TPS/MSPT guarantees. The only automated review P2 — paired performance counters splitting across drain windows — was corrected in final HEAD `224fe45b...` and protected by regression coverage before merge.
 
+### ✅ 03 World upgrade and recovery
+
+- Implementation branch: `feat/09-world-upgrade`.
+- Final implementation HEAD: `aec0f6ad227642c096478c77343cf79efed7f88a`.
+- PR: #74 — `Stage 09.03 — World upgrade and recovery`.
+- Exact final PR-head workflow/job: `34003017774` / `101405148483` — `completed/success` across wrapper provenance, unit tests, performance benchmark baselines, diff sanity, NeoForge build, canonical + external GameTest compilation, JAR integrity, standalone GameTests, SavedData two-boot reload, isolated real Ars Zero profile and dedicated-server save/reload smoke.
+- Implementation merge SHA: `0d2b07f4cc3bf60627acab60237f087a1e102b58`.
+- Independent post-merge `main` workflow/job: `34003313686` / `101405934457` — `completed/success` across the same complete gate set.
+- Post-merge verified implementation `main`: `0d2b07f4cc3bf60627acab60237f087a1e102b58`.
+- Completed file: `✅-03-world-upgrade.md`.
+- Automated review P2 for omitted `ShroudDiscoverySavedData` migration coverage: corrected in final HEAD and review thread resolved.
+- New cross-stage pending contracts: none.
+
+Stage 09.03 centralizes explicit persistence evolution for all six persisted Level-1 stores: Shroud, Shroud Discovery, Exposure, Entity Corruption, Flame Progression and Story. Supported schema v1 migrates deterministically to v2 while preserving identity/progression/reward state; schema 0/pre-versioned, missing-schema, malformed representative data and unknown future schemas fail closed rather than silently resetting world state. Migration + reload coverage protects core/ritual/reward idempotence, and operator recovery remains narrowly scoped without force-loading chunks or bypassing canonical gameplay authorities.
+
 ## Open cross-stage contracts
 
 - No cross-stage contract currently remains open in `plans/PENDING.md`.
 
 ## Immediate next step
 
-Stage 09.03 (`plans/09-hardening/03-world-upgrade.md`) is the next canonical task. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
+Stage 09.05 (`plans/09-hardening/05-third-party-licenses-provenance.md`) is the next canonical task. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
 
 ## Level 1 release gate
 
-Level 1 is not complete. Stage 09.03 World Upgrade, Stage 09.05 Third-Party Licenses/Provenance and Stage 09.04 Release Checklist remain in causal order. Every Level-1-required Stage 09 task must reach verified GREEN implementation and receive its `✅-` closeout before release completion can be declared.
+Level 1 is not complete. Stage 09.05 Third-Party Licenses/Provenance and Stage 09.04 Release Checklist remain in causal order. Every Level-1-required Stage 09 task must reach verified GREEN implementation and receive its `✅-` closeout before release completion can be declared.
 
 ## Rules for updating this file
 
