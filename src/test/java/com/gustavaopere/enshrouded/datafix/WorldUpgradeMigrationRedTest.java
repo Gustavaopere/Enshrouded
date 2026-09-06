@@ -5,6 +5,8 @@ import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionSchema;
 import com.gustavaopere.enshrouded.exposure.ExposureSchema;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionCodec;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionSchema;
+import com.gustavaopere.enshrouded.shroud.discovery.ShroudDiscoveryCodec;
+import com.gustavaopere.enshrouded.shroud.discovery.ShroudDiscoverySchema;
 import com.gustavaopere.enshrouded.shroud.state.ShroudSchema;
 import com.gustavaopere.enshrouded.shroud.state.ShroudStateCodec;
 import com.gustavaopere.enshrouded.story.state.StoryCodec;
@@ -27,6 +29,7 @@ final class WorldUpgradeMigrationRedTest {
     @Test
     void allPersistentSubsystemsExposeExplicitVersionContracts() {
         assertEquals(2, ShroudSchema.CURRENT_VERSION);
+        assertEquals(2, ShroudDiscoverySchema.CURRENT_VERSION);
         assertEquals(2, ExposureSchema.CURRENT_VERSION);
         assertEquals(2, EntityCorruptionSchema.CURRENT_VERSION);
         assertEquals(2, FlameProgressionSchema.CURRENT_VERSION);
@@ -42,6 +45,22 @@ final class WorldUpgradeMigrationRedTest {
         assertEquals(1, shroudState.cores().size());
         assertEquals(64, shroudState.cores().get(coreId).maxInfluenceRadius());
         assertEquals(1, shroudState.regions().size());
+
+        CompoundTag discovery = EnshroudedDataFixer.migrate(
+                PersistentSubsystem.SHROUD_DISCOVERY,
+                fixture("shroud-discovery-v1.snbt")
+        );
+        assertEquals(ShroudDiscoverySchema.CURRENT_VERSION, discovery.getInt("schema_version"));
+        var discoveryState = ShroudDiscoveryCodec.decode(discovery);
+        ProgressionOwner discoveryOwner = ProgressionOwner.player(
+                UUID.fromString("11111111-1111-1111-1111-111111111111")
+        );
+        var discovered = discoveryState.knownTo(discoveryOwner);
+        assertEquals(1, discovered.size());
+        assertEquals(UUID.fromString("44444444-4444-4444-4444-444444444444"), discovered.getFirst().coreId());
+        assertEquals("minecraft:overworld", discovered.getFirst().dimensionId());
+        assertEquals(32, discovered.getFirst().pos().getX());
+        assertEquals(-16, discovered.getFirst().pos().getZ());
 
         CompoundTag exposure = EnshroudedDataFixer.migrate(PersistentSubsystem.EXPOSURE, fixture("exposure-v1.snbt"));
         assertEquals(ExposureSchema.CURRENT_VERSION, exposure.getInt("schema_version"));
