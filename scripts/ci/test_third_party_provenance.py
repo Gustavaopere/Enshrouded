@@ -48,6 +48,7 @@ def manifest_with(entry):
         required_entries.append(required)
     return {
         "schema_version": 1,
+        "first_party_binaries": [],
         "entries": required_entries + [entry],
         "excluded_provider_ids": ["spore", "infnexus"]
     }
@@ -89,6 +90,35 @@ class ProvenanceManifestContractTests(unittest.TestCase):
         errors = validate_manifest_document(manifest_with(entry))
         self.assertTrue(any("files" in error for error in errors), errors)
 
+    def test_first_party_binaries_field_is_required_and_must_be_string_array(self):
+        document = manifest_with(copy.deepcopy(BASE_ENTRY))
+        del document["first_party_binaries"]
+        errors = validate_manifest_document(document)
+        self.assertTrue(any("first_party_binaries" in error for error in errors), errors)
+
+        document = manifest_with(copy.deepcopy(BASE_ENTRY))
+        document["first_party_binaries"] = ["src/main/resources/assets/example/a.ogg", 42]
+        errors = validate_manifest_document(document)
+        self.assertTrue(any("first_party_binaries" in error for error in errors), errors)
+
+    def test_duplicate_first_party_binary_is_rejected(self):
+        document = manifest_with(copy.deepcopy(BASE_ENTRY))
+        path = "src/main/resources/assets/example/a.ogg"
+        document["first_party_binaries"] = [path, path]
+        errors = validate_manifest_document(document)
+        self.assertTrue(any("duplicate first-party binary" in error for error in errors), errors)
+
+    def test_first_party_and_third_party_material_overlap_is_rejected(self):
+        path = "src/main/resources/assets/example/shared.ogg"
+        entry = copy.deepcopy(BASE_ENTRY)
+        entry["usage_kind"] = "derived"
+        entry["license"]["status"] = "approved"
+        entry["files"] = [path]
+        document = manifest_with(entry)
+        document["first_party_binaries"] = [path]
+        errors = validate_manifest_document(document)
+        self.assertTrue(any("both first-party and third-party" in error for error in errors), errors)
+
 
 class ProvenanceRepositoryContractTests(unittest.TestCase):
     def test_forbidden_spore_or_infnexus_reference_in_production_tree_is_rejected(self):
@@ -109,18 +139,51 @@ class ProvenanceRepositoryContractTests(unittest.TestCase):
             errors = validate_repository(root, manifest_with(copy.deepcopy(BASE_ENTRY)))
             self.assertTrue(any("untracked.ogg" in error for error in errors), errors)
 
-    def test_registered_material_file_is_not_reported_as_unregistered(self):
+    def test_registered_first_party_binary_is_accepted(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            material = root / "src/main/resources/assets/example/registered.json"
+            relative = "src/main/resources/assets/example/owned.ogg"
+            binary = root / relative
+            binary.parent.mkdir(parents=True)
+            binary.write_bytes(b"first-party-audio")
+            document = manifest_with(copy.deepcopy(BASE_ENTRY))
+            document["first_party_binaries"] = [relative]
+            errors = validate_manifest_document(document) + validate_repository(root, document)
+            self.assertEqual([], errors)
+
+    def test_stale_first_party_binary_declaration_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            document = manifest_with(copy.deepcopy(BASE_ENTRY))
+            document["first_party_binaries"] = ["src/main/resources/assets/example/missing.ogg"]
+            errors = validate_repository(root, document)
+            self.assertTrue(any("first-party binary does not exist" in error for error in errors), errors)
+
+    def test_first_party_declaration_must_point_to_scanned_binary_resource(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            relative = "src/main/resources/assets/example/not-binary.json"
+            path = root / relative
+            path.parent.mkdir(parents=True)
+            path.write_text("{}\n", encoding="utf-8")
+            document = manifest_with(copy.deepcopy(BASE_ENTRY))
+            document["first_party_binaries"] = [relative]
+            errors = validate_repository(root, document)
+            self.assertTrue(any("not a scanned distributable binary/resource" in error for error in errors), errors)
+
+    def test_registered_material_binary_is_not_reported_as_unregistered(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            relative = "src/main/resources/assets/example/registered.ogg"
+            material = root / relative
             material.parent.mkdir(parents=True)
-            material.write_text("{}\n", encoding="utf-8")
+            material.write_bytes(b"third-party-audio")
             entry = copy.deepcopy(BASE_ENTRY)
             entry["usage_kind"] = "derived"
             entry["license"]["status"] = "approved"
-            entry["files"] = ["src/main/resources/assets/example/registered.json"]
+            entry["files"] = [relative]
             errors = validate_repository(root, manifest_with(entry))
-            self.assertFalse(any("registered.json" in error and "unregistered" in error.lower() for error in errors), errors)
+            self.assertFalse(any("registered.ogg" in error and "unregistered" in error.lower() for error in errors), errors)
 
     def test_actual_repository_ledger_passes(self):
         root = Path(__file__).resolve().parents[2]
