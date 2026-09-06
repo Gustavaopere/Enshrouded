@@ -1,7 +1,7 @@
 # Stage 10 — Scope and Principles
 
-**Status:** PLANNED — design/documentation only.  
-**Platform:** Minecraft 1.21.1 / NeoForge 21.1.248 / Java 21.  
+**Status:** PLANNED — design/documentation only.
+**Platform:** Minecraft 1.21.1 / NeoForge 21.1.248 / Java 21.
 **Depends on:** Level 1 repository milestone completed through Stage 09.
 
 ## Goal
