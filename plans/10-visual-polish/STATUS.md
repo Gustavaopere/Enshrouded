@@ -18,6 +18,9 @@
 - [x] Flame Altar, Shroud Core and Lich Skull marked as P0 hero-asset redesigns.
 - [x] Sanctuary/purification and Lich presentation plan defined.
 - [x] Multiblock authoritative-anchor contract defined, including 3×3/5×5 Flame Altar prototypes.
+- [x] Player-built hero multiblocks must use explicit formation UX: place components → activate/validate → FORMED state.
+- [x] FORMED multiblocks must visually read as one authored construction, with hidden/merged seams, coherent silhouette and controller-owned state; visible cube-grid/checkerboard assembly is a rejection criterion.
+- [x] Formation animation remains presentation-only and cannot become gameplay authority.
 - [x] Shroud world-art family and optional connected/continuous surface strategy defined.
 - [x] HUD/UI, VFX and audio polish plan defined.
 - [x] Performance, accessibility, provenance, renderer compatibility and dedicated-server gates defined.
