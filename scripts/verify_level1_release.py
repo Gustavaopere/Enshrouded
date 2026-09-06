@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -17,20 +18,20 @@ PREREQUISITES = {
     "09.05": "plans/09-hardening/✅-05-third-party-licenses-provenance.md",
 }
 
-PACK_VERSION_TOKENS = (
-    "Ars Nouveau 5.13.1",
-    "Ars Zero 2.0.2",
-    "Iron's Spells 3.16.3",
-    "Epic Fight 21.17.3.1",
-    "Goety 3.1.4",
-    "Malum 1.8.2",
-    "Eidolon: Repraised 0.5.0.2",
-    "FTB Chunks 2101.1.22",
-    "FTB Teams 2101.1.11",
-    "JourneyMap 6.0.7",
-    "MineColonies 1.1.1376",
-    "GeckoLib 4.9.2",
-)
+PACK_VERSIONS = {
+    "Ars Nouveau": "5.13.1",
+    "Ars Zero": "2.0.2",
+    "Iron's Spells": "3.16.3",
+    "Epic Fight": "21.17.3.1",
+    "Goety": "3.1.4",
+    "Malum": "1.8.2",
+    "Eidolon: Repraised": "0.5.0.2",
+    "FTB Chunks": "2101.1.22",
+    "FTB Teams": "2101.1.11",
+    "JourneyMap": "6.0.7",
+    "MineColonies": "1.1.1376",
+    "GeckoLib": "4.9.2",
+}
 
 RELEASE_DOCS = (
     "docs/release/level1-checklist.md",
@@ -48,6 +49,11 @@ BLOCKER_MARKERS = (
 
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def has_name_version_line(text: str, name: str, version: str) -> bool:
+    pattern = re.compile(rf"^{re.escape(name)}.*{re.escape(version)}$|^.*{re.escape(name)}.*{re.escape(version)}.*$", re.MULTILINE)
+    return bool(pattern.search(text))
 
 
 def validate_repository(root: Path) -> list[str]:
@@ -86,9 +92,9 @@ def validate_repository(root: Path) -> list[str]:
         errors.append("missing current-pack compatibility profile: docs/compat/current-pack-2026-09-06.md")
     else:
         compat = read(compat_path)
-        for token in PACK_VERSION_TOKENS:
-            if token not in compat:
-                errors.append(f"current-pack compatibility profile missing: {token}")
+        for name, version in PACK_VERSIONS.items():
+            if not has_name_version_line(compat, name, version):
+                errors.append(f"current-pack compatibility profile missing: {name} {version}")
         if "Spore/Infnexus: unsupported integration" not in compat:
             errors.append("current-pack profile must state Spore/Infnexus: unsupported integration")
 
