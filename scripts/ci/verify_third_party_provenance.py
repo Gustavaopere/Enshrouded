@@ -50,10 +50,18 @@ TEXT_SUFFIXES = {
 }
 DERIVED_MARKER = re.compile(r"UPSTREAM-DERIVED:\s*([A-Za-z0-9_.-]+)")
 INTEGRATION_ROOT = Path("src/main/java/com/gustavaopere/enshrouded/integration")
+RESOURCE_ROOT = Path("src/main/resources")
 
 
 def _nonempty_string(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def _first_party_binary_files(document: dict) -> set[str]:
+    values = document.get("first_party_binaries")
+    if not isinstance(values, list):
+        return set()
+    return {str(value) for value in values if _nonempty_string(value)}
 
 
 def validate_manifest_document(document: object) -> list[str]:
@@ -62,6 +70,17 @@ def validate_manifest_document(document: object) -> list[str]:
         return ["manifest root must be an object"]
     if document.get("schema_version") != 1:
         errors.append("schema_version must be 1")
+
+    first_party_values = document.get("first_party_binaries")
+    first_party: set[str] = set()
+    if not isinstance(first_party_values, list) or any(not _nonempty_string(path) for path in first_party_values):
+        errors.append("first_party_binaries must be an array of non-empty repository paths")
+    else:
+        for path in first_party_values:
+            normalized = str(path)
+            if normalized in first_party:
+                errors.append(f"duplicate first-party binary: {normalized}")
+            first_party.add(normalized)
 
     entries = document.get("entries")
     if not isinstance(entries, list):
@@ -130,6 +149,11 @@ def validate_manifest_document(document: object) -> list[str]:
         elif files:
             errors.append(f"{entry_id} is {kind}; non-material entries must not claim redistributed files")
 
+    for local_path in sorted(first_party & material_files.keys()):
+        errors.append(
+            f"binary/resource is classified as both first-party and third-party material: {local_path}"
+        )
+
     missing = sorted(REQUIRED_SOURCE_IDS - ids)
     if missing:
         errors.append("mandatory provenance sources missing: " + ", ".join(missing))
@@ -165,23 +189,45 @@ def _registered_material_files(document: dict) -> dict[str, str]:
     return registered
 
 
+def _is_scanned_binary_resource(local_path: str) -> bool:
+    path = Path(local_path)
+    if path.is_absolute() or ".." in path.parts or path.as_posix() != local_path:
+        return False
+    try:
+        path.relative_to(RESOURCE_ROOT)
+    except ValueError:
+        return False
+    return path.suffix.lower() in BINARY_RESOURCE_SUFFIXES
+
+
 def validate_repository(root: Path, document: dict) -> list[str]:
     errors: list[str] = []
     entries = _entry_map(document)
     registered_material = _registered_material_files(document)
+    first_party = _first_party_binary_files(document)
 
     for local_path, provenance_id in sorted(registered_material.items()):
         if not (root / local_path).is_file():
             errors.append(f"registered material file does not exist: {local_path} ({provenance_id})")
 
-    resource_root = root / "src/main/resources"
+    for local_path in sorted(first_party):
+        if not _is_scanned_binary_resource(local_path):
+            errors.append(f"first-party declaration is not a scanned distributable binary/resource: {local_path}")
+            continue
+        if not (root / local_path).is_file():
+            errors.append(f"first-party binary does not exist: {local_path}")
+
+    resource_root = root / RESOURCE_ROOT
     if resource_root.exists():
         for path in resource_root.rglob("*"):
             if not path.is_file() or path.suffix.lower() not in BINARY_RESOURCE_SUFFIXES:
                 continue
             relative = path.relative_to(root).as_posix()
-            if relative not in registered_material:
+            classifications = int(relative in first_party) + int(relative in registered_material)
+            if classifications == 0:
                 errors.append(f"unregistered distributable binary/resource: {relative}")
+            elif classifications > 1:
+                errors.append(f"binary/resource has multiple provenance classifications: {relative}")
 
     production_root = root / "src/main"
     forbidden = [str(value).strip().lower() for value in document.get("excluded_provider_ids", [])]
@@ -257,7 +303,12 @@ def main(argv: list[str] | None = None) -> int:
         for error in errors:
             print(f"ERROR: {error}")
         return 1
-    print(f"Third-party provenance verified: {len(document.get('entries', []))} entries; no blocked material detected.")
+    print(
+        "Third-party provenance verified: "
+        f"{len(document.get('entries', []))} entries; "
+        f"{len(document.get('first_party_binaries', []))} first-party binaries; "
+        "no blocked material detected."
+    )
     return 0
 
 
