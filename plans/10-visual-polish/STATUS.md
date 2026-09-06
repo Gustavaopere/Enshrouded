@@ -1,9 +1,9 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.01 IMPLEMENTATION IN PROGRESS
+**State:** 10.01 COMPLETE / MERGED / POST-MERGE VERIFIED — NEXT: 10.02 FLAME ALTAR HERO ASSET
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
-**Implementation branch:** `feat/10-01-visual-stack`
+**10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
 
 ## Planning checkpoint
 
@@ -27,7 +27,7 @@
 - [x] Manual full 607-mod pack smoke retained as an external release gate.
 - [x] Canonical implementation sequence 10.01 → 10.10 defined.
 
-## 10.01 — Visual Bible + dependency ADR
+## 10.01 — Visual Bible + dependency ADR — COMPLETE
 
 - [x] Reconciled implementation start against current 607-mod pack and Notion Enshrouded dossier.
 - [x] Promoted GeckoLib `4.9.2` from compatibility-fixture-only usage to the Enshrouded primary production animation runtime.
@@ -35,8 +35,14 @@
 - [x] Reused the same version property for the Ars Zero real-distribution fixture to prevent dependency drift.
 - [x] Kept Fusion soft/optional: no compile/runtime dependency and no gameplay authority.
 - [x] Added CI contract tests for GeckoLib versioning, metadata, external provenance and Fusion softness.
-- [ ] PR CI green.
-- [ ] Merge to `main` and post-merge CI green.
+- [x] PR #81 final HEAD `33a5da3b734055004323c9789622c52741d5a26d` passed Level 1 Release Readiness `34049582677` and Enshrouded CI `34049582642`.
+- [x] PR #81 merged to `main` as `abd938361697d20b431334cff47053a3a2787342`.
+- [x] Post-merge Level 1 Release Readiness `34049961298` passed.
+- [x] Post-merge Enshrouded CI `34049961432 / 101531662766` passed the full matrix, including Stage 10 visual-stack contract, NeoForge build, GameTests, two-boot SavedData reload, real Ars Zero 2.0.2 profile and dedicated-server save/reload smoke.
+
+## 10.02 — Flame Altar hero asset — NEXT
+
+The next implementation task must preserve the existing Flame Altar BlockEntity as the single authoritative controller and follow the merged 3×3/5×5 formed-multiblock design gate. A visually formed altar that still reads as a cube grid is rejected.
 
 ## Hard boundaries carried into implementation
 
