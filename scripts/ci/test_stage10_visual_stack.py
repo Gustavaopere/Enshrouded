@@ -124,9 +124,10 @@ class Stage10VisualStackContractTests(unittest.TestCase):
         menu = (ROOT / "src/main/java/com/gustavaopere/enshrouded/flame/altar/FlameAltarMenu.java").read_text(encoding="utf-8")
         block_entity = (ROOT / "src/main/java/com/gustavaopere/enshrouded/flame/altar/FlameAltarBlockEntity.java").read_text(encoding="utf-8")
 
-        self.assertIn("int flameLevelBefore = flameLevel();", menu)
+        self.assertIn("FlameAltarRuntime.ProgressionSnapshot before = FlameAltarRuntime.snapshot(serverPlayer);", menu)
+        self.assertIn("FlameAltarRuntime.ProgressionSnapshot after = FlameAltarRuntime.snapshot(serverPlayer);", menu)
         self.assertIn("result.status() == FlameAltarService.Status.APPLIED", menu)
-        self.assertIn("altar.triggerAuthoritativePresentation(flameLevel() > flameLevelBefore);", menu)
+        self.assertIn("altar.triggerAuthoritativePresentation(after.flameLevel() > before.flameLevel());", menu)
         self.assertIn("void triggerAuthoritativePresentation(boolean levelTransition)", block_entity)
         self.assertIn(
             'triggerAnim("flame_altar", levelTransition ? "level_transition" : "ritual_success")',
