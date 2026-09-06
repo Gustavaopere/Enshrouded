@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import copy
-import json
 import sys
 import tempfile
 import unittest
@@ -20,7 +19,7 @@ BASE_ENTRY = {
     "name": "Example Runtime",
     "author": "Example Author",
     "source_url": "https://example.invalid/project",
-    "immutable_ref": "artifact:example-runtime:1.2.3:sha256:0123456789abcdef",
+    "immutable_ref": "artifact:example-runtime:1.2.3:sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     "license": {
         "name": "Example-Proprietary",
         "url": "https://example.invalid/license",
@@ -29,7 +28,7 @@ BASE_ENTRY = {
     "usage_kind": "runtime_provided",
     "files": [],
     "integration_paths": [],
-    "notice_required": True,
+    "notice_required": False,
     "notes": "Runtime-provided only; no source or assets are redistributed."
 }
 
@@ -67,6 +66,26 @@ class ProvenanceManifestContractTests(unittest.TestCase):
         entry["immutable_ref"] = ""
         errors = validate_manifest_document(manifest_with(entry))
         self.assertTrue(any("immutable_ref" in error for error in errors), errors)
+
+    def test_material_entry_with_mutable_placeholder_ref_is_rejected(self):
+        for mutable_ref in ("main", "latest", "https://example.invalid/project/blob/main/File.java"):
+            with self.subTest(mutable_ref=mutable_ref):
+                entry = copy.deepcopy(BASE_ENTRY)
+                entry["usage_kind"] = "derived"
+                entry["license"]["status"] = "approved"
+                entry["files"] = ["src/main/java/example/Derived.java"]
+                entry["immutable_ref"] = mutable_ref
+                errors = validate_manifest_document(manifest_with(entry))
+                self.assertTrue(any("immutable_ref" in error for error in errors), errors)
+
+    def test_material_entry_accepts_pinned_git_commit(self):
+        entry = copy.deepcopy(BASE_ENTRY)
+        entry["usage_kind"] = "derived"
+        entry["license"]["status"] = "approved"
+        entry["files"] = ["src/main/java/example/Derived.java"]
+        entry["immutable_ref"] = "git:0123456789abcdef0123456789abcdef01234567"
+        errors = validate_manifest_document(manifest_with(entry))
+        self.assertEqual([], errors)
 
     def test_material_entry_with_restricted_license_is_rejected(self):
         entry = copy.deepcopy(BASE_ENTRY)
@@ -184,6 +203,60 @@ class ProvenanceRepositoryContractTests(unittest.TestCase):
             entry["files"] = [relative]
             errors = validate_repository(root, manifest_with(entry))
             self.assertFalse(any("registered.ogg" in error and "unregistered" in error.lower() for error in errors), errors)
+
+    def test_notice_required_entry_missing_from_notices_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            entry = copy.deepcopy(BASE_ENTRY)
+            entry["id"] = "must-notice"
+            entry["notice_required"] = True
+            document = manifest_with(entry)
+            (root / "THIRD_PARTY_NOTICES.md").write_text("# Notices\n", encoding="utf-8")
+            errors = validate_repository(root, document)
+            self.assertTrue(any("must-notice" in error and "notice" in error.lower() for error in errors), errors)
+
+    def test_notice_id_without_notice_required_ledger_entry_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            document = manifest_with(copy.deepcopy(BASE_ENTRY))
+            (root / "THIRD_PARTY_NOTICES.md").write_text(
+                "# Notices\n\n- ID `ghost-source` — should not be present.\n",
+                encoding="utf-8",
+            )
+            errors = validate_repository(root, document)
+            self.assertTrue(any("ghost-source" in error and "notice" in error.lower() for error in errors), errors)
+
+    def test_derived_java_mapped_in_ledger_requires_matching_source_marker(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            relative = "src/main/java/example/Derived.java"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("package example;\nclass Derived {}\n", encoding="utf-8")
+            entry = copy.deepcopy(BASE_ENTRY)
+            entry["id"] = "derived-source"
+            entry["usage_kind"] = "derived"
+            entry["license"]["status"] = "approved"
+            entry["files"] = [relative]
+            entry["immutable_ref"] = "git:0123456789abcdef0123456789abcdef01234567"
+            errors = validate_repository(root, manifest_with(entry))
+            self.assertTrue(any("UPSTREAM-DERIVED" in error and relative in error for error in errors), errors)
+
+    def test_derived_java_with_matching_source_marker_is_accepted(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            relative = "src/main/java/example/Derived.java"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("// UPSTREAM-DERIVED: derived-source\npackage example;\nclass Derived {}\n", encoding="utf-8")
+            entry = copy.deepcopy(BASE_ENTRY)
+            entry["id"] = "derived-source"
+            entry["usage_kind"] = "derived"
+            entry["license"]["status"] = "approved"
+            entry["files"] = [relative]
+            entry["immutable_ref"] = "git:0123456789abcdef0123456789abcdef01234567"
+            errors = validate_repository(root, manifest_with(entry))
+            self.assertEqual([], errors)
 
     def test_actual_repository_ledger_passes(self):
         root = Path(__file__).resolve().parents[2]
