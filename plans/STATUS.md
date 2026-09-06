@@ -1,6 +1,6 @@
 # Project Status
 
-Last structural update: 2026-09-05.
+Last structural update: 2026-09-06.
 
 The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HISTORY-THROUGH-08.02.md`](STATUS-HISTORY-THROUGH-08.02.md). Completed-task dossiers and `plans/PENDING.md` remain the authoritative provenance for individual contracts.
 
@@ -16,7 +16,7 @@ The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HIS
 - [x] 06 Lich & Story — 4/4 verified and merged.
 - [x] 07 Client Experience — 4/4 verified and merged.
 - [x] 08 Integrations — 5/5 reviewed, verified and merged.
-- [ ] 09 Hardening — 3/5 verified and merged.
+- [ ] 09 Hardening — 4/5 verified and merged.
 
 ## 08 Integrations — complete
 
@@ -142,17 +142,32 @@ Stage 09.02 adds passive observability plus explicit bounded-work evidence witho
 
 Stage 09.03 centralizes explicit persistence evolution for all six persisted Level-1 stores: Shroud, Shroud Discovery, Exposure, Entity Corruption, Flame Progression and Story. Supported schema v1 migrates deterministically to v2 while preserving identity/progression/reward state; schema 0/pre-versioned, missing-schema, malformed representative data and unknown future schemas fail closed rather than silently resetting world state. Migration + reload coverage protects core/ritual/reward idempotence, and operator recovery remains narrowly scoped without force-loading chunks or bypassing canonical gameplay authorities.
 
+### ✅ 05 Third-party licenses and provenance
+
+- Implementation branch: `feat/09-third-party-provenance`.
+- Final implementation HEAD: `bd80ad8618ace2fe923d0cd7e3575fd8c6e2b1cc`.
+- PR: #76 — `Stage 09.05 — Third-party licenses and provenance`.
+- Exact final PR-head workflow/job: `34009516524` / `101422757081` — `completed/success` across the complete gate set, including the new third-party provenance contract.
+- Implementation merge SHA: `94fabffc807b34b4066fcbf7cec5411ed58a35fa`.
+- Independent post-merge `main` workflow/job: `34009936498` / `101423866082` — `completed/success` across provenance contract tests, wrapper verification, unit tests, performance baselines, diff sanity, NeoForge build, canonical + external GameTest compilation, production-JAR integrity, standalone GameTests, SavedData two-boot reload, isolated real Ars Zero 2.0.2 profile and dedicated-server save/reload smoke.
+- Post-merge verified implementation `main`: `94fabffc807b34b4066fcbf7cec5411ed58a35fa`.
+- Completed file: `✅-05-third-party-licenses-provenance.md`.
+- Automated review: 2 P1 + 3 P2 findings corrected with RED→GREEN evidence; all five review threads resolved before merge.
+- New cross-stage pending contracts: none.
+
+Stage 09.05 establishes a machine-readable provenance ledger and makes release acceptance fail closed for unresolved copied/derived/vendored material. First-party binary resources are enumerated explicitly; source derivation and required notices are reconciled bidirectionally; material immutable refs must be genuinely pinned; unregistered distributable binaries and new direct integration/provider directories without a provenance decision fail validation. The retroactive audit found no copied/derived/vendored third-party production material in the current tree, and installed/runtime compatibility does not become implicit source-reuse permission.
+
 ## Open cross-stage contracts
 
 - No cross-stage contract currently remains open in `plans/PENDING.md`.
 
 ## Immediate next step
 
-Stage 09.05 (`plans/09-hardening/05-third-party-licenses-provenance.md`) is the next canonical task. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
+Stage 09.04 (`plans/09-hardening/04-release-checklist.md`) is the next and final canonical Hardening task. **Do not start it automatically.** Begin it only when explicitly requested from the then-current verified `main`.
 
 ## Level 1 release gate
 
-Level 1 is not complete. Stage 09.05 Third-Party Licenses/Provenance and Stage 09.04 Release Checklist remain in causal order. Every Level-1-required Stage 09 task must reach verified GREEN implementation and receive its `✅-` closeout before release completion can be declared.
+Level 1 is not complete. Stage 09.04 Release Checklist is the only remaining Level-1-required Hardening task. It must reach verified GREEN implementation and receive its `✅-` closeout before release completion can be declared.
 
 ## Rules for updating this file
 
