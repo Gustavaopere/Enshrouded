@@ -75,11 +75,11 @@ public final class EnshroudedDataFixer {
     private static Map<PersistentSubsystem, Map<Integer, MigrationStep>> buildMigrations() {
         EnumMap<PersistentSubsystem, Map<Integer, MigrationStep>> bySubsystem =
                 new EnumMap<>(PersistentSubsystem.class);
-        register(bySubsystem, PersistentSubsystem.SHROUD, 0, 1, EnshroudedDataFixer::versionBumpToOne);
-        register(bySubsystem, PersistentSubsystem.EXPOSURE, 0, 1, EnshroudedDataFixer::versionBumpToOne);
-        register(bySubsystem, PersistentSubsystem.ENTITY_CORRUPTION, 0, 1, EnshroudedDataFixer::versionBumpToOne);
+        register(bySubsystem, PersistentSubsystem.SHROUD, 1, 2, EnshroudedDataFixer::versionBumpToTwo);
+        register(bySubsystem, PersistentSubsystem.EXPOSURE, 1, 2, EnshroudedDataFixer::versionBumpToTwo);
+        register(bySubsystem, PersistentSubsystem.ENTITY_CORRUPTION, 1, 2, EnshroudedDataFixer::versionBumpToTwo);
         register(bySubsystem, PersistentSubsystem.FLAME_PROGRESSION, 1, 2, EnshroudedDataFixer::flameOneToTwo);
-        register(bySubsystem, PersistentSubsystem.STORY, 0, 1, EnshroudedDataFixer::versionBumpToOne);
+        register(bySubsystem, PersistentSubsystem.STORY, 1, 2, EnshroudedDataFixer::versionBumpToTwo);
         return Map.copyOf(bySubsystem);
     }
 
@@ -96,9 +96,9 @@ public final class EnshroudedDataFixer {
         bySubsystem.put(subsystem, Map.copyOf(mutable));
     }
 
-    private static CompoundTag versionBumpToOne(CompoundTag input) {
+    private static CompoundTag versionBumpToTwo(CompoundTag input) {
         CompoundTag migrated = SchemaMigration.copyOf(input);
-        migrated.putInt(SCHEMA_VERSION_TAG, 1);
+        migrated.putInt(SCHEMA_VERSION_TAG, 2);
         return migrated;
     }
 
