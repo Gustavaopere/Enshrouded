@@ -7,6 +7,7 @@ import com.gustavaopere.enshrouded.client.effects.ShroudParticleController;
 import com.gustavaopere.enshrouded.client.hud.ShroudHudOverlay;
 import com.gustavaopere.enshrouded.client.render.ShroudFogController;
 import com.gustavaopere.enshrouded.client.render.flame.FlameAltarRenderer;
+import com.gustavaopere.enshrouded.client.render.shroud.ShroudCoreRenderer;
 import com.gustavaopere.enshrouded.client.state.ClientShroudDiscoveryState;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
 import com.gustavaopere.enshrouded.registry.ModBlockEntities;
@@ -37,5 +38,6 @@ public final class EnshroudedClient {
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.FLAME_ALTAR.get(), FlameAltarRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.SHROUD_CORE.get(), ShroudCoreRenderer::new);
     }
 }
