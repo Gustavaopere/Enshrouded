@@ -81,11 +81,12 @@ public final class FlameAltarMenu extends AbstractContainerMenu {
             return false;
         }
 
-        int flameLevelBefore = flameLevel();
+        FlameAltarRuntime.ProgressionSnapshot before = FlameAltarRuntime.snapshot(serverPlayer);
         FlameAltarService.ActivationResult result = FlameAltarRuntime.activate(serverPlayer, altarInventory);
-        refreshData(serverPlayer);
+        FlameAltarRuntime.ProgressionSnapshot after = FlameAltarRuntime.snapshot(serverPlayer);
+        refreshData(after);
         if (altar != null && result.status() == FlameAltarService.Status.APPLIED) {
-            altar.triggerAuthoritativePresentation(flameLevel() > flameLevelBefore);
+            altar.triggerAuthoritativePresentation(after.flameLevel() > before.flameLevel());
         }
         serverPlayer.displayClientMessage(Component.translatable(messageKey(result.status())), false);
         return true;
@@ -129,7 +130,10 @@ public final class FlameAltarMenu extends AbstractContainerMenu {
     }
 
     private void refreshData(ServerPlayer player) {
-        FlameAltarRuntime.ProgressionSnapshot snapshot = FlameAltarRuntime.snapshot(player);
+        refreshData(FlameAltarRuntime.snapshot(player));
+    }
+
+    private void refreshData(FlameAltarRuntime.ProgressionSnapshot snapshot) {
         data.set(DATA_FLAME_LEVEL, snapshot.flameLevel());
         data.set(DATA_PASSAGE_LEVEL, snapshot.passageLevel());
         data.set(DATA_NEXT_LEVEL_READY, snapshot.nextLevelReady() ? 1 : 0);
