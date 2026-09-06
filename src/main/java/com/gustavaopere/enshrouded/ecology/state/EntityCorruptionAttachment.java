@@ -1,11 +1,14 @@
 package com.gustavaopere.enshrouded.ecology.state;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.neoforged.bus.api.IEventBus;
@@ -61,14 +64,21 @@ public record EntityCorruptionAttachment(int schemaVersion, float intensity) {
     }
 
     private static DataResult<EntityCorruptionAttachment> decode(SerializedState serialized) {
-        if (serialized.schemaVersion() != EntityCorruptionSchema.CURRENT_VERSION) {
-            return DataResult.error(() -> "unsupported entity corruption schema version: " + serialized.schemaVersion()
-                    + " (current=" + EntityCorruptionSchema.CURRENT_VERSION + ")");
+        CompoundTag raw = new CompoundTag();
+        raw.putInt(EnshroudedDataFixer.SCHEMA_VERSION_TAG, serialized.schemaVersion());
+        raw.putFloat("intensity", serialized.intensity());
+
+        final CompoundTag migrated;
+        try {
+            migrated = EnshroudedDataFixer.migrate(PersistentSubsystem.ENTITY_CORRUPTION, raw);
+        } catch (IllegalArgumentException failure) {
+            return DataResult.error(failure::getMessage);
         }
-        if (!Float.isFinite(serialized.intensity()) || serialized.intensity() < 0.0F || serialized.intensity() > 1.0F) {
+        float intensity = migrated.getFloat("intensity");
+        if (!Float.isFinite(intensity) || intensity < 0.0F || intensity > 1.0F) {
             return DataResult.error(() -> "intensity must be finite and within [0, 1]");
         }
-        return DataResult.success(new EntityCorruptionAttachment(serialized.schemaVersion(), serialized.intensity()));
+        return DataResult.success(new EntityCorruptionAttachment(EntityCorruptionSchema.CURRENT_VERSION, intensity));
     }
 
     private record SerializedState(int schemaVersion, float intensity) {
