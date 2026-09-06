@@ -114,6 +114,11 @@ class Stage10VisualStackContractTests(unittest.TestCase):
         source = json.loads(source_path.read_text(encoding="utf-8"))
         self.assertEqual("Flame Altar", source["name"])
         self.assertEqual("geometry.flame_altar", source["model_identifier"])
+        self.assertEqual(26, len(source["elements"]), "Blockbench source must cover every runtime cube")
+        element_names = {element["name"] for element in source["elements"]}
+        self.assertTrue({"pedestal_focus", "cradle_north", "cradle_south", "flame_tip", "halo_se", "fragment_south"}.issubset(element_names))
+        texture_names = {texture_entry["name"] for texture_entry in source["textures"]}
+        self.assertEqual({"flame_altar.png", "flame_altar_glowmask.png"}, texture_names)
 
     def test_flame_altar_presentation_is_downstream_of_authoritative_result(self):
         menu = (ROOT / "src/main/java/com/gustavaopere/enshrouded/flame/altar/FlameAltarMenu.java").read_text(encoding="utf-8")
