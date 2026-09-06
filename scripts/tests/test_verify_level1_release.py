@@ -29,7 +29,21 @@ class Level1ReleaseContractTest(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "docs/compat/current-pack-2026-09-06.md").write_text(
-            "Ars Nouveau 5.13.1\nArs Zero 2.0.2\nIron's Spells 3.16.3\nEpic Fight 21.17.3.1\nGoety 3.1.4\nMalum 1.8.2\nEidolon: Repraised 0.5.0.2\nFTB Chunks 2101.1.22\nFTB Teams 2101.1.11\nJourneyMap 6.0.7\nMineColonies 1.1.1376\nGeckoLib 4.9.2\nSpore/Infnexus: unsupported integration\n",
+            "| Target | Version |\n"
+            "| --- | --- |\n"
+            "| Ars Nouveau | 5.13.1 |\n"
+            "| Ars Zero | 2.0.2 |\n"
+            "| Iron's Spells | 3.16.3 |\n"
+            "| Epic Fight | 21.17.3.1 |\n"
+            "| Goety | 3.1.4 |\n"
+            "| Malum | 1.8.2 |\n"
+            "| Eidolon: Repraised | 0.5.0.2 |\n"
+            "| FTB Chunks | 2101.1.22 |\n"
+            "| FTB Teams | 2101.1.11 |\n"
+            "| JourneyMap | 6.0.7 |\n"
+            "| MineColonies | 1.1.1376 |\n"
+            "| GeckoLib | 4.9.2 |\n"
+            "Spore/Infnexus: unsupported integration\n",
             encoding="utf-8",
         )
         (root / "gradle.properties").write_text(
@@ -62,7 +76,7 @@ class Level1ReleaseContractTest(unittest.TestCase):
     def test_current_pack_versions_are_required(self):
         root = self.make_repo()
         p = root / "docs/compat/current-pack-2026-09-06.md"
-        p.write_text(p.read_text(encoding="utf-8").replace("MineColonies 1.1.1376", "MineColonies 1.1.1375"), encoding="utf-8")
+        p.write_text(p.read_text(encoding="utf-8").replace("| MineColonies | 1.1.1376 |", "| MineColonies | 1.1.1375 |"), encoding="utf-8")
         self.assertTrue(any("MineColonies 1.1.1376" in e for e in release.validate_repository(root)))
 
     def test_language_key_parity_is_required(self):
