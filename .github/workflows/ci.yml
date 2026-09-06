@@ -60,6 +60,9 @@ jobs:
       - name: Third-party provenance contract tests
         run: python3 -m unittest scripts/ci/test_third_party_provenance.py
 
+      - name: Stage 10 visual stack contract tests
+        run: python3 -m unittest scripts/ci/test_stage10_visual_stack.py
+
       - name: Verify Gradle wrapper
         run: ./gradlew --no-daemon --version
 
@@ -130,6 +133,8 @@ jobs:
           MODS_TOML="$(unzip -p "$JAR" META-INF/neoforge.mods.toml)"
           grep -Fq 'modId="enshrouded"' <<<"$MODS_TOML"
           grep -Fq 'license="BSD-2-Clause"' <<<"$MODS_TOML"
+          grep -Fq 'modId="geckolib"' <<<"$MODS_TOML"
+          grep -Fq 'versionRange="[4.9.2,5.0.0)"' <<<"$MODS_TOML"
           grep -Fq 'type="required"' <<<"$MODS_TOML"
           if grep -Fq '${' <<<"$MODS_TOML"; then
             echo 'Unexpanded placeholder leaked into neoforge.mods.toml'
