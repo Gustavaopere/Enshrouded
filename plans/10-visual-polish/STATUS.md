@@ -1,11 +1,13 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.02 TECHNICAL IMPLEMENTATION COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED
+**State:** 10.03 TECHNICAL IMPLEMENTATION COMPLETE / PR #85 OPEN / FINAL CI PENDING / P0 IN-GAME ART REVIEW STILL REQUIRED
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
 **10.01 closeout PR:** #82 — MERGED
 **10.02 implementation PR:** #83 — `Stage 10.02 — Flame Altar Hero Asset` — MERGED as `00edf323936f6559c40f30b354ce57d64db152fe`
+**10.02 closeout PR:** #84 — MERGED; final verified baseline before 10.03: `main@ccd003cec3cee5e652729fe9225d61ed5f08b54e`
+**10.03 implementation PR:** #85 — `Stage 10.03 — Shroud Core Hero Asset` — OPEN / CI PENDING
 
 ## Planning checkpoint
 
@@ -81,9 +83,39 @@
 - [ ] Full 607-mod-pack visual smoke remains an external/manual gate because the complete pack is not vendored into CI.
 - [ ] Technical merge does **not** waive the later 3×3/5×5 multiblock formation requirement.
 
+## 10.03 — Shroud Core hero asset — TECHNICAL IMPLEMENTATION COMPLETE / FINAL CI PENDING
+
+### TDD and authority
+
+- [x] RED commit `688496e0130a27db7f66063283a88eea45cd25ac` executed 333 tests and failed exactly the six new 10.03 contract clauses before the implementation existed (`Enshrouded CI 34062099651 / job 101564316011`).
+- [x] Existing `ShroudCoreBlockEntity` remains the physical/core identity anchor and continues to delegate lifecycle to `ShroudSavedData` / `ShroudCoreService`.
+- [x] Existing recovery API, persistent UUID fail-closed behavior, registration queue and configured `EnshroudedConfig.coreMaxInfluenceRadius()` are preserved.
+- [x] Shroud Core rendering is GeckoLib `ENTITYBLOCK_ANIMATED`; renderer registration remains client-only.
+- [x] `PresentationProfile.ORDINARY|DEADLY` is read-only presentation state. It is not persisted as gameplay authority.
+- [x] Deadly presentation is derived only from canonical `ShroudSeverity.DEADLY` and a matching canonical `sourceId`; core `tier` is never used as a visual severity authority.
+- [x] Presentation refresh is server-only, position-staggered and bounded to one check per 20 ticks per loaded core; client updates are emitted only when the profile changes.
+- [x] Collapse animation trigger is downstream of a successful authoritative ACTIVE → DESTROYED transition and `ShroudCoreDestroyedEvent`; authoritative block/lifecycle removal is never delayed for animation.
+
+### Hero asset package
+
+- [x] Separate Ordinary and Deadly GeckoLib geometry resources rather than a hue-only recolor.
+- [x] Ordinary silhouette includes `core_root`, `roots`, asymmetric `outer_husk`, exposed `inner_heart`, `tendrils` and membranes.
+- [x] Deadly silhouette opens the husk further, enlarges/exposes the heart and adds a dedicated `deadly_thorns` bone with eight outward spikes.
+- [x] `idle`, `threat` and `collapse` animation clips animate heart/husk/tendrils independently; Deadly thorns participate in threat/collapse.
+- [x] Separate first-party 128×128 Ordinary/Deadly material atlases and selective glowmasks are present and registered in provenance.
+- [x] Editable Blockbench source and technical design sheet are present.
+- [x] No Fusion hard dependency was added; optional environmental continuity remains a later world-art concern.
+
+### Final gates
+
+- [ ] Final PR #85 HEAD must pass Level 1 Release Readiness.
+- [ ] Final PR #85 HEAD must pass the full Enshrouded CI matrix, including provenance, unit/contract tests, NeoForge build, GameTests, two-boot reload, real Ars Zero profile and dedicated-server smoke.
+- [ ] After merge, both workflows must be rechecked on the resulting `main` SHA before 10.03 is marked post-merge verified.
+- [ ] P0 **ART APPROVED** still requires in-game screenshots for Ordinary and Deadly at realistic FOV/distance, reduced-effects readability and external full 607-mod-pack visual smoke.
+
 ## Multiblock boundary carried forward
 
-Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct.
+Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02 or 10.03. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct.
 
 ## Hard boundaries carried into subsequent tasks
 
@@ -93,4 +125,4 @@ Full player-built 3×3/5×5 formation/validation is deliberately not implemented
 - Lodestone, OctoLib and Player Animator remain task-gated rather than automatic dependencies.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
 - Manual full 607-mod pack smoke remains an external release gate before distribution.
-- Do not mark Flame Altar P0 **ART APPROVED** until the required in-game evidence exists.
+- Do not mark Flame Altar or Shroud Core P0 **ART APPROVED** until the required in-game evidence exists.
