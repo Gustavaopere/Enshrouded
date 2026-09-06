@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded;
 
 import com.gustavaopere.enshrouded.combat.magic.MagicResistanceRuntime;
+import com.gustavaopere.enshrouded.command.RecoveryCommand;
 import com.gustavaopere.enshrouded.command.ShroudCoreCommand;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
 import com.gustavaopere.enshrouded.ecology.state.EntityCorruptionRuntime;
@@ -42,6 +43,7 @@ public final class Enshrouded {
         modContainer.registerConfig(ModConfig.Type.SERVER, EnshroudedConfig.SERVER_SPEC);
         ShroudCoreRegistrationQueue.registerRuntime();
         ShroudCoreCommand.registerRuntime();
+        RecoveryCommand.registerRuntime();
         ShroudDiscoveryRuntime.register();
         ShroudSyncRuntime.register();
         FlameProgressionRuntime.register();
