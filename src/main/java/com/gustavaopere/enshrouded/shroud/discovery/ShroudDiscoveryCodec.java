@@ -1,6 +1,9 @@
 package com.gustavaopere.enshrouded.shroud.discovery;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
+import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
+import com.gustavaopere.enshrouded.datafix.UnsupportedPersistentSchemaException;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -32,13 +35,15 @@ public final class ShroudDiscoveryCodec {
     }
 
     public static ShroudDiscoveryState decode(CompoundTag root) {
-        int schemaVersion = root.getInt("schema_version");
-        if (schemaVersion != ShroudDiscoverySchema.CURRENT_VERSION) {
-            throw new UnsupportedShroudDiscoverySchemaException(schemaVersion);
+        final CompoundTag migrated;
+        try {
+            migrated = EnshroudedDataFixer.migrate(PersistentSubsystem.SHROUD_DISCOVERY, root);
+        } catch (UnsupportedPersistentSchemaException exception) {
+            throw new UnsupportedShroudDiscoverySchemaException(exception.schemaVersion());
         }
 
         LinkedHashMap<String, Map<UUID, DiscoveredCore>> byOwner = new LinkedHashMap<>();
-        ListTag owners = root.getList("owners", CompoundTag.TAG_COMPOUND);
+        ListTag owners = migrated.getList("owners", CompoundTag.TAG_COMPOUND);
         for (int index = 0; index < owners.size(); index++) {
             CompoundTag ownerTag = owners.getCompound(index);
             String ownerKey = ownerTag.getString("owner");
