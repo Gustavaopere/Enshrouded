@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 MATERIAL_KINDS = {"vendored", "copied", "derived"}
+MARKER_REQUIRED_KINDS = {"copied", "derived"}
 ALLOWED_KINDS = MATERIAL_KINDS | {
     "runtime_provided",
     "api_only",
@@ -49,12 +50,29 @@ TEXT_SUFFIXES = {
     ".txt", ".md", ".yml", ".yaml", ".gradle", ".xml",
 }
 DERIVED_MARKER = re.compile(r"UPSTREAM-DERIVED:\s*([A-Za-z0-9_.-]+)")
+NOTICE_ID = re.compile(r"^\s*-\s+ID\s+`([A-Za-z0-9_.-]+)`\s+—", re.MULTILINE)
+GIT_IMMUTABLE_REF = re.compile(r"^git:[0-9a-fA-F]{40}(?:[0-9a-fA-F]{24})?$")
+SHA256_IMMUTABLE_REF = re.compile(r"^sha256:[0-9a-fA-F]{64}$")
+ARTIFACT_IMMUTABLE_REF = re.compile(
+    r"^artifact:.+:(?:sha1:[0-9a-fA-F]{40}|sha256:[0-9a-fA-F]{64})$"
+)
 INTEGRATION_ROOT = Path("src/main/java/com/gustavaopere/enshrouded/integration")
 RESOURCE_ROOT = Path("src/main/resources")
 
 
 def _nonempty_string(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def _is_immutable_material_ref(value: object) -> bool:
+    if not _nonempty_string(value):
+        return False
+    normalized = str(value).strip()
+    return bool(
+        GIT_IMMUTABLE_REF.fullmatch(normalized)
+        or SHA256_IMMUTABLE_REF.fullmatch(normalized)
+        or ARTIFACT_IMMUTABLE_REF.fullmatch(normalized)
+    )
 
 
 def _first_party_binary_files(document: dict) -> set[str]:
@@ -134,8 +152,13 @@ def validate_manifest_document(document: object) -> list[str]:
         if kind in MATERIAL_KINDS:
             if not files:
                 errors.append(f"{entry_id}.files must map every {kind} local file")
-            if not _nonempty_string(entry.get("immutable_ref")):
+            immutable_ref = entry.get("immutable_ref")
+            if not _nonempty_string(immutable_ref):
                 errors.append(f"{entry_id}.immutable_ref is required for material provenance")
+            elif not _is_immutable_material_ref(immutable_ref):
+                errors.append(
+                    f"{entry_id}.immutable_ref must be a pinned git commit or cryptographic artifact digest"
+                )
             status = license_info.get("status")
             if status in BLOCKED_MATERIAL_LICENSE_STATUSES:
                 errors.append(f"{entry_id} material is blocked by license status {status}")
@@ -200,6 +223,76 @@ def _is_scanned_binary_resource(local_path: str) -> bool:
     return path.suffix.lower() in BINARY_RESOURCE_SUFFIXES
 
 
+def _validate_notice_reconciliation(root: Path, document: dict) -> list[str]:
+    errors: list[str] = []
+    required_ids = {
+        str(entry["id"])
+        for entry in document.get("entries", [])
+        if isinstance(entry, dict)
+        and _nonempty_string(entry.get("id"))
+        and entry.get("notice_required") is True
+    }
+    notice_path = root / "THIRD_PARTY_NOTICES.md"
+    if not notice_path.is_file():
+        if required_ids:
+            errors.append(
+                "THIRD_PARTY_NOTICES.md is required because notice_required entries exist: "
+                + ", ".join(sorted(required_ids))
+            )
+        return errors
+
+    try:
+        notice_text = notice_path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return ["THIRD_PARTY_NOTICES.md must be UTF-8 text"]
+
+    notice_ids_list = NOTICE_ID.findall(notice_text)
+    notice_ids = set(notice_ids_list)
+    duplicates = sorted({notice_id for notice_id in notice_ids_list if notice_ids_list.count(notice_id) > 1})
+    for notice_id in duplicates:
+        errors.append(f"duplicate notice provenance id: {notice_id}")
+
+    for entry_id in sorted(required_ids - notice_ids):
+        errors.append(f"notice_required ledger entry is missing from THIRD_PARTY_NOTICES.md: {entry_id}")
+    for notice_id in sorted(notice_ids - required_ids):
+        errors.append(f"THIRD_PARTY_NOTICES notice has no notice_required ledger entry: {notice_id}")
+    return errors
+
+
+def _validate_required_derivation_markers(root: Path, document: dict) -> list[str]:
+    errors: list[str] = []
+    for entry in document.get("entries", []):
+        if not isinstance(entry, dict) or entry.get("usage_kind") not in MARKER_REQUIRED_KINDS:
+            continue
+        entry_id = str(entry.get("id", "<unknown>"))
+        for local_path in entry.get("files", []):
+            if not _nonempty_string(local_path):
+                continue
+            relative = str(local_path)
+            path = Path(relative)
+            if path.suffix.lower() != ".java":
+                continue
+            try:
+                path.relative_to(Path("src/main/java"))
+            except ValueError:
+                continue
+            absolute = root / path
+            if not absolute.is_file():
+                continue
+            try:
+                text = absolute.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                errors.append(f"registered source material must be UTF-8 text: {relative}")
+                continue
+            markers = DERIVED_MARKER.findall(text)
+            if entry_id not in markers:
+                errors.append(
+                    f"{relative} is mapped as {entry.get('usage_kind')} material for {entry_id} "
+                    f"but lacks // UPSTREAM-DERIVED: {entry_id}"
+                )
+    return errors
+
+
 def validate_repository(root: Path, document: dict) -> list[str]:
     errors: list[str] = []
     entries = _entry_map(document)
@@ -254,6 +347,9 @@ def validate_repository(root: Path, document: dict) -> list[str]:
                 if relative not in entry.get("files", []):
                     errors.append(f"{relative} has UPSTREAM-DERIVED:{marker_id} but is not mapped in that ledger entry")
 
+    errors.extend(_validate_required_derivation_markers(root, document))
+    errors.extend(_validate_notice_reconciliation(root, document))
+
     integration_dir = root / INTEGRATION_ROOT
     covered_paths: list[str] = []
     for entry in document.get("entries", []):
@@ -267,11 +363,10 @@ def validate_repository(root: Path, document: dict) -> list[str]:
             if not any(relative == prefix or relative.startswith(prefix + "/") for prefix in covered_paths):
                 errors.append(f"integration/provider path lacks provenance decision: {relative}")
 
-    for required in ("LICENSE", "THIRD_PARTY_NOTICES.md"):
-        if root.resolve() != Path(root.anchor).resolve() and not (root / required).is_file():
-            # Synthetic unit-test roots intentionally omit release notices.
-            if (root / ".git").exists() or (root / "build.gradle").exists():
-                errors.append(f"release notice missing: {required}")
+    if not (root / "LICENSE").is_file():
+        # Synthetic unit-test roots intentionally omit repository release files.
+        if (root / ".git").exists() or (root / "build.gradle").exists():
+            errors.append("release notice missing: LICENSE")
 
     return errors
 
