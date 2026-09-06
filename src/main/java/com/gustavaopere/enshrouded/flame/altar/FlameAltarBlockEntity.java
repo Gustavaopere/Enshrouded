@@ -17,11 +17,24 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.animatable.GeoBlockEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
-/** One-slot persistent inventory backing the physical Flame Altar. */
-public final class FlameAltarBlockEntity extends BlockEntity implements MenuProvider {
+/** One-slot persistent inventory backing the physical, animated Flame Altar. */
+public final class FlameAltarBlockEntity extends BlockEntity implements MenuProvider, GeoBlockEntity {
     private static final String INVENTORY_TAG = "Inventory";
+    private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("animation.flame_altar.idle");
+    private static final RawAnimation RITUAL_AVAILABLE = RawAnimation.begin().thenLoop("animation.flame_altar.ritual_available");
+    private static final RawAnimation RITUAL_CHARGE = RawAnimation.begin().thenPlay("animation.flame_altar.ritual_charge");
+    private static final RawAnimation RITUAL_SUCCESS = RawAnimation.begin().thenPlay("animation.flame_altar.ritual_success");
+    private static final RawAnimation LEVEL_TRANSITION = RawAnimation.begin().thenPlay("animation.flame_altar.level_transition");
+    private static final RawAnimation INACTIVE = RawAnimation.begin().thenLoop("animation.flame_altar.inactive");
 
+    private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     private final ItemStackHandler inventory = new ItemStackHandler(1) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -35,6 +48,22 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
 
     public ItemStackHandler inventory() {
         return inventory;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "flame_altar", 8,
+                state -> state.setAndContinue(IDLE_ANIMATION))
+                .triggerableAnim("ritual_available", RITUAL_AVAILABLE)
+                .triggerableAnim("ritual_charge", RITUAL_CHARGE)
+                .triggerableAnim("ritual_success", RITUAL_SUCCESS)
+                .triggerableAnim("level_transition", LEVEL_TRANSITION)
+                .triggerableAnim("inactive", INACTIVE));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return animationCache;
     }
 
     @Override
