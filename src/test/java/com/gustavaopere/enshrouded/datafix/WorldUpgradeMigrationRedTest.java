@@ -103,6 +103,16 @@ final class WorldUpgradeMigrationRedTest {
         assertEquals(ExposureSchema.CURRENT_VERSION + 1, futureFailure.schemaVersion());
         assertTrue(futureFailure.getMessage().contains("exposure"));
 
+        CompoundTag discoveryFuture = fixture("shroud-discovery-v1.snbt");
+        discoveryFuture.putInt("schema_version", ShroudDiscoverySchema.CURRENT_VERSION + 1);
+        UnsupportedPersistentSchemaException discoveryFailure = assertThrows(
+                UnsupportedPersistentSchemaException.class,
+                () -> EnshroudedDataFixer.migrate(PersistentSubsystem.SHROUD_DISCOVERY, discoveryFuture)
+        );
+        assertEquals(PersistentSubsystem.SHROUD_DISCOVERY, discoveryFailure.subsystem());
+        assertEquals(ShroudDiscoverySchema.CURRENT_VERSION + 1, discoveryFailure.schemaVersion());
+        assertTrue(discoveryFailure.getMessage().contains("shroud_discovery"));
+
         CompoundTag preVersioned = fixture("story-v1.snbt");
         preVersioned.putInt("schema_version", 0);
         UnsupportedPersistentSchemaException preVersionedFailure = assertThrows(
