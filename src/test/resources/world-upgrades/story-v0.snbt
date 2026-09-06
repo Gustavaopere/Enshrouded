@@ -1,1 +1,0 @@
-{schema_version:0,manifestations:[{owner:"player:11111111-1111-1111-1111-111111111111",current_manifestation_index:1,defeated_manifestations:[1]}],encounters:[{encounter_id:"33333333-3333-3333-3333-333333333333",manifestation_index:1,owner:"player:11111111-1111-1111-1111-111111111111",outcome:"defeated",reward_issued:1b}]}
