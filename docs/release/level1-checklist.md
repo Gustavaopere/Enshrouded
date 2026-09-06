@@ -12,11 +12,12 @@
 
 ## Prerequisite hardening
 
-All prerequisite closeouts exist and are merged:
+All Hardening closeouts are required by the release validator:
 
 - [x] 09.01 — Level 1 test matrix and real Ars Zero co-load.
 - [x] 09.02 — performance budgets/observability.
 - [x] 09.03 — world upgrade and recovery.
+- [x] 09.04 — Level 1 release checklist closeout.
 - [x] 09.05 — third-party licenses and provenance.
 
 ## Automated release gates
@@ -40,6 +41,8 @@ The repository release gate passed all of the following on the final implementat
 Final implementation HEAD `4c983331d8d9b5310376254fd3e20fad27604fab` passed PR-head `Level 1 Release Readiness` workflow/job `34031623079 / 101482073832` and `Enshrouded CI` workflow/job `34031623105 / 101482073811`.
 
 PR #78 merged as `47189826fe03cb633d32fd8eb695f275f4aaa96f`. Independent push validation on that exact `main` passed `Enshrouded CI` `34033865386 / 101488274386` and `Level 1 Release Readiness` `34033865468 / 101488268597`.
+
+Closeout review then hardened the release contract itself: removing `plans/09-hardening/✅-04-release-checklist.md` must fail. RED evidence is `329ce91ce9d1b116762080fbc39e1091b371079e` with workflow/job `34035071072 / 101491523337`; corrected head `fff7471e16aa95384f37b941ddab16322f5bbcd0` passed `Level 1 Release Readiness` `34035319418 / 101492195887` and full `Enshrouded CI` `34035319414 / 101492222107`.
 
 ## Current-pack profile
 
@@ -75,7 +78,8 @@ The repository does not contain the complete 607-JAR pack distribution, so GitHu
 ## Blockers
 
 - [x] No unresolved P0/P1 release blocker is recorded in `plans/PENDING.md`.
-- [x] The only automated review P1 in Stage 09.04 — real Markdown compatibility-table parsing — was corrected and regression-tested before merge.
+- [x] Review P1 #1 — real Markdown compatibility-table parsing — was corrected and regression-tested before implementation merge.
+- [x] Review P1 #2 — the release validator did not require its own 09.04 closeout — was reproduced RED and corrected so deleting `✅-04-release-checklist.md` fails closed.
 - Any future unresolved legal/provenance decision, failed release-readiness validation, failed required CI gate, unknown authority regression or unsupported persistence migration blocks a later release.
 
 ## Acceptance
@@ -85,6 +89,7 @@ The repository does not contain the complete 607-JAR pack distribution, so GitHu
 - [x] Implementation PR #78 is merged.
 - [x] Independent post-merge `main` `Enshrouded CI` is GREEN.
 - [x] Independent post-merge `main` `Level 1 Release Readiness` is GREEN.
+- [x] Stage 09.04 closeout is now itself a fail-closed prerequisite of the release validator.
 - [x] Stage 09.04 documentation closeout is prepared with the exact evidence above.
 
 With this closeout merged and independently GREEN, Stage 09 is 5/5 and the repository Level 1 milestone is complete. The surrounding full modpack still requires `MANUAL_CURRENT_PACK_SMOKE_REQUIRED` before pack distribution.
