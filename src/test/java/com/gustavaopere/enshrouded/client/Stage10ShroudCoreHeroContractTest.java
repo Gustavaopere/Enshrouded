@@ -43,9 +43,9 @@ class Stage10ShroudCoreHeroContractTest {
         String animations = read("src/main/resources/assets/enshrouded/animations/shroud_core.animation.json");
 
         for (String requiredBone : new String[]{"core_root", "outer_husk", "inner_heart", "tendrils", "roots"}) {
-            assertTrue(ordinary.contains("\"name\": \"" + requiredBone + "\""), "ordinary geometry missing " + requiredBone);
+            assertTrue(containsJsonName(ordinary, requiredBone), "ordinary geometry missing " + requiredBone);
         }
-        assertTrue(deadly.contains("\"name\": \"deadly_thorns\""), "Deadly geometry needs additional thorn/split silhouette");
+        assertTrue(containsJsonName(deadly, "deadly_thorns"), "Deadly geometry needs additional thorn/split silhouette");
         assertTrue(animations.contains("animation.shroud_core.idle"));
         assertTrue(animations.contains("animation.shroud_core.threat"));
         assertTrue(animations.contains("animation.shroud_core.collapse"));
@@ -86,6 +86,11 @@ class Stage10ShroudCoreHeroContractTest {
         assertTrue(blockEntity.contains("ShroudCoreDestroyedEvent"), "authoritative destruction event must remain the causal source");
         assertTrue(blockEntity.contains("triggerAuthoritativeCollapsePresentation"),
                 "collapse presentation must be explicitly downstream of authoritative retirement");
+    }
+
+    private static boolean containsJsonName(String json, String name) {
+        return json.contains("\"name\":\"" + name + "\"")
+                || json.contains("\"name\": \"" + name + "\"");
     }
 
     private static String read(String relative) throws IOException {
