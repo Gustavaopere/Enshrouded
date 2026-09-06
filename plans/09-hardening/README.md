@@ -7,7 +7,7 @@
 1. [`✅ 01 test matrix`](✅-01-test-matrix.md)
 2. [`✅ 02 performance`](✅-02-performance.md)
 3. [`✅ 03 world upgrade`](✅-03-world-upgrade.md)
-4. [`05 third-party licenses/provenance`](05-third-party-licenses-provenance.md)
+4. [`✅ 05 third-party licenses/provenance`](✅-05-third-party-licenses-provenance.md)
 5. [`04 release checklist`](04-release-checklist.md)
 
 The numeric filenames are historical identifiers; causal execution order places provenance/license closure before the final release checklist because `04-release-checklist.md` depends on task 05.
@@ -20,6 +20,6 @@ The numeric filenames are historical identifiers; causal execution order places 
 - The public release fails closed for actual copied/adapted third-party material with unresolved provenance, license or permission.
 - Optional dependencies/references do not become source-reuse grants merely because they are installed or supported.
 
-**Stage 09 status:** 3/5 tasks verified and merged. Stage 09.01 provides the complete Level-1 standalone/restart matrix and closes the real Ars Zero distribution verification. Stage 09.02 adds bounded performance observability, explicit global/per-core/entity/client work ceilings, reproducible 1/10/50-core stress and persistence evidence without introducing a second gameplay authority. Stage 09.03 centralizes explicit v1 → v2 migration and fail-closed recovery for all six persisted Level-1 stores, with exact legacy-value preservation, idempotent reload coverage and narrow operator recovery. Stage 09.05 Third-Party Licenses & Provenance is the next canonical task and is not started by this closeout.
+**Stage 09 status:** 4/5 tasks verified and merged at the implementation level. Stage 09.01 provides the complete Level-1 standalone/restart matrix and closes the real Ars Zero distribution verification. Stage 09.02 adds bounded performance observability, explicit global/per-core/entity/client work ceilings, reproducible 1/10/50-core stress and persistence evidence without introducing a second gameplay authority. Stage 09.03 centralizes explicit v1 → v2 migration and fail-closed recovery for all six persisted Level-1 stores, with exact legacy-value preservation, idempotent reload coverage and narrow operator recovery. Stage 09.05 establishes machine-readable third-party provenance, explicit first-party binary classification, fail-closed derivation/license/notice validation and a retroactive repository audit, with final implementation `main@94fabffc807b34b4066fcbf7cec5411ed58a35fa` independently GREEN. Stage 09.04 Release Checklist is the remaining canonical task and is not started by this closeout.
 
 Tasks are implemented and merged in causal order unless `STATUS.md` explicitly records a reviewed dependency change.
