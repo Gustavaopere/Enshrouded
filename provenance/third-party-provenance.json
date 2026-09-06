@@ -1,11 +1,25 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-09-05",
+  "snapshot_date": "2026-09-06",
   "pack_entry_count": 607,
-  "policy": "No copied, derived, vendored source, assets, audio or binary material is authorized unless an approved material entry maps every local file to immutable upstream provenance.",
+  "policy": "No copied, derived, vendored source, assets, audio or binary material is authorized unless an approved material entry maps every local file to immutable upstream provenance. Project-authored distributable binaries must be enumerated explicitly in first_party_binaries.",
   "excluded_provider_ids": [
     "spore",
     "infnexus"
+  ],
+  "first_party_binaries": [
+    "src/main/resources/assets/enshrouded/sounds/ambient/deadly_shroud.ogg",
+    "src/main/resources/assets/enshrouded/sounds/ambient/shroud.ogg",
+    "src/main/resources/assets/enshrouded/sounds/madness/whisper.ogg",
+    "src/main/resources/assets/enshrouded/textures/block/red_sludge_flow.png",
+    "src/main/resources/assets/enshrouded/textures/block/red_sludge_still.png",
+    "src/main/resources/assets/enshrouded/textures/block/shroud_growth.png",
+    "src/main/resources/assets/enshrouded/textures/block/shroud_vein.png",
+    "src/main/resources/assets/enshrouded/textures/block/withered_growth.png",
+    "src/main/resources/assets/enshrouded/textures/gui/shroud_hud_icons.png",
+    "src/main/resources/assets/enshrouded/textures/particle/red_sludge.png",
+    "src/main/resources/assets/enshrouded/textures/particle/shroud_core.png",
+    "src/main/resources/assets/enshrouded/textures/particle/shroud_growth.png"
   ],
   "entries": [
     {
