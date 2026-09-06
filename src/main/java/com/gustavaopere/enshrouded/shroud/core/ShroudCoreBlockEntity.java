@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.NeoForge;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public final class ShroudCoreBlockEntity extends BlockEntity {
@@ -31,21 +32,9 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return;
+        if (level instanceof ServerLevel serverLevel) {
+            enqueueRegistration(serverLevel, autoActivate);
         }
-
-        ensureLocalIdentity();
-        ShroudCoreRegistrationQueue.enqueue(
-                serverLevel,
-                worldPosition,
-                coreId,
-                regionId,
-                LEVEL_ONE_TIER,
-                EnshroudedConfig.coreMaxInfluenceRadius(),
-                expansionSeed(coreId),
-                autoActivate
-        );
     }
 
     /**
@@ -57,18 +46,23 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         autoActivate = true;
         setChanged();
         if (level instanceof ServerLevel serverLevel) {
-            ensureLocalIdentity();
-            ShroudCoreRegistrationQueue.enqueue(
-                    serverLevel,
-                    worldPosition,
-                    coreId,
-                    regionId,
-                    LEVEL_ONE_TIER,
-                    EnshroudedConfig.coreMaxInfluenceRadius(),
-                    expansionSeed(coreId),
-                    true
-            );
+            enqueueRegistration(serverLevel, true);
         }
+    }
+
+    /** Immutable physical identity exposed only so operator recovery can compare, never rewrite, it. */
+    public RecoveryIdentity recoveryIdentity() {
+        ensureLocalIdentity();
+        return new RecoveryIdentity(coreId, regionId, worldPosition.immutable(), autoActivate);
+    }
+
+    /** Replays the normal bounded registration handoff without mutating SavedData directly. */
+    public void enqueueRecoveryRegistration(ServerLevel serverLevel) {
+        Objects.requireNonNull(serverLevel, "serverLevel");
+        if (level != serverLevel) {
+            throw new IllegalArgumentException("recovery server level does not own this Shroud core");
+        }
+        enqueueRegistration(serverLevel, autoActivate);
     }
 
     boolean matchesIdentity(UUID expectedCoreId, UUID expectedRegionId) {
@@ -126,6 +120,20 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
         }
     }
 
+    private void enqueueRegistration(ServerLevel serverLevel, boolean activateAfterRegistration) {
+        ensureLocalIdentity();
+        ShroudCoreRegistrationQueue.enqueue(
+                serverLevel,
+                worldPosition,
+                coreId,
+                regionId,
+                LEVEL_ONE_TIER,
+                EnshroudedConfig.coreMaxInfluenceRadius(),
+                expansionSeed(coreId),
+                activateAfterRegistration
+        );
+    }
+
     private void ensureLocalIdentity() {
         if (coreId == null && regionId == null) {
             coreId = UUID.randomUUID();
@@ -140,5 +148,14 @@ public final class ShroudCoreBlockEntity extends BlockEntity {
 
     private static long expansionSeed(UUID coreId) {
         return coreId.getMostSignificantBits() ^ coreId.getLeastSignificantBits();
+    }
+
+    public record RecoveryIdentity(UUID coreId, UUID regionId, BlockPos position, boolean autoActivate) {
+        public RecoveryIdentity {
+            Objects.requireNonNull(coreId, "coreId");
+            Objects.requireNonNull(regionId, "regionId");
+            Objects.requireNonNull(position, "position");
+            position = position.immutable();
+        }
     }
 }
