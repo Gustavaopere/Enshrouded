@@ -4,12 +4,13 @@ This file indexes third-party projects used by Enshrouded as architectural refer
 
 **A source link, installed mod or observed behavior is not a license grant.** No source/assets may be copied or adapted unless the ledger contains an approved material entry with exact local-file mapping and immutable upstream provenance.
 
-## Stage 09.05 audited baseline
+## Stage 09 release-candidate baseline
 
-- repository audit baseline: `main@cd6850abdabc016136368fd2b6a9decfa6e1df51`;
-- pack authority: 607-entry `modlist.txt` snapshot supplied 2026-09-05;
-- detailed audit: [`docs/compat/third-party-provenance-audit-2026-09-05.md`](docs/compat/third-party-provenance-audit-2026-09-05.md);
-- current material derivations: **none**.
+- verified repository baseline entering Stage 09.04: `main@24b7df890777eccca7148b27b4e5dc0a028abc34`;
+- pack authority: user-supplied 607-entry `modlist.txt` snapshot reconciled 2026-09-06;
+- current compatibility profile: [`docs/compat/current-pack-2026-09-06.md`](docs/compat/current-pack-2026-09-06.md);
+- provenance audit: [`docs/compat/third-party-provenance-audit-2026-09-05.md`](docs/compat/third-party-provenance-audit-2026-09-05.md);
+- current copied/derived/vendored third-party production material: **none**.
 
 ## Current direct integration targets
 
@@ -43,4 +44,4 @@ When actual source-level material is incorporated, the local source carries:
 // UPSTREAM-DERIVED: provenance-id
 ```
 
-and the same provenance id must be a `copied`, `derived` or `vendored` ledger entry mapping that exact local file. Restricted, unknown, `REVIEW_REQUIRED` or `PERMISSION_REQUIRED` material is not mergeable/releasable.
+and the same provenance id must be a `copied`, `derived` or `vendored` ledger entry mapping that exact local file. Restricted, unknown or unresolved material is not mergeable/releasable.
