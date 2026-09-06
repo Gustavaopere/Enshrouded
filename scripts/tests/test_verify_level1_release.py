@@ -18,7 +18,13 @@ class Level1ReleaseContractTest(unittest.TestCase):
         for name in ("LICENSE", "SOURCES.md", "THIRD_PARTY_NOTICES.md"):
             (root / name).write_text("ok\n", encoding="utf-8")
         (root / "provenance/third-party-provenance.json").write_text("{}\n", encoding="utf-8")
-        for name in ("✅-01-test-matrix.md", "✅-02-performance.md", "✅-03-world-upgrade.md", "✅-05-third-party-licenses-provenance.md"):
+        for name in (
+            "✅-01-test-matrix.md",
+            "✅-02-performance.md",
+            "✅-03-world-upgrade.md",
+            "✅-04-release-checklist.md",
+            "✅-05-third-party-licenses-provenance.md",
+        ):
             (root / "plans/09-hardening" / name).write_text("closed\n", encoding="utf-8")
         (root / "docs/release/level1-checklist.md").write_text(
             "NeoForge 1.21.1\nJava 21\nMANUAL_CURRENT_PACK_SMOKE_REQUIRED\nNo unresolved P0/P1 release blockers\n",
@@ -72,6 +78,11 @@ class Level1ReleaseContractTest(unittest.TestCase):
         root = self.make_repo()
         (root / "plans/09-hardening/✅-05-third-party-licenses-provenance.md").unlink()
         self.assertTrue(any("09.05" in e for e in release.validate_repository(root)))
+
+    def test_missing_stage_09_04_closeout_fails_closed(self):
+        root = self.make_repo()
+        (root / "plans/09-hardening/✅-04-release-checklist.md").unlink()
+        self.assertTrue(any("09.04" in e for e in release.validate_repository(root)))
 
     def test_current_pack_versions_are_required(self):
         root = self.make_repo()
