@@ -26,6 +26,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Third-party provenance contract tests
+        run: python3 -m unittest scripts/tests/test_verify_third_party_provenance.py
+
+      - name: Verify third-party provenance
+        run: python3 scripts/verify_third_party_provenance.py
+
       - name: Level 1 release-readiness contract tests
         run: python3 -m unittest scripts/tests/test_verify_level1_release.py
 
