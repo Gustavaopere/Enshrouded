@@ -129,6 +129,87 @@ final class WorldUpgradeMigrationRedTest {
         assertTrue(malformedFailure.getMessage().contains("schema_version"));
     }
 
+    @Test
+    void truncatedRequiredCollectionsFailClosedInsteadOfResettingState() throws Exception {
+        CompoundTag shroud = EnshroudedDataFixer.migrate(PersistentSubsystem.SHROUD, fixture("shroud-v1.snbt"));
+        shroud.remove("cores");
+        PersistentDataFormatException shroudFailure = assertThrows(
+                PersistentDataFormatException.class,
+                () -> ShroudStateCodec.decode(shroud)
+        );
+        assertEquals(PersistentSubsystem.SHROUD, shroudFailure.subsystem());
+        assertTrue(shroudFailure.getMessage().contains("cores"));
+
+        CompoundTag shroudNested = EnshroudedDataFixer.migrate(PersistentSubsystem.SHROUD, fixture("shroud-v1.snbt"));
+        shroudNested.getList("regions", CompoundTag.TAG_COMPOUND).getCompound(0).remove("cells");
+        PersistentDataFormatException shroudNestedFailure = assertThrows(
+                PersistentDataFormatException.class,
+                () -> ShroudStateCodec.decode(shroudNested)
+        );
+        assertEquals(PersistentSubsystem.SHROUD, shroudNestedFailure.subsystem());
+        assertTrue(shroudNestedFailure.getMessage().contains("cells"));
+
+        CompoundTag discovery = EnshroudedDataFixer.migrate(
+                PersistentSubsystem.SHROUD_DISCOVERY,
+                fixture("shroud-discovery-v1.snbt")
+        );
+        discovery.putString("owners", "truncated");
+        PersistentDataFormatException discoveryFailure = assertThrows(
+                PersistentDataFormatException.class,
+                () -> ShroudDiscoveryCodec.decode(discovery)
+        );
+        assertEquals(PersistentSubsystem.SHROUD_DISCOVERY, discoveryFailure.subsystem());
+        assertTrue(discoveryFailure.getMessage().contains("owners"));
+
+        CompoundTag discoveryNested = EnshroudedDataFixer.migrate(
+                PersistentSubsystem.SHROUD_DISCOVERY,
+                fixture("shroud-discovery-v1.snbt")
+        );
+        discoveryNested.getList("owners", CompoundTag.TAG_COMPOUND).getCompound(0).remove("cores");
+        PersistentDataFormatException discoveryNestedFailure = assertThrows(
+                PersistentDataFormatException.class,
+                () -> ShroudDiscoveryCodec.decode(discoveryNested)
+        );
+        assertEquals(PersistentSubsystem.SHROUD_DISCOVERY, discoveryNestedFailure.subsystem());
+        assertTrue(discoveryNestedFailure.getMessage().contains("cores"));
+
+        CompoundTag flame = EnshroudedDataFixer.migrate(PersistentSubsystem.FLAME_PROGRESSION, fixture("flame-v1.snbt"));
+        flame.remove("owners");
+        PersistentDataFormatException flameFailure = assertThrows(
+                PersistentDataFormatException.class,
+                () -> FlameProgressionCodec.decode(flame)
+        );
+        assertEquals(PersistentSubsystem.FLAME_PROGRESSION, flameFailure.subsystem());
+        assertTrue(flameFailure.getMessage().contains("owners"));
+
+        CompoundTag flameNested = EnshroudedDataFixer.migrate(PersistentSubsystem.FLAME_PROGRESSION, fixture("flame-v1.snbt"));
+        flameNested.getList("owners", CompoundTag.TAG_COMPOUND).getCompound(0).remove("completed_rituals");
+        PersistentDataFormatException flameNestedFailure = assertThrows(
+                PersistentDataFormatException.class,
+                () -> FlameProgressionCodec.decode(flameNested)
+        );
+        assertEquals(PersistentSubsystem.FLAME_PROGRESSION, flameNestedFailure.subsystem());
+        assertTrue(flameNestedFailure.getMessage().contains("completed_rituals"));
+
+        CompoundTag story = EnshroudedDataFixer.migrate(PersistentSubsystem.STORY, fixture("story-v1.snbt"));
+        story.putString("encounters", "truncated");
+        PersistentDataFormatException storyFailure = assertThrows(
+                PersistentDataFormatException.class,
+                () -> StoryCodec.decode(story)
+        );
+        assertEquals(PersistentSubsystem.STORY, storyFailure.subsystem());
+        assertTrue(storyFailure.getMessage().contains("encounters"));
+
+        CompoundTag storyNested = EnshroudedDataFixer.migrate(PersistentSubsystem.STORY, fixture("story-v1.snbt"));
+        storyNested.getList("manifestations", CompoundTag.TAG_COMPOUND).getCompound(0).remove("defeated_manifestations");
+        PersistentDataFormatException storyNestedFailure = assertThrows(
+                PersistentDataFormatException.class,
+                () -> StoryCodec.decode(storyNested)
+        );
+        assertEquals(PersistentSubsystem.STORY, storyNestedFailure.subsystem());
+        assertTrue(storyNestedFailure.getMessage().contains("defeated_manifestations"));
+    }
+
     private static CompoundTag fixture(String name) throws Exception {
         String path = "/world-upgrades/" + name;
         try (InputStream stream = WorldUpgradeMigrationRedTest.class.getResourceAsStream(path)) {

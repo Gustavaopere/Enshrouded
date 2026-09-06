@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.story.state;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentDataValidation;
 import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
 import com.gustavaopere.enshrouded.datafix.UnsupportedPersistentSchemaException;
 import net.minecraft.nbt.CompoundTag;
@@ -49,14 +50,24 @@ public final class StoryCodec {
         }
 
         LinkedHashMap<ProgressionOwner, ManifestationRecord> manifestations = new LinkedHashMap<>();
-        ListTag encodedManifestations = current.getList("manifestations", CompoundTag.TAG_COMPOUND);
+        ListTag encodedManifestations = PersistentDataValidation.requireList(
+                current,
+                "manifestations",
+                CompoundTag.TAG_COMPOUND,
+                PersistentSubsystem.STORY
+        );
         for (int index = 0; index < encodedManifestations.size(); index++) {
             CompoundTag tag = encodedManifestations.getCompound(index);
             ProgressionOwner owner = parseOwner(tag.getString("owner"));
             ManifestationRecord record = new ManifestationRecord(
                     owner,
                     tag.getInt("current_manifestation_index"),
-                    decodeDefeated(tag.getList("defeated_manifestations", CompoundTag.TAG_INT))
+                    decodeDefeated(PersistentDataValidation.requireList(
+                            tag,
+                            "defeated_manifestations",
+                            CompoundTag.TAG_INT,
+                            PersistentSubsystem.STORY
+                    ))
             );
             if (manifestations.put(owner, record) != null) {
                 throw new IllegalArgumentException("duplicate story progression owner: " + owner.stableKey());
@@ -64,7 +75,12 @@ public final class StoryCodec {
         }
 
         LinkedHashMap<UUID, EncounterRecord> encounters = new LinkedHashMap<>();
-        ListTag encodedEncounters = current.getList("encounters", CompoundTag.TAG_COMPOUND);
+        ListTag encodedEncounters = PersistentDataValidation.requireList(
+                current,
+                "encounters",
+                CompoundTag.TAG_COMPOUND,
+                PersistentSubsystem.STORY
+        );
         for (int index = 0; index < encodedEncounters.size(); index++) {
             EncounterRecord record = decodeEncounter(encodedEncounters.getCompound(index));
             if (encounters.put(record.encounterId(), record) != null) {

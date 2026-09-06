@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.flame.state;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentDataValidation;
 import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
 import com.gustavaopere.enshrouded.datafix.UnsupportedPersistentSchemaException;
 import net.minecraft.nbt.CompoundTag;
@@ -42,7 +43,12 @@ public final class FlameProgressionCodec {
         }
 
         LinkedHashMap<ProgressionOwner, FlameProgressionState.OwnerProgression> owners = new LinkedHashMap<>();
-        ListTag encodedOwners = current.getList("owners", CompoundTag.TAG_COMPOUND);
+        ListTag encodedOwners = PersistentDataValidation.requireList(
+                current,
+                "owners",
+                CompoundTag.TAG_COMPOUND,
+                PersistentSubsystem.FLAME_PROGRESSION
+        );
         for (int index = 0; index < encodedOwners.size(); index++) {
             CompoundTag tag = encodedOwners.getCompound(index);
             String ownerKey = tag.getString("owner");
@@ -52,7 +58,12 @@ public final class FlameProgressionCodec {
                     tag.getInt("flame_level"),
                     tag.getInt("passage_level"),
                     tag.getBoolean("next_level_ready"),
-                    decodeRituals(tag.getList("completed_rituals", CompoundTag.TAG_STRING))
+                    decodeRituals(PersistentDataValidation.requireList(
+                            tag,
+                            "completed_rituals",
+                            CompoundTag.TAG_STRING,
+                            PersistentSubsystem.FLAME_PROGRESSION
+                    ))
             );
             if (owners.put(owner, progression) != null) {
                 throw new IllegalArgumentException("duplicate progression owner: " + owner.stableKey());

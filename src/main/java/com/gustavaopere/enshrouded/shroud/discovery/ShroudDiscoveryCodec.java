@@ -2,6 +2,7 @@ package com.gustavaopere.enshrouded.shroud.discovery;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentDataValidation;
 import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
 import com.gustavaopere.enshrouded.datafix.UnsupportedPersistentSchemaException;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
@@ -43,14 +44,24 @@ public final class ShroudDiscoveryCodec {
         }
 
         LinkedHashMap<String, Map<UUID, DiscoveredCore>> byOwner = new LinkedHashMap<>();
-        ListTag owners = migrated.getList("owners", CompoundTag.TAG_COMPOUND);
+        ListTag owners = PersistentDataValidation.requireList(
+                migrated,
+                "owners",
+                CompoundTag.TAG_COMPOUND,
+                PersistentSubsystem.SHROUD_DISCOVERY
+        );
         for (int index = 0; index < owners.size(); index++) {
             CompoundTag ownerTag = owners.getCompound(index);
             String ownerKey = ownerTag.getString("owner");
             if (ProgressionOwner.parse(ownerKey).isEmpty()) {
                 throw new IllegalArgumentException("invalid progression owner stable key: " + ownerKey);
             }
-            LinkedHashMap<UUID, DiscoveredCore> cores = decodeCores(ownerTag.getList("cores", CompoundTag.TAG_COMPOUND));
+            LinkedHashMap<UUID, DiscoveredCore> cores = decodeCores(PersistentDataValidation.requireList(
+                    ownerTag,
+                    "cores",
+                    CompoundTag.TAG_COMPOUND,
+                    PersistentSubsystem.SHROUD_DISCOVERY
+            ));
             if (byOwner.put(ownerKey, cores) != null) {
                 throw new IllegalArgumentException("duplicate discovery owner: " + ownerKey);
             }
