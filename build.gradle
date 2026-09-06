@@ -98,6 +98,11 @@ configurations {
 
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
+
+    // Stage 10 primary animated-3D runtime. This is an external required mod
+    // dependency supplied by the pack/runtime; it is not shaded into Enshrouded.
+    implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:${geckolib_version}"
+
     compileOnly group: 'info.journeymap', name: 'journeymap-api-neoforge', version: '2.0.0-1.21.1'
     testImplementation group: 'info.journeymap', name: 'journeymap-api-neoforge', version: '2.0.0-1.21.1'
     testImplementation platform('org.junit:junit-bom:5.11.4')
@@ -109,7 +114,7 @@ dependencies {
     arsZeroCompatRuntime 'curse.maven:ars-nouveau-401955:8721482'
     arsZeroCompatRuntime 'curse.maven:ars-elemental-561470:8399862'
     arsZeroCompatRuntime 'curse.maven:curios-309927:6529130'
-    arsZeroCompatRuntime 'software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.2'
+    arsZeroCompatRuntime "software.bernie.geckolib:geckolib-neoforge-1.21.1:${geckolib_version}"
     arsZeroCompatRuntime 'curse.maven:terrablender-neoforge-940057:6054947'
 }
 
@@ -137,6 +142,7 @@ tasks.withType(ProcessResources).configureEach {
         minecraft_version_range: minecraft_version_range,
         neo_version: neo_version,
         loader_version_range: loader_version_range,
+        geckolib_version_range: geckolib_version_range,
         mod_id: mod_id,
         mod_name: mod_name,
         mod_license: mod_license,
