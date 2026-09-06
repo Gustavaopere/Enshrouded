@@ -81,8 +81,12 @@ public final class FlameAltarMenu extends AbstractContainerMenu {
             return false;
         }
 
+        int flameLevelBefore = flameLevel();
         FlameAltarService.ActivationResult result = FlameAltarRuntime.activate(serverPlayer, altarInventory);
         refreshData(serverPlayer);
+        if (altar != null && result.status() == FlameAltarService.Status.APPLIED) {
+            altar.triggerAuthoritativePresentation(flameLevel() > flameLevelBefore);
+        }
         serverPlayer.displayClientMessage(Component.translatable(messageKey(result.status())), false);
         return true;
     }
