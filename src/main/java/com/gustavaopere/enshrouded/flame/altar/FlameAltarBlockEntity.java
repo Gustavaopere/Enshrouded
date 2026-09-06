@@ -66,6 +66,17 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         return animationCache;
     }
 
+    /**
+     * Emits presentation only after the canonical server-side ritual result has been accepted.
+     * GeckoLib distributes the trigger to tracking clients; it never decides or mutates progression.
+     */
+    void triggerAuthoritativePresentation(boolean levelTransition) {
+        if (!(level instanceof ServerLevel)) {
+            return;
+        }
+        triggerAnim("flame_altar", levelTransition ? "level_transition" : "ritual_success");
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();
