@@ -1,10 +1,13 @@
 package com.gustavaopere.enshrouded.exposure;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.nbt.CompoundTag;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -57,14 +60,21 @@ public record ShroudExposureAttachment(int schemaVersion, int remainingTicks) {
     }
 
     private static DataResult<ShroudExposureAttachment> decode(SerializedExposure serialized) {
-        if (serialized.schemaVersion() != ExposureSchema.CURRENT_VERSION) {
-            return DataResult.error(() -> "unsupported exposure schema version: " + serialized.schemaVersion()
-                    + " (current=" + ExposureSchema.CURRENT_VERSION + ")");
+        CompoundTag raw = new CompoundTag();
+        raw.putInt(EnshroudedDataFixer.SCHEMA_VERSION_TAG, serialized.schemaVersion());
+        raw.putInt("remaining_ticks", serialized.remainingTicks());
+
+        final CompoundTag migrated;
+        try {
+            migrated = EnshroudedDataFixer.migrate(PersistentSubsystem.EXPOSURE, raw);
+        } catch (IllegalArgumentException failure) {
+            return DataResult.error(failure::getMessage);
         }
-        if (serialized.remainingTicks() < 0) {
+        int remainingTicks = migrated.getInt("remaining_ticks");
+        if (remainingTicks < 0) {
             return DataResult.error(() -> "remaining_ticks must be >= 0");
         }
-        return DataResult.success(new ShroudExposureAttachment(serialized.schemaVersion(), serialized.remainingTicks()));
+        return DataResult.success(new ShroudExposureAttachment(ExposureSchema.CURRENT_VERSION, remainingTicks));
     }
 
     private record SerializedExposure(int schemaVersion, int remainingTicks) {

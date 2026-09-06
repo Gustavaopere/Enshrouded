@@ -1,6 +1,9 @@
 package com.gustavaopere.enshrouded.flame.state;
 
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
+import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
+import com.gustavaopere.enshrouded.datafix.UnsupportedPersistentSchemaException;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -31,31 +34,30 @@ public final class FlameProgressionCodec {
     }
 
     public static FlameProgressionState decode(CompoundTag root) {
-        int schemaVersion = root.getInt("schema_version");
-        if (schemaVersion < FlameProgressionSchema.FIRST_VERSION
-                || schemaVersion > FlameProgressionSchema.CURRENT_VERSION) {
-            throw new UnsupportedFlameProgressionSchemaException(schemaVersion);
+        CompoundTag current;
+        try {
+            current = EnshroudedDataFixer.migrate(PersistentSubsystem.FLAME_PROGRESSION, root);
+        } catch (UnsupportedPersistentSchemaException failure) {
+            throw new UnsupportedFlameProgressionSchemaException(failure.schemaVersion());
         }
 
         LinkedHashMap<ProgressionOwner, FlameProgressionState.OwnerProgression> owners = new LinkedHashMap<>();
-        ListTag encodedOwners = root.getList("owners", CompoundTag.TAG_COMPOUND);
+        ListTag encodedOwners = current.getList("owners", CompoundTag.TAG_COMPOUND);
         for (int index = 0; index < encodedOwners.size(); index++) {
             CompoundTag tag = encodedOwners.getCompound(index);
             String ownerKey = tag.getString("owner");
             ProgressionOwner owner = ProgressionOwner.parse(ownerKey)
                     .orElseThrow(() -> new IllegalArgumentException("invalid progression owner: " + ownerKey));
-            boolean nextLevelReady = schemaVersion >= 2 && tag.getBoolean("next_level_ready");
             FlameProgressionState.OwnerProgression progression = new FlameProgressionState.OwnerProgression(
                     tag.getInt("flame_level"),
                     tag.getInt("passage_level"),
-                    nextLevelReady,
+                    tag.getBoolean("next_level_ready"),
                     decodeRituals(tag.getList("completed_rituals", CompoundTag.TAG_STRING))
             );
             if (owners.put(owner, progression) != null) {
                 throw new IllegalArgumentException("duplicate progression owner: " + owner.stableKey());
             }
         }
-        // Supported legacy schemas are migrated eagerly to the current in-memory representation.
         return new FlameProgressionState(FlameProgressionSchema.CURRENT_VERSION, owners);
     }
 

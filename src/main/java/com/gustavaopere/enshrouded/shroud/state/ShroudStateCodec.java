@@ -1,6 +1,9 @@
 package com.gustavaopere.enshrouded.shroud.state;
 
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
+import com.gustavaopere.enshrouded.datafix.EnshroudedDataFixer;
+import com.gustavaopere.enshrouded.datafix.PersistentSubsystem;
+import com.gustavaopere.enshrouded.datafix.UnsupportedPersistentSchemaException;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -42,14 +45,16 @@ public final class ShroudStateCodec {
     }
 
     public static ShroudWorldState decode(CompoundTag root) {
-        int schemaVersion = root.getInt("schema_version");
-        if (schemaVersion != ShroudSchema.CURRENT_VERSION) {
-            throw new UnsupportedShroudSchemaException(schemaVersion);
+        CompoundTag current;
+        try {
+            current = EnshroudedDataFixer.migrate(PersistentSubsystem.SHROUD, root);
+        } catch (UnsupportedPersistentSchemaException failure) {
+            throw new UnsupportedShroudSchemaException(failure.schemaVersion());
         }
 
-        Map<UUID, ShroudCoreState> cores = decodeCores(root.getList("cores", CompoundTag.TAG_COMPOUND));
-        Map<UUID, ShroudRegionState> regions = decodeRegions(root.getList("regions", CompoundTag.TAG_COMPOUND));
-        return new ShroudWorldState(schemaVersion, cores, regions);
+        Map<UUID, ShroudCoreState> cores = decodeCores(current.getList("cores", CompoundTag.TAG_COMPOUND));
+        Map<UUID, ShroudRegionState> regions = decodeRegions(current.getList("regions", CompoundTag.TAG_COMPOUND));
+        return new ShroudWorldState(ShroudSchema.CURRENT_VERSION, cores, regions);
     }
 
     private static CompoundTag encodeCore(ShroudCoreState core) {
