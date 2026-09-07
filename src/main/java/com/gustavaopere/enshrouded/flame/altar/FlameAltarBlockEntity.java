@@ -43,6 +43,7 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
             setChanged();
         }
     };
+    private FlameAltarFormationState formationState = FlameAltarFormationState.unformed();
 
     public FlameAltarBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FLAME_ALTAR.get(), pos, state);
@@ -50,6 +51,10 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
 
     public ItemStackHandler inventory() {
         return inventory;
+    }
+
+    public boolean isFormed() {
+        return formationState.formed();
     }
 
     @Override
