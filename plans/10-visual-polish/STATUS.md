@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.05 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.06 SHROUD WORLD-ART FAMILY
+**State:** 10.06 IMPLEMENTATION PRESENT / FINAL PR REVALIDATION IN PROGRESS / P0 IN-GAME ART REVIEW STILL REQUIRED
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -13,6 +13,7 @@
 **10.04 closeout PR:** #88 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.05 implementation PR:** #89 — `Stage 10.05 — Sanctuary / Purification presentation` — MERGED as `771341394045bdef09eb9d9fbb4743aaad1c39f6`.
 **10.05 closeout PR:** #90 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
+**10.06 implementation PR:** #91 — `Stage 10.06 — Shroud world-art family` — OPEN; final PR-head revalidation pending after 612-mod/Fusion reconciliation.
 
 ## Planning checkpoint
 
@@ -33,7 +34,7 @@
 - [x] Shroud world-art family and optional connected/continuous surface strategy defined.
 - [x] HUD/UI, VFX and audio polish plan defined.
 - [x] Performance, accessibility, provenance, renderer compatibility and dedicated-server gates defined.
-- [x] Manual full 607-mod pack smoke retained as an external release gate.
+- [x] Manual full 607-mod pack smoke retained as an external release gate at the original Stage 10 planning checkpoint.
 - [x] Canonical implementation sequence 10.01 → 10.10 defined.
 
 ## 10.01 — Visual Bible + dependency ADR — COMPLETE
@@ -200,9 +201,48 @@
 - [ ] Reduced-effects / particles-disabled readability remains to be reviewed.
 - [ ] Full 607-mod-pack visual smoke remains an external/manual gate because the complete pack is not vendored into CI.
 
+## 10.06 — Shroud world-art family — IMPLEMENTATION PRESENT / FINAL PR REVALIDATION IN PROGRESS
+
+### Authority and resource architecture
+
+- [x] Stage 02 remains the sole terrain mutation/materialization authority; no gameplay Java authority was added by 10.06.
+- [x] `shroud_growth`, `shroud_vein` and `withered_growth` use exactly three bounded vanilla weighted baked variants each.
+- [x] No visual-only SavedData, packet, block entity, ticker, runtime randomizer, neighbor scan, chunk forcing or parallel spread state was introduced.
+- [x] `withered_growth` is explicitly Deadly/Red ecology presentation, not purification.
+- [x] Purification/regression continues to use canonical restoration/cleanup and no persistent purified-residue provider exists.
+- [x] Fusion remains optional; vanilla blockstates/models constitute the complete fallback.
+
+### World-art package
+
+- [x] Ordinary growth and vein families use authored multi-element geometry instead of single `minecraft:block/cross` placeholders.
+- [x] Separate Ordinary membrane/crust materials are present.
+- [x] Deadly withered-growth variants use a distinct silhouette/material composition and separate Deadly membrane/crust materials.
+- [x] Red Sludge still/flow textures were upgraded within the same Deadly-family language without changing `RedSludgeFluidType` gameplay behavior.
+- [x] New first-party PNGs are explicitly registered in the provenance ledger.
+- [x] Stage 10.06 material textures are 32×32 and the contract bounds them to at most 64×64.
+- [x] `09-asset-review-matrix.md` records all 10.06 surfaces as `REVIEW_IN_GAME`/optional enhancement rather than treating CI as art approval.
+
+### TDD and validation evidence
+
+- [x] RED HEAD `af8f6140491e3304f1f4b60bf2a40f7affb51b29`: Enshrouded CI `34077847446 / 101607351530` failed at the new Stage 10 visual contract; Release Readiness `34077847501 / 101607351673` failed at the new presentation contract.
+- [x] First GREEN implementation HEAD `90b81e1d4df50b5c2b4956b0a0a1ce7384dace2e` exposed an actual provenance failure for new PNGs; the ledger was fixed rather than weakening the gate.
+- [x] Reconciled checkpoint `aa7ec50a0bc61de80eda9a4e838106603897f76e` passed Release Readiness `34078546785 / 101609292301` and full Enshrouded CI `34078546777 / 101609292946`.
+- [x] Before final merge, the latest attached modlist was rechecked: current pack is 612 mods; GeckoLib remains `4.9.2`; Sodium remains `0.8.13+mc1.21.1`; Fusion is now `1.3.15+a` / `fusion-1.3.15a-neoforge-mc1.21.1.jar`.
+- [ ] Final PR HEAD after this 612-mod/Fusion reconciliation must pass Release Readiness and the complete Enshrouded CI again before merge.
+
+### Visual/manual acceptance still open
+
+- [ ] Dense Ordinary growth/vein screenshots at realistic FOV/distance.
+- [ ] Deadly withered-growth + Red Sludge screenshots.
+- [ ] Large-surface seam/tile/checkerboard inspection.
+- [ ] Reduced-effects readability.
+- [ ] Sodium/Fusion coexistence visual check on the current versions.
+- [ ] Full 612-mod client visual smoke.
+- [ ] **ART APPROVED** remains open until the above evidence exists.
+
 ## Multiblock boundary carried forward
 
-Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04 or 10.05. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
+Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04, 10.05 or 10.06. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
 
 ## Hard boundaries carried into subsequent tasks
 
@@ -211,5 +251,5 @@ Full player-built 3×3/5×5 formation/validation is deliberately not implemented
 - Fusion may improve environmental materials only when a valid base/fallback resource path exists.
 - Lodestone, OctoLib and Player Animator remain task-gated rather than automatic dependencies.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
-- Manual full 607-mod pack smoke remains an external release gate before distribution.
-- Do not mark the Flame Altar/Sanctuary focus, Shroud Core or Lich Skull P0 **ART APPROVED** until the required in-game evidence exists.
+- Manual full 612-mod pack smoke is the current external release gate before distribution; older 607-mod references above are historical checkpoint evidence.
+- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull or 10.06 world-art family P0 **ART APPROVED** until the required in-game evidence exists.
