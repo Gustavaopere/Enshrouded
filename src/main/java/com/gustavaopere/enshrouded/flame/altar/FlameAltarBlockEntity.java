@@ -27,6 +27,9 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 /** One-slot persistent inventory backing the physical, animated Flame Altar. */
 public final class FlameAltarBlockEntity extends BlockEntity implements MenuProvider, GeoBlockEntity {
     private static final String INVENTORY_TAG = "Inventory";
+    private static final String FORMATION_TAG = "Formation";
+    private static final String FORMATION_SCHEMA_TAG = "SchemaVersion";
+    private static final String FORMATION_FORMED_TAG = "Formed";
     private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("animation.flame_altar.idle");
     private static final RawAnimation RITUAL_AVAILABLE = RawAnimation.begin().thenLoop("animation.flame_altar.ritual_available");
     private static final RawAnimation RITUAL_CHARGE = RawAnimation.begin().thenPlay("animation.flame_altar.ritual_charge");
@@ -44,6 +47,7 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         }
     };
     private FlameAltarFormationState formationState = FlameAltarFormationState.unformed();
+    private FlameAltarFormationState pendingFormationRecovery = FlameAltarFormationState.unformed();
 
     public FlameAltarBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FLAME_ALTAR.get(), pos, state);
@@ -126,11 +130,31 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         if (tag.contains(INVENTORY_TAG)) {
             inventory.deserializeNBT(registries, tag.getCompound(INVENTORY_TAG));
         }
+
+        // A persisted FORMED bit is only recovery intent. Gameplay remains UNFORMED until the
+        // bounded world validator explicitly re-confirms the physical structure.
+        formationState = FlameAltarFormationState.unformed();
+        pendingFormationRecovery = FlameAltarFormationState.unformed();
+        if (tag.contains(FORMATION_TAG)) {
+            CompoundTag formation = tag.getCompound(FORMATION_TAG);
+            pendingFormationRecovery = FlameAltarFormationState.fromPersisted(
+                    formation.getInt(FORMATION_SCHEMA_TAG),
+                    formation.getBoolean(FORMATION_FORMED_TAG)
+            );
+        }
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put(INVENTORY_TAG, inventory.serializeNBT(registries));
+
+        FlameAltarFormationState persistedFormation = formationState.formed()
+                ? formationState
+                : pendingFormationRecovery;
+        CompoundTag formation = new CompoundTag();
+        formation.putInt(FORMATION_SCHEMA_TAG, persistedFormation.schemaVersion());
+        formation.putBoolean(FORMATION_FORMED_TAG, persistedFormation.formed());
+        tag.put(FORMATION_TAG, formation);
     }
 }
