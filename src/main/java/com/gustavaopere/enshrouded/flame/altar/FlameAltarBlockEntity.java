@@ -99,6 +99,21 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         return result;
     }
 
+    /** Revokes only multiblock formation state; ritual inventory/progression remain untouched. */
+    void unform(ServerLevel level) {
+        boolean hadFormation = formationState.formed()
+                || pendingFormationRecovery.formed()
+                || formationPhase != FlameAltarFormationPhase.UNFORMED;
+        formationState = FlameAltarFormationState.unformed();
+        pendingFormationRecovery = FlameAltarFormationState.unformed();
+        formationPhase = FlameAltarFormationPhase.UNFORMED;
+        setShellFormedPresentation(level, false);
+        FlameWardRuntime.onAltarRemoved(level, worldPosition);
+        if (hadFormation) {
+            setChanged();
+        }
+    }
+
     private void setShellFormedPresentation(ServerLevel level, boolean formed) {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
@@ -107,6 +122,9 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
                 }
 
                 BlockPos pos = worldPosition.offset(dx, 0, dz);
+                if (!level.getChunkSource().hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
+                    continue;
+                }
                 BlockState state = level.getBlockState(pos);
                 if (state.getBlock() instanceof FlameAltarBraceBlock) {
                     if (state.getValue(FlameAltarBraceBlock.FORMED) != formed) {
