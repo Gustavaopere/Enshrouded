@@ -11,6 +11,14 @@ MODEL = ROOT / "src/main/java/com/gustavaopere/enshrouded/client/hud/ExposureHud
 CONTRACT = ROOT / "plans/10-visual-polish/10-07-hud-ui-art.md"
 LANG = ROOT / "src/main/resources/assets/enshrouded/lang"
 
+ATLAS = GUI / "shroud_hud_icons.png"
+ATLAS_WIDTH = 384
+ATLAS_HEIGHT = 64
+FRAME_WIDTH = 160
+FRAME_HEIGHT = 60
+SYMBOL_START_X = 320
+SYMBOL_SIZE = 16
+
 
 def decode_rgba8_png(path: Path):
     data = path.read_bytes()
@@ -81,28 +89,44 @@ def decode_rgba8_png(path: Path):
 
 
 class Stage10HudUiArtContractTest(unittest.TestCase):
-    def test_full_hud_atlas_has_bounded_ordinary_and_deadly_frames_with_structural_difference(self):
-        path = GUI / "shroud_hud_frame.png"
-        self.assertTrue(path.is_file(), "Stage 10.07 requires the authored full-HUD frame atlas")
-        width, height, pixels = decode_rgba8_png(path)
-        self.assertEqual((320, 64), (width, height))
+    def test_combined_hud_atlas_is_bounded_and_frames_are_structurally_distinct(self):
+        self.assertTrue(ATLAS.is_file(), "Stage 10.07 requires the authored HUD atlas")
+        width, height, pixels = decode_rgba8_png(ATLAS)
+        self.assertEqual((ATLAS_WIDTH, ATLAS_HEIGHT), (width, height))
 
-        ordinary_alpha = tuple(pixels[y][x][3] for y in range(60) for x in range(160))
-        deadly_alpha = tuple(pixels[y][x + 160][3] for y in range(60) for x in range(160))
-        self.assertNotEqual(ordinary_alpha, deadly_alpha,
-                            "Ordinary and Deadly frames must differ by shape/pattern, not only color")
+        ordinary_alpha = tuple(
+            pixels[y][x][3]
+            for y in range(FRAME_HEIGHT)
+            for x in range(FRAME_WIDTH)
+        )
+        deadly_alpha = tuple(
+            pixels[y][x + FRAME_WIDTH][3]
+            for y in range(FRAME_HEIGHT)
+            for x in range(FRAME_WIDTH)
+        )
+        self.assertNotEqual(
+            ordinary_alpha,
+            deadly_alpha,
+            "Ordinary and Deadly frames must differ by shape/pattern, not only color",
+        )
         alpha_delta = sum(a != b for a, b in zip(ordinary_alpha, deadly_alpha))
-        self.assertGreaterEqual(alpha_delta, 400,
-                                "Ordinary/Deadly frame topology is too similar for non-color accessibility")
+        self.assertGreaterEqual(
+            alpha_delta,
+            400,
+            "Ordinary/Deadly frame topology is too similar for non-color accessibility",
+        )
 
-    def test_hud_symbol_atlas_contains_four_bounded_shape_distinct_symbols(self):
-        path = GUI / "shroud_hud_icons.png"
-        width, height, pixels = decode_rgba8_png(path)
-        self.assertEqual((64, 16), (width, height),
-                         "Stage 10.07 symbol atlas must expose ordinary/deadly/passage/madness cells")
+    def test_combined_hud_atlas_contains_four_shape_distinct_symbols(self):
+        width, height, pixels = decode_rgba8_png(ATLAS)
+        self.assertEqual((ATLAS_WIDTH, ATLAS_HEIGHT), (width, height))
         masks = []
         for cell in range(4):
-            masks.append(tuple(pixels[y][cell * 16 + x][3] for y in range(16) for x in range(16)))
+            start_x = SYMBOL_START_X + cell * SYMBOL_SIZE
+            masks.append(tuple(
+                pixels[y][start_x + x][3]
+                for y in range(SYMBOL_SIZE)
+                for x in range(SYMBOL_SIZE)
+            ))
         self.assertEqual(4, len(set(masks)), "HUD symbols must be shape-distinct, not palette aliases")
 
     def test_overlay_remains_stage03_projection_and_has_full_plus_minimal_render_paths(self):
@@ -113,11 +137,14 @@ class Stage10HudUiArtContractTest(unittest.TestCase):
         self.assertIn("renderMinimalHud", source)
         self.assertIn("renderFullHud", source)
         self.assertIn("renderMadnessBar", source)
-        self.assertIn("HUD_FRAME_TEXTURE", source)
+        self.assertIn("HUD_ATLAS_TEXTURE", source)
         self.assertIn("model.passageWarning()", source)
         for forbidden in ("SavedData", "PacketDistributor", "sendToServer", "System.nanoTime()"):
-            self.assertNotIn(forbidden, source,
-                             f"HUD presentation must not acquire gameplay/network authority via {forbidden}")
+            self.assertNotIn(
+                forbidden,
+                source,
+                f"HUD presentation must not acquire gameplay/network authority via {forbidden}",
+            )
 
     def test_madness_bar_uses_only_server_authored_stage(self):
         source = MODEL.read_text(encoding="utf-8")
