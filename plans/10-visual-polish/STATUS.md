@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.03 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED
+**State:** 10.04 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.05 SANCTUARY / PURIFICATION
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -9,6 +9,8 @@
 **10.02 closeout PR:** #84 — MERGED; final verified baseline before 10.03: `main@ccd003cec3cee5e652729fe9225d61ed5f08b54e`
 **10.03 implementation PR:** #85 — `Stage 10.03 — Shroud Core Hero Asset` — MERGED as `aa3f96eaa387c49c286d0cf8978554fbd56067c5`
 **10.03 closeout PR:** #86 — records final technical/post-merge verification only; no runtime changes.
+**10.04 implementation PR:** #87 — `Stage 10.04 — Lich Skull and manifestation presentation` — MERGED as `a54e8f32e85c6b07dd3ace89a301743bfeb669ca`
+**10.04 closeout PR:** #88 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 
 ## Planning checkpoint
 
@@ -116,9 +118,50 @@
 - [x] Post-merge Level 1 Release Readiness `34065822757 / 101574271832` passed on the same `main@aa3f96eaa387c49c286d0cf8978554fbd56067c5` baseline.
 - [ ] P0 **ART APPROVED** still requires in-game screenshots for Ordinary and Deadly at realistic FOV/distance, reduced-effects readability and external full 607-mod-pack visual smoke.
 
+## 10.04 — Lich Skull + manifestation presentation — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
+
+### Runtime and authority
+
+- [x] Existing Stage 06 provider, Story State, defeat routing and exactly-once Lich Skull reward path remain canonical and unchanged.
+- [x] `LichSkullItem` is now a GeckoLib `GeoItem` rather than a `StandingAndWallBlockItem`/vanilla-skull presentation.
+- [x] GeckoLib split-source pattern is used: common item code contains no `net.minecraft.client.*`; the physical client injects `LichSkullRenderProvider` from `EnshroudedClient`.
+- [x] `LichSkullRenderer` + `LichSkullGeoModel` own rendering only and add selective emissive treatment through `AutoGlowingGeoLayer`.
+- [x] Manifestation spawn VFX occurs only after provider spawn, canonical encounter activation and optional arena activation succeed.
+- [x] Defeat VFX occurs only after the persisted encounter validates the dead bound actor and `StorySavedData.defeatEncounter(encounterId)` succeeds.
+- [x] `LichManifestationPresentation` has no provider, StorySavedData mutation, actor spawning, reward issuance, chunk forcing or global scan authority.
+
+### Hero asset + VFX package
+
+- [x] Original first-party `geometry.lich_skull_manifestation_1` with elongated ritual mask/skull, broken crown, fragmented halo, detached fragments and arcane fracture layer.
+- [x] Editable `art/blockbench/lich_skull_manifestation_1.bbmodel` source is present.
+- [x] First-party base texture + selective glowmask are present and provenance-tracked.
+- [x] Item model uses `builtin/entity` with authored GUI, ground, fixed/display, first-person and third-person transforms.
+- [x] `animation.lich_skull.idle` and `animation.lich_skull.ritual_resonance` are authored; animation completion cannot mutate Story/reward authority.
+- [x] First-party `lich_arcana` particle is registered for spawn/defeat presentation.
+- [x] Hard VFX budgets are 28 spawn particles, 36 defeat particles and 48-block maximum audience/audio radius.
+- [x] `10-04-lich-skull-design-sheet.md` records visual language, render architecture, authority boundaries, budgets and manual review requirements.
+- [x] `09-asset-review-matrix.md` now records all Stage 10.04 touched assets explicitly instead of allowing silent compile-to-approval promotion.
+
+### TDD / final gates
+
+- [x] TDD RED commit `7f45cbafa94c438919569acc419ddc2686c607ca` failed exactly at the new Stage 10.04 visual contract (`Enshrouded CI 34068621021 / 101581789264`).
+- [x] Initial GREEN work exposed a real NeoForge 1.21.1 `SoundEvent` holder signature mismatch; it was fixed without changing authority semantics.
+- [x] The repository architecture test then rejected the first renderer wiring because common code referenced client classes; the implementation was corrected to GeckoLib split-source rather than weakening the boundary test.
+- [x] Final PR #87 HEAD `2c79c7e9b6673b89117f38154267aa323962b50c` passed Release Readiness `34071068581 / 101588392524`.
+- [x] Final PR #87 HEAD passed Enshrouded CI `34071068613 / 101588392587`: Stage 10 contracts, 333 unit tests, performance baselines, diff sanity, NeoForge build, GameTests, two-boot reload, real Ars Zero 2.0.2 profile and dedicated-server save/reload smoke.
+- [x] PR #87 merged to `main` as `a54e8f32e85c6b07dd3ace89a301743bfeb669ca`.
+- [x] Post-merge Release Readiness `34071344201 / 101589147118` passed on `main@a54e8f32e85c6b07dd3ace89a301743bfeb669ca`.
+- [x] Post-merge Enshrouded CI `34071344252 / 101589147239` passed the complete matrix on the same main baseline.
+
+### Visual/manual acceptance still open
+
+- [ ] P0 **ART APPROVED** requires in-game GUI, first-person, third-person, ground/fixed-display and manifestation screenshots at realistic FOV/distance.
+- [ ] Reduced-effects readability remains to be reviewed in-game.
+- [ ] Full 607-mod-pack visual smoke remains an external/manual gate because the complete pack is not vendored into CI.
+
 ## Multiblock boundary carried forward
 
-Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02 or 10.03. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct.
+Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03 or 10.04. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct.
 
 ## Hard boundaries carried into subsequent tasks
 
@@ -128,4 +171,4 @@ Full player-built 3×3/5×5 formation/validation is deliberately not implemented
 - Lodestone, OctoLib and Player Animator remain task-gated rather than automatic dependencies.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
 - Manual full 607-mod pack smoke remains an external release gate before distribution.
-- Do not mark Flame Altar or Shroud Core P0 **ART APPROVED** until the required in-game evidence exists.
+- Do not mark Flame Altar, Shroud Core or Lich Skull P0 **ART APPROVED** until the required in-game evidence exists.

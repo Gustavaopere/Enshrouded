@@ -49,6 +49,18 @@ Use this matrix as the canonical visual-audit status for assets discovered durin
 | Entity Texture Features | 7.2.1 | installed | resource/model neighbor, not Enshrouded authority |
 | Easy Model Entities | 2.3.0 filename | installed | design/reference tooling neighbor; not selected runtime core |
 
+## Stage 10.04 reconciled audit
+
+| Asset/system | Exact repository evidence | Runtime owner / provenance | Technical state | Screenshot evidence | Final visual state |
+|---|---|---|---|---|---|
+| Lich Skull Manifestation I model | `assets/enshrouded/geo/lich_skull_manifestation_1.geo.json`; `art/blockbench/lich_skull_manifestation_1.bbmodel` | Enshrouded first-party; GeckoLib presentation | authored 3D model + editable source present | pending | **REVIEW_IN_GAME** |
+| Lich Skull base/emissive material | `textures/item/lich_skull_manifestation_1.png`; `textures/item/lich_skull_manifestation_1_glowmask.png` | first-party binaries listed in provenance | base + selective glowmask present | pending | **REVIEW_IN_GAME** |
+| Lich Skull item render path | `LichSkullItem`; `LichSkullRenderProvider`; `LichSkullRenderer`; `LichSkullGeoModel` | split-source client presentation; no gameplay authority | `builtin/entity`, GUI/ground/fixed/first-person/third-person transforms, `AutoGlowingGeoLayer` | pending | **REVIEW_IN_GAME** |
+| Lich Skull animations | `animations/lich_skull_manifestation_1.animation.json` | GeckoLib presentation-only | `idle` + `ritual_resonance` authored; animation completion cannot mutate Story/reward state | pending | **REVIEW_IN_GAME** |
+| Lich manifestation VFX | `LichManifestationPresentation`; `particles/lich_arcana.json`; `textures/particle/lich_arcana.png` | Enshrouded first-party presentation downstream of canonical Stage 06 lifecycle | bounded 28/36 particles, 48-block audience radius, no chunk forcing/provider fork | pending | **REVIEW_IN_GAME** |
+
+Stage 10.04 technical verification is complete on implementation PR #87 and post-merge `main@a54e8f32e85c6b07dd3ace89a301743bfeb669ca`. This does **not** promote these rows to `KEEP`: the P0 approval rule still requires in-game screenshots at realistic FOV/distance, reduced-effects readability and the external full 607-mod-pack visual smoke.
+
 ## Audit expansion rule
 
 During implementation, every new or touched asset is added here with:
