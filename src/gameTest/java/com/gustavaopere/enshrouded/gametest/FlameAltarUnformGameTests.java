@@ -6,6 +6,7 @@ import com.gustavaopere.enshrouded.flame.altar.FlameAltarBlockEntity;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarBraceBlock;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarFormationPhase;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuneBlock;
+import com.gustavaopere.enshrouded.flame.ward.FlameWardRuntime;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,44 +37,49 @@ public final class FlameAltarUnformGameTests {
         BlockPos center = helper.absolutePos(centerRelative);
         BlockPos southeastRelative = centerRelative.offset(1, 0, 1);
 
-        placeCanonicalShell(helper, centerRelative);
-        FlameAltarBlockEntity altar = requireAltar(helper, centerRelative);
-        altar.inventory().setStackInSlot(0, new ItemStack(Items.DIRT, 3));
+        FlameWardRuntime.service().clear();
+        try {
+            placeCanonicalShell(helper, centerRelative);
+            FlameAltarBlockEntity altar = requireAltar(helper, centerRelative);
+            altar.inventory().setStackInSlot(0, new ItemStack(Items.DIRT, 3));
 
-        helper.useBlock(centerRelative, player);
-        helper.assertTrue(altar.isFormed(), "Precondition: canonical shell must form before break test");
-        helper.assertTrue(FlameWardRuntimeBindings.query().suppresses(level, center),
-                "Precondition: formed altar must own active Sanctuary");
+            helper.useBlock(centerRelative, player);
+            helper.assertTrue(altar.isFormed(), "Precondition: canonical shell must form before break test");
+            helper.assertTrue(FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "Precondition: formed altar must own active Sanctuary");
 
-        helper.destroyBlock(southeastRelative);
+            helper.destroyBlock(southeastRelative);
 
-        helper.assertTrue(!altar.isFormed(),
-                "Breaking any required satellite must deterministically revoke controller FORMED state");
-        helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.UNFORMED,
-                "Required-part break must return the controller runtime phase to UNFORMED");
-        helper.assertTrue(!FlameWardRuntimeBindings.query().suppresses(level, center),
-                "UNFORM caused by structural break must deactivate the canonical Sanctuary provider");
-        assertExistingShellPresentation(helper, centerRelative, false);
-        helper.assertTrue(altar.inventory().getStackInSlot(0).getCount() == 3,
-                "Structural unform must not consume the ritual offering");
+            helper.assertTrue(!altar.isFormed(),
+                    "Breaking any required satellite must deterministically revoke controller FORMED state");
+            helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.UNFORMED,
+                    "Required-part break must return the controller runtime phase to UNFORMED");
+            helper.assertTrue(!FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "UNFORM caused by structural break must deactivate the canonical Sanctuary provider");
+            assertExistingShellPresentation(helper, centerRelative, false);
+            helper.assertTrue(altar.inventory().getStackInSlot(0).getCount() == 3,
+                    "Structural unform must not consume the ritual offering");
 
-        helper.setBlock(southeastRelative, ModBlocks.FLAME_ALTAR_RUNE.get());
-        helper.assertTrue(!altar.isFormed(),
-                "Replacing a missing satellite must not passively reform without explicit controller interaction");
-        helper.assertTrue(!FlameWardRuntimeBindings.query().suppresses(level, center),
-                "Replacing the part alone must not reactivate Sanctuary");
+            helper.setBlock(southeastRelative, ModBlocks.FLAME_ALTAR_RUNE.get());
+            helper.assertTrue(!altar.isFormed(),
+                    "Replacing a missing satellite must not passively reform without explicit controller interaction");
+            helper.assertTrue(!FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "Replacing the part alone must not reactivate Sanctuary");
 
-        helper.useBlock(centerRelative, player);
-        helper.assertTrue(altar.isFormed(),
-                "A repaired canonical shell must reform on a new explicit controller interaction");
-        assertExistingShellPresentation(helper, centerRelative, true);
-        helper.assertTrue(FlameWardRuntimeBindings.query().suppresses(level, center),
-                "Explicit reformation must reactivate the same canonical Sanctuary provider");
-        helper.assertTrue(altar.inventory().getStackInSlot(0).getCount() == 3,
-                "Form-unform-reform lifecycle must not consume or duplicate the ritual offering");
+            helper.useBlock(centerRelative, player);
+            helper.assertTrue(altar.isFormed(),
+                    "A repaired canonical shell must reform on a new explicit controller interaction");
+            assertExistingShellPresentation(helper, centerRelative, true);
+            helper.assertTrue(FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "Explicit reformation must reactivate the same canonical Sanctuary provider");
+            helper.assertTrue(altar.inventory().getStackInSlot(0).getCount() == 3,
+                    "Form-unform-reform lifecycle must not consume or duplicate the ritual offering");
 
-        helper.destroyBlock(centerRelative);
-        helper.succeed();
+            helper.succeed();
+        } finally {
+            player.closeContainer();
+            FlameWardRuntime.service().clear();
+        }
     }
 
     @GameTest(template = "foundation_empty", batch = BATCH)
@@ -83,22 +89,28 @@ public final class FlameAltarUnformGameTests {
         BlockPos centerRelative = new BlockPos(3, 1, 3);
         BlockPos center = helper.absolutePos(centerRelative);
 
-        placeCanonicalShell(helper, centerRelative);
-        FlameAltarBlockEntity altar = requireAltar(helper, centerRelative);
-        helper.useBlock(centerRelative, player);
-        helper.assertTrue(altar.isFormed(), "Precondition: controller must be FORMED before removal");
-        assertExistingShellPresentation(helper, centerRelative, true);
-        helper.assertTrue(FlameWardRuntimeBindings.query().suppresses(level, center),
-                "Precondition: formed controller must activate Sanctuary");
+        FlameWardRuntime.service().clear();
+        try {
+            placeCanonicalShell(helper, centerRelative);
+            FlameAltarBlockEntity altar = requireAltar(helper, centerRelative);
+            helper.useBlock(centerRelative, player);
+            helper.assertTrue(altar.isFormed(), "Precondition: controller must be FORMED before removal");
+            assertExistingShellPresentation(helper, centerRelative, true);
+            helper.assertTrue(FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "Precondition: formed controller must activate Sanctuary");
 
-        helper.destroyBlock(centerRelative);
+            helper.destroyBlock(centerRelative);
 
-        helper.assertTrue(level.getBlockEntity(center) == null,
-                "Breaking the controller must remove its authoritative BlockEntity");
-        assertExistingShellPresentation(helper, centerRelative, false);
-        helper.assertTrue(!FlameWardRuntimeBindings.query().suppresses(level, center),
-                "Breaking the controller must deactivate Sanctuary and leave no orphan authority");
-        helper.succeed();
+            helper.assertTrue(level.getBlockEntity(center) == null,
+                    "Breaking the controller must remove its authoritative BlockEntity");
+            assertExistingShellPresentation(helper, centerRelative, false);
+            helper.assertTrue(!FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "Breaking the controller must deactivate Sanctuary and leave no orphan authority");
+            helper.succeed();
+        } finally {
+            player.closeContainer();
+            FlameWardRuntime.service().clear();
+        }
     }
 
     private static void placeCanonicalShell(GameTestHelper helper, BlockPos center) {
