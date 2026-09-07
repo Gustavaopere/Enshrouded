@@ -54,6 +54,7 @@ public final class FlameAltarBlock extends Block implements EntityBlock {
         if (state.getBlock() != newState.getBlock()
                 && level instanceof ServerLevel serverLevel
                 && level.getBlockEntity(pos) instanceof FlameAltarBlockEntity altar) {
+            altar.unform(serverLevel);
             altar.dropContents(serverLevel);
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
