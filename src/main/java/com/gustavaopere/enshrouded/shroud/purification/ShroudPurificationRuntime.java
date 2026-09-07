@@ -83,7 +83,10 @@ public final class ShroudPurificationRuntime {
                     var updated = after.cores().get(core.id());
                     return updated != null && updated.lifecycleState() == CoreLifecycleState.PURIFIED;
                 })
-                .forEach(core -> NeoForge.EVENT_BUS.post(new ShroudCorePurifiedEvent(level, core.id())));
+                .forEach(core -> {
+                    ShroudPurificationPresentation.onPurified(level, core);
+                    NeoForge.EVENT_BUS.post(new ShroudCorePurifiedEvent(level, core.id()));
+                });
     }
 
     private static TerrainRestorationService restoration(ServerLevel level) {
