@@ -8,9 +8,11 @@ import com.gustavaopere.enshrouded.client.hud.ShroudHudOverlay;
 import com.gustavaopere.enshrouded.client.render.ShroudFogController;
 import com.gustavaopere.enshrouded.client.render.flame.FlameAltarRenderer;
 import com.gustavaopere.enshrouded.client.render.shroud.ShroudCoreRenderer;
+import com.gustavaopere.enshrouded.client.render.story.LichSkullRenderProvider;
 import com.gustavaopere.enshrouded.client.state.ClientShroudDiscoveryState;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
 import com.gustavaopere.enshrouded.registry.ModBlockEntities;
+import com.gustavaopere.enshrouded.registry.ModItems;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -39,5 +41,6 @@ public final class EnshroudedClient {
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.FLAME_ALTAR.get(), FlameAltarRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.SHROUD_CORE.get(), ShroudCoreRenderer::new);
+        ModItems.LICH_SKULL_MANIFESTATION_1.get().setGeoRenderProvider(new LichSkullRenderProvider());
     }
 }
