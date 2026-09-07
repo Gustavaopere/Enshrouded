@@ -53,12 +53,13 @@ public final class FlameWardMutationGameTests {
         BlockPos altarRelative = new BlockPos(2, 1, 2);
         BlockPos center = helper.absolutePos(altarRelative);
 
-        // This batch verifies one deterministic ward. Remove loaded-altar state left by prior
-        // GameTest batches so their spatial layout cannot redefine this fixture's "outside".
+        // This batch verifies one deterministic ward independently of the physical multiblock
+        // lifecycle. Stage 10.09 separately proves that only a FORMED altar may call this provider.
         FlameWardRuntime.service().clear();
 
         try {
             helper.setBlock(altarRelative, ModBlocks.FLAME_ALTAR.get());
+            FlameWardRuntime.onAltarLoaded(level, center);
 
             int radius = EnshroudedConfig.flameWardRadius();
             BlockPos insideCore = center.offset(1, 0, 0);
