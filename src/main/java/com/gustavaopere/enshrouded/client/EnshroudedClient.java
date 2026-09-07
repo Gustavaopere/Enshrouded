@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.client;
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.client.accessibility.AccessibilityPresetController;
 import com.gustavaopere.enshrouded.client.ambient.ShroudAmbientController;
+import com.gustavaopere.enshrouded.client.effects.SanctuaryPresentationController;
 import com.gustavaopere.enshrouded.client.effects.ShroudParticleController;
 import com.gustavaopere.enshrouded.client.hud.ShroudHudOverlay;
 import com.gustavaopere.enshrouded.client.render.ShroudFogController;
@@ -10,6 +11,7 @@ import com.gustavaopere.enshrouded.client.render.flame.FlameAltarRenderer;
 import com.gustavaopere.enshrouded.client.render.shroud.ShroudCoreRenderer;
 import com.gustavaopere.enshrouded.client.render.story.LichSkullRenderProvider;
 import com.gustavaopere.enshrouded.client.state.ClientShroudDiscoveryState;
+import com.gustavaopere.enshrouded.client.state.ClientShroudState;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
 import com.gustavaopere.enshrouded.registry.ModBlockEntities;
 import com.gustavaopere.enshrouded.registry.ModItems;
@@ -34,8 +36,12 @@ public final class EnshroudedClient {
         ShroudFogController.register(NeoForge.EVENT_BUS);
         ShroudAmbientController.register(NeoForge.EVENT_BUS);
         ShroudParticleController.register(NeoForge.EVENT_BUS);
-        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) ->
-                ClientShroudDiscoveryState.INSTANCE.reset());
+        SanctuaryPresentationController.register(NeoForge.EVENT_BUS);
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
+            ClientShroudDiscoveryState.INSTANCE.reset();
+            ClientShroudState.INSTANCE.reset();
+            SanctuaryPresentationController.reset();
+        });
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
