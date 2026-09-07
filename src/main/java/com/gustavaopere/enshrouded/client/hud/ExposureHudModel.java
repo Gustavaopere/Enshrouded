@@ -65,6 +65,20 @@ public record ExposureHudModel(
         return String.format(Locale.ROOT, "%02d:%02d", minutes, seconds);
     }
 
+    /**
+     * Five-step presentation projection of the already server-authored Madness stage.
+     * No reserve threshold or Madness reducer is duplicated on the client.
+     */
+    public int madnessSegments() {
+        return switch (madnessStage) {
+            case STABLE -> 1;
+            case UNEASY -> 2;
+            case DISTORTED -> 3;
+            case CRITICAL -> 4;
+            case FATAL -> 5;
+        };
+    }
+
     public enum ZoneKind {
         ORDINARY("hud.enshrouded.shroud"),
         DEADLY("hud.enshrouded.deadly_shroud");
