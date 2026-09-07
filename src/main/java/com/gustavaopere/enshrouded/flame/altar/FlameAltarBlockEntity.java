@@ -83,14 +83,6 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     }
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level instanceof ServerLevel serverLevel) {
-            FlameWardRuntime.onAltarLoaded(serverLevel, worldPosition);
-        }
-    }
-
-    @Override
     public void setRemoved() {
         if (level instanceof ServerLevel serverLevel) {
             FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
