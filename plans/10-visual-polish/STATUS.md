@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.06 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.07
+**State:** 10.07 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.08
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -15,6 +15,8 @@
 **10.05 closeout PR:** #90 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.06 implementation PR:** #91 — `Stage 10.06 — Shroud world-art family` — MERGED as `19b9cee08cf5b5f369497ad4c8c0329eff65253d`.
 **10.06 closeout PR:** #92 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
+**10.07 implementation PR:** #93 — `Stage 10.07 — HUD / UI art` — MERGED as `341aa508bcd997cf32b7d550c9a37fca19f36ff3`.
+**10.07 closeout PR:** #94 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 
 ## Planning checkpoint
 
@@ -246,9 +248,48 @@
 - [ ] Full 612-mod client visual smoke.
 - [ ] **ART APPROVED** remains open until the above evidence exists.
 
+## 10.07 — HUD / UI art — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
+
+### Authority and presentation architecture
+
+- [x] Stage 03 remains authoritative for exposure, reserve, Madness and Passage/Flame gating.
+- [x] `ShroudHudOverlay` remains client-side presentation-only and consumes the synchronized `ClientExposureState` projection.
+- [x] No new packet, SavedData, gameplay clock, server mutation, death prediction, global scan or authoritative recomputation was introduced.
+- [x] `ExposureHudModel.madnessSegments()` maps only the already server-authored `MadnessStage`; it does not recreate Madness thresholds or reducers.
+- [x] Passage warning remains a projection of synchronized `deadlyBarrierActive`; the HUD does not decide eligibility.
+
+### HUD package and accessibility
+
+- [x] `textures/gui/shroud_hud_icons.png` is a bounded 384×64 first-party atlas with Ordinary/Deadly frame cells and four authored symbol cells.
+- [x] Ordinary and Deadly frames differ structurally rather than by palette alone.
+- [x] The final CI contract normalizes alpha into occupied/transparent masks before comparing frame/symbol topology, preventing opacity-only false positives.
+- [x] Four 16×16 Ordinary, Deadly, Passage and Madness symbols must remain shape-distinct.
+- [x] `AccessibilityProfile.MINIMAL` has a dedicated render path that retains hazard identity, countdown, Madness stage and Passage warning while removing optional ornament.
+- [x] PT-BR/EN HUD translation-key parity remains contract-checked.
+- [x] Fusion is optional; GeckoLib and shaders are not required for the static 2D HUD path.
+
+### TDD and validation evidence
+
+- [x] Deliberate RED head `13252ccc1d58b4e1c5b4f1a0e31097c968f22bd8` failed exactly in the new Stage 10.07 contract: Release Readiness `34107462335 / 101695661987` and Enshrouded CI `34107462334 / 101695662104`.
+- [x] Final P2 review hardened alpha comparisons to normalized occupied topology; the thread was resolved only after the corrected head was green.
+- [x] Final PR #93 HEAD `cda923713f6228e3c34885fc7da3d8592081c78b` passed Release Readiness `34140834386 / 101802215801`.
+- [x] The same head passed Enshrouded CI `34140834405 / 101802215875`, including provenance, Stage 10 contracts, unit tests, performance, diff sanity, NeoForge build, GameTests, SavedData two-boot reload, real Ars Zero 2.0.2 profile and dedicated-server smoke.
+- [x] PR #93 merged to `main` as `341aa508bcd997cf32b7d550c9a37fca19f36ff3`.
+- [x] Post-merge Release Readiness `34141675351` passed on exact `main@341aa508bcd997cf32b7d550c9a37fca19f36ff3`.
+- [x] Post-merge Enshrouded CI `34141675549 / 101804820155` passed the complete matrix on the same baseline.
+- [x] Current pack reconciliation remains 612 mods with GeckoLib `4.9.2`, Sodium `0.8.13+mc1.21.1` and Fusion `1.3.15+a`.
+
+### Visual/manual acceptance still open
+
+- [ ] Ordinary vs Deadly screenshots at representative GUI scales.
+- [ ] MINIMAL / reduced-effects comparison.
+- [ ] Readability/coexistence near other HUD mods and common overlays.
+- [ ] Full 612-mod client visual smoke.
+- [ ] **ART APPROVED** remains open until the above evidence exists.
+
 ## Multiblock boundary carried forward
 
-Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04, 10.05 or 10.06. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
+Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04, 10.05, 10.06 or 10.07. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
 
 ## Hard boundaries carried into subsequent tasks
 
@@ -258,4 +299,4 @@ Full player-built 3×3/5×5 formation/validation is deliberately not implemented
 - Lodestone, OctoLib and Player Animator remain task-gated rather than automatic dependencies.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
 - Manual full 612-mod pack smoke is the current external release gate before distribution; older 607-mod references above are historical checkpoint evidence.
-- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull or 10.06 world-art family P0 **ART APPROVED** until the required in-game evidence exists.
+- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull, 10.06 world-art family or 10.07 HUD/UI P0 **ART APPROVED** until the required in-game evidence exists.
