@@ -32,7 +32,7 @@ public final class LichManifestationPresentation {
         level.sendParticles(ModParticles.LICH_ARCANA.get(),
                 actor.getX(), actor.getY() + actor.getBbHeight() * 0.55D, actor.getZ(),
                 MAX_SPAWN_PARTICLES, 0.85D, 1.15D, 0.85D, 0.025D);
-        level.playSound(null, actor.blockPosition(), SoundEvents.SOUL_ESCAPE, SoundSource.HOSTILE,
+        level.playSound(null, actor.blockPosition(), SoundEvents.SOUL_ESCAPE.value(), SoundSource.HOSTILE,
                 0.85F, 0.72F);
     }
 
@@ -47,7 +47,7 @@ public final class LichManifestationPresentation {
         level.sendParticles(ModParticles.LICH_ARCANA.get(),
                 actor.getX(), actor.getY() + actor.getBbHeight() * 0.45D, actor.getZ(),
                 MAX_DEFEAT_PARTICLES, 1.05D, 0.90D, 1.05D, 0.045D);
-        level.playSound(null, actor.blockPosition(), SoundEvents.SOUL_ESCAPE, SoundSource.HOSTILE,
+        level.playSound(null, actor.blockPosition(), SoundEvents.SOUL_ESCAPE.value(), SoundSource.HOSTILE,
                 0.70F, 0.52F);
     }
 
