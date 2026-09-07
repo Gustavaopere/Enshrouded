@@ -1,13 +1,10 @@
 package com.gustavaopere.enshrouded.flame.altar;
 
-import com.gustavaopere.enshrouded.flame.ward.FlameWardRuntime;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -31,27 +28,6 @@ public final class FlameAltarBlock extends Block implements EntityBlock {
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new FlameAltarBlockEntity(pos, state);
-    }
-
-    @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (state.getBlock() != oldState.getBlock() && level instanceof ServerLevel serverLevel) {
-            FlameWardRuntime.onAltarLoaded(serverLevel, pos);
-        }
-    }
-
-    @Override
-    public void setPlacedBy(
-            Level level,
-            BlockPos pos,
-            BlockState state,
-            @Nullable LivingEntity placer,
-            ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
-        if (level instanceof ServerLevel serverLevel) {
-            FlameWardRuntime.onAltarLoaded(serverLevel, pos);
-        }
     }
 
     @Override
