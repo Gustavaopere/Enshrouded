@@ -4,9 +4,11 @@ import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.api.progression.ProgressionRuntimeBindings;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarBlockEntity;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarBraceBlock;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarFormationState;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarMenu;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarOffering;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuneBlock;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuntime;
 import com.gustavaopere.enshrouded.flame.ritual.FlameRitual;
 import com.gustavaopere.enshrouded.flame.ritual.RitualOutcome;
@@ -21,6 +23,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -35,6 +38,30 @@ public final class FlameAltarFormationGameTests {
     private static boolean registered;
 
     private FlameAltarFormationGameTests() {
+    }
+
+    @GameTest(template = "foundation_empty", batch = BATCH)
+    public static void unformedShellComponentsHaveNoGameplayAuthority(GameTestHelper helper) {
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        BlockPos braceRelative = new BlockPos(1, 1, 1);
+        BlockPos runeRelative = new BlockPos(2, 1, 1);
+
+        BlockState braceState = ModBlocks.FLAME_ALTAR_BRACE.get().defaultBlockState();
+        BlockState runeState = ModBlocks.FLAME_ALTAR_RUNE.get().defaultBlockState();
+        helper.assertTrue(braceState.hasProperty(FlameAltarBraceBlock.FORMED)
+                        && !braceState.getValue(FlameAltarBraceBlock.FORMED),
+                "Fresh Flame Altar brace must begin as presentation-only UNFORMED material");
+        helper.assertTrue(runeState.hasProperty(FlameAltarRuneBlock.FORMED)
+                        && !runeState.getValue(FlameAltarRuneBlock.FORMED),
+                "Fresh Flame Altar rune must begin as presentation-only UNFORMED material");
+
+        helper.setBlock(braceRelative, braceState);
+        helper.setBlock(runeRelative, runeState);
+        helper.assertTrue(level.getBlockEntity(helper.absolutePos(braceRelative)) == null,
+                "Flame Altar brace must not own a BlockEntity or gameplay state");
+        helper.assertTrue(level.getBlockEntity(helper.absolutePos(runeRelative)) == null,
+                "Flame Altar rune must not own a BlockEntity or gameplay state");
+        helper.succeed();
     }
 
     @GameTest(template = "foundation_empty", batch = BATCH)
