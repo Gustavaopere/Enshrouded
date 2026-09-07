@@ -61,6 +61,18 @@ Use this matrix as the canonical visual-audit status for assets discovered durin
 
 Stage 10.04 technical verification is complete on implementation PR #87 and post-merge `main@a54e8f32e85c6b07dd3ace89a301743bfeb669ca`. This does **not** promote these rows to `KEEP`: the P0 approval rule still requires in-game screenshots at realistic FOV/distance, reduced-effects readability and the external full 607-mod-pack visual smoke.
 
+## Stage 10.05 reconciled audit
+
+| Asset/system | Exact repository evidence | Runtime owner / provenance | Technical state | Screenshot evidence | Final visual state |
+|---|---|---|---|---|---|
+| Sanctuary ward focus on Flame Altar | `assets/enshrouded/geo/flame_altar.geo.json`; `art/blockbench/flame_altar.bbmodel` | Enshrouded first-party geometry; GeckoLib presentation; canonical ward remains `FlameWardRuntime` / `FlameWardService` | `ward_focus`, `ward_ring`, `purification_aperture` and `ward_fragments` authored; editable source is contract-checked against every runtime cuboid | pending | **REVIEW_IN_GAME** |
+| Sanctuary / purification altar animation language | `assets/enshrouded/animations/flame_altar.animation.json`; `FlameAltarBlockEntity` | GeckoLib presentation-only; no Flame/ward state mutation | `animation.flame_altar.sanctuary_active` plus reserved one-shot `purification_release`; animation state cannot become gameplay authority | pending | **REVIEW_IN_GAME** |
+| Sanctuary local VFX | `SanctuaryPresentationController`; `particles/sanctuary_mote.json`; `ModParticles.SANCTUARY_MOTE` | client presentation reads only synchronized `ClientShroudState`; particle descriptor reuses an existing first-party sprite | max 6 motes every 6 ticks, existing particle config respected, no scan, server packet or chunk force | pending | **REVIEW_IN_GAME** |
+| Canonical terminal purification release | `ShroudPurificationPresentation`; `ShroudPurificationRuntime` | server presentation strictly downstream of persisted `DESTROYED -> PURIFIED` | max 24 motes once per canonical terminal transition, loaded-center check, no state mutation or chunk force | pending | **REVIEW_IN_GAME** |
+| Sanctuary over latent Shroud | `ShroudSample.sanctuarySuppressed`; `SanctuaryPresentationController`; canonical query/sync path | underlying intensity remains authoritative Shroud data; Sanctuary is a synchronized suppression fact | protected contamination remains visually legible instead of pretending the Shroud was deleted | pending | **REVIEW_IN_GAME** |
+
+Stage 10.05 technical verification is complete on implementation PR #89, merged as `771341394045bdef09eb9d9fbb4743aaad1c39f6`. Post-merge Level 1 Release Readiness `34074967881 / 101599175586` and Enshrouded CI `34074967864 / 101599175335` both passed on that exact `main` baseline. No new third-party binary or second Sanctuary/purification authority was introduced. These rows remain `REVIEW_IN_GAME` until active ward, latent-Shroud, terminal-release, reduced-effects and full 607-mod-pack visual evidence exists.
+
 ## Audit expansion rule
 
 During implementation, every new or touched asset is added here with:
