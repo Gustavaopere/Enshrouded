@@ -81,22 +81,30 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         }
 
         formationPhase = FlameAltarFormationPhase.VALIDATING;
-        FlameAltarStructureValidator.Result result = new FlameAltarStructureValidator(
-                ProtectionRuntimeBindings.protectedAreas()
-        ).validate(level, worldPosition);
+        FlameAltarStructureValidator.Result result = validateFormation(level);
 
         if (result.status() != FlameAltarStructureValidator.Status.VALID) {
             formationPhase = FlameAltarFormationPhase.UNFORMED;
             return result;
         }
 
+        commitFormation(level);
+        return result;
+    }
+
+    private FlameAltarStructureValidator.Result validateFormation(ServerLevel level) {
+        return new FlameAltarStructureValidator(
+                ProtectionRuntimeBindings.protectedAreas()
+        ).validate(level, worldPosition);
+    }
+
+    private void commitFormation(ServerLevel level) {
         formationState = new FlameAltarFormationState(FlameAltarFormationState.CURRENT_SCHEMA_VERSION, true);
         pendingFormationRecovery = FlameAltarFormationState.unformed();
         setShellFormedPresentation(level, true);
         formationPhase = FlameAltarFormationPhase.FORMED;
         setChanged();
         FlameWardRuntime.onAltarLoaded(level, worldPosition);
-        return result;
     }
 
     /** Revokes only multiblock formation state; ritual inventory/progression remain untouched. */
@@ -111,6 +119,30 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         FlameWardRuntime.onAltarRemoved(level, worldPosition);
         if (hadFormation) {
             setChanged();
+        }
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (!(level instanceof ServerLevel serverLevel) || !pendingFormationRecovery.formed()) {
+            return;
+        }
+
+        formationPhase = FlameAltarFormationPhase.VALIDATING;
+        FlameAltarStructureValidator.Result result = validateFormation(serverLevel);
+        switch (result.status()) {
+            case VALID -> commitFormation(serverLevel);
+            case REQUIRED_CHUNK_UNLOADED, PROTECTION_INDETERMINATE -> {
+                // The persisted bit is recovery intent, not gameplay authority. If required evidence
+                // is temporarily unavailable, stay fail-closed without destroying that intent and
+                // without force-loading the missing chunk. A later explicit interaction may retry.
+                formationState = FlameAltarFormationState.unformed();
+                formationPhase = FlameAltarFormationPhase.UNFORMED;
+                setShellFormedPresentation(serverLevel, false);
+                FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
+            }
+            default -> unform(serverLevel);
         }
     }
 
