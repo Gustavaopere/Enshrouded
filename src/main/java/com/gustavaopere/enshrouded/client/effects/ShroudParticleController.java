@@ -37,6 +37,7 @@ public final class ShroudParticleController {
         event.registerSpriteSet(ModParticles.SHROUD_CORE.get(), PlayerCloudParticle.Provider::new);
         event.registerSpriteSet(ModParticles.SHROUD_GROWTH.get(), PlayerCloudParticle.Provider::new);
         event.registerSpriteSet(ModParticles.RED_SLUDGE.get(), PlayerCloudParticle.Provider::new);
+        event.registerSpriteSet(ModParticles.LICH_ARCANA.get(), PlayerCloudParticle.Provider::new);
     }
 
     public static void reset() {
