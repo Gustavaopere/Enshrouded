@@ -87,6 +87,19 @@ Stage 10.05 technical verification is complete on implementation PR #89, merged 
 
 Stage 10.06 technical verification is complete on final PR #91 HEAD `1bf6dca57f8ff3548ef41955b0db06b8eb46b1c8`: Release Readiness `34079531152` and Enshrouded CI `34079531285 / 101612091620` both completed successfully after the two P2 contract hardenings. PR #91 merged as `19b9cee08cf5b5f369497ad4c8c0329eff65253d`; post-merge Release Readiness `34079910949` and Enshrouded CI `34079910911 / 101613106937` passed the complete matrix again on that exact `main`. The current pack reconciliation is **612 mods**, GeckoLib `4.9.2`, Sodium `0.8.13+mc1.21.1` and Fusion `1.3.15+a`. Manual Ordinary/Deadly surface captures, seam inspection, reduced-effects readability, Sodium/Fusion coexistence and the full 612-mod client smoke remain open; no row is promoted to `KEEP` from CI alone and `ART APPROVED` remains open.
 
+## Stage 10.07 reconciled audit
+
+| Asset/system | Exact repository evidence | Runtime owner / provenance | Technical state | Screenshot evidence | Final visual state |
+|---|---|---|---|---|---|
+| Shroud HUD authored frame atlas | `textures/gui/shroud_hud_icons.png`; `ShroudHudOverlay` | Enshrouded first-party GUI atlas; Stage 03 synchronized Exposure state remains authority | bounded 384×64 atlas with separate Ordinary/Deadly 160×60 frame cells; presentation-only render path | pending | **REVIEW_IN_GAME** |
+| Ordinary vs Deadly HUD identity | `shroud_hud_icons.png`; `scripts/ci/test_stage10_hud_ui_art.py` | first-party presentation; no gameplay state | CI decodes RGBA and normalizes `alpha > 0` to occupied topology masks, so palette/opacity-only aliases cannot satisfy the structural distinction gate | pending | **REVIEW_IN_GAME** |
+| HUD status symbols | `shroud_hud_icons.png` cells at U=320/336/352/368 | first-party Ordinary, Deadly, Passage and Madness symbols | four 16×16 symbols are required to have distinct occupied masks rather than palette aliases | pending | **REVIEW_IN_GAME** |
+| Madness presentation | `ExposureHudModel.madnessSegments()`; `ShroudHudOverlay.renderMadnessBar()` | projection of synchronized `MadnessStage`; Stage 03 remains sole authority | five-step bar derives only from server-authored Madness stage; no client threshold/reducer recomputation | pending | **REVIEW_IN_GAME** |
+| Passage warning presentation | `ExposureHudModel.passageWarning()`; `ShroudHudOverlay` | projection of synchronized Deadly barrier state | warning/icon renders from existing synchronized `deadlyBarrierActive`; no client passage eligibility authority | pending | **REVIEW_IN_GAME** |
+| MINIMAL accessibility path | `ShroudHudOverlay.renderMinimalHud()`; `AccessibilityProfile.MINIMAL` | client-only presentation/config | removes optional ornament while retaining zone identity, countdown, Madness and Passage warning; Ordinary/Deadly remains shape-distinct | pending reduced-effects comparison | **REVIEW_IN_GAME** |
+
+Stage 10.07 technical verification is complete on final PR #93 HEAD `cda923713f6228e3c34885fc7da3d8592081c78b`: Release Readiness `34140834386 / 101802215801` and Enshrouded CI `34140834405 / 101802215875` both completed successfully after the P2 alpha-topology hardening. PR #93 merged as `341aa508bcd997cf32b7d550c9a37fca19f36ff3`; post-merge Release Readiness `34141675351` and Enshrouded CI `34141675549 / 101804820155` passed the complete matrix again on that exact `main`, including dedicated-server save/reload smoke. Current pack baseline remains **612 mods** with GeckoLib `4.9.2`, Sodium `0.8.13+mc1.21.1` and Fusion `1.3.15+a`. Screenshots at representative GUI scales, MINIMAL/reduced-effects comparison, coexistence with other HUD overlays and the full 612-mod visual smoke remain open; `ART APPROVED` is not inferred from CI.
+
 ## Audit expansion rule
 
 During implementation, every new or touched asset is added here with:
