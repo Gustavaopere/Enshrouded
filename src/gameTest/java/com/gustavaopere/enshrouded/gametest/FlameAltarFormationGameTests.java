@@ -46,15 +46,15 @@ public final class FlameAltarFormationGameTests {
         BlockPos relative = new BlockPos(1, 1, 1);
         helper.setBlock(relative, ModBlocks.FLAME_ALTAR.get());
         FlameAltarBlockEntity altar = requireAltar(helper, relative);
-        altar.inventory().setStackInSlot(0, new ItemStack(Items.BLAZE_POWDER));
+        altar.inventory().setStackInSlot(0, new ItemStack(Items.DIRT));
 
         FlameAltarMenu menu = new FlameAltarMenu(1, player.getInventory(), altar);
         boolean handled = menu.clickMenuButton(player, FlameAltarMenu.ACTIVATE_BUTTON_ID);
         var after = FlameProgressionSavedData.get(level).progression(owner);
 
         helper.assertTrue(handled, "UNFORMED altar activation request should be handled server-side");
-        helper.assertTrue(altar.inventory().getStackInSlot(0).is(Items.BLAZE_POWDER),
-                "UNFORMED altar must not consume a valid ritual offering");
+        helper.assertTrue(altar.inventory().getStackInSlot(0).is(Items.DIRT),
+                "UNFORMED altar must not consume a valid synthetic ritual offering");
         helper.assertTrue(after.equals(before),
                 "UNFORMED altar must not mutate authoritative Flame progression");
         helper.succeed();
@@ -86,7 +86,7 @@ public final class FlameAltarFormationGameTests {
                     @Override
                     public boolean accepts(Context context, Offering offering) {
                         return offering instanceof FlameAltarOffering altarOffering
-                                && altarOffering.stack().is(Items.BLAZE_POWDER);
+                                && altarOffering.stack().is(Items.DIRT);
                     }
 
                     @Override
