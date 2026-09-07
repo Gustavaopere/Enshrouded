@@ -33,8 +33,9 @@ public final class FlameAltarBlock extends Block implements EntityBlock {
         return new FlameAltarBlockEntity(pos, state);
     }
 
+    @Nullable
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
             Level level,
             BlockState state,
             BlockEntityType<T> type) {
