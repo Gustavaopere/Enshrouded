@@ -1,6 +1,5 @@
 package com.gustavaopere.enshrouded.story.reward;
 
-import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -8,49 +7,74 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
+import software.bernie.geckolib.animatable.client.GeoRenderProvider;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
- * Authentic Enshrouded trophy for the first Lich manifestation.
+ * Authentic, non-placeable Enshrouded trophy for the first Lich manifestation.
  *
- * <p>Authenticity is encoded in persistent item-stack component data. Display name and lore are
- * presentation only and are never trusted by progression logic. The vanilla Wither Skeleton skull
- * blocks are used only to select Minecraft's skull item renderer; this trophy deliberately cannot
- * place or remap those vanilla blocks.</p>
+ * <p>Encounter identity remains persistent component data and is the only authority used by
+ * progression/reward logic. GeckoLib is presentation-only and may animate the trophy without
+ * creating or mutating encounter state.</p>
  */
-public final class LichSkullItem extends StandingAndWallBlockItem {
+public final class LichSkullItem extends Item implements GeoItem {
     private static final String ROOT_KEY = "EnshroudedLichSkull";
+    private static final RawAnimation IDLE_ANIMATION =
+            RawAnimation.begin().thenLoop("animation.lich_skull.idle");
     public static final int LEVEL_ONE_MANIFESTATION = 1;
 
+    private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
+    private final AtomicReference<GeoRenderProvider> geoRenderProvider = new AtomicReference<>();
+
     public LichSkullItem(Properties properties) {
-        super(
-                Blocks.WITHER_SKELETON_SKULL,
-                Blocks.WITHER_SKELETON_WALL_SKULL,
-                properties,
-                Direction.DOWN
-        );
+        super(properties);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
+    }
+
+    /** Client bootstrap supplies the renderer without introducing client-only Minecraft classes here. */
+    public void setGeoRenderProvider(GeoRenderProvider provider) {
+        Objects.requireNonNull(provider, "provider");
+        if (!geoRenderProvider.compareAndSet(null, provider)) {
+            throw new IllegalStateException("Lich Skull GeoRenderProvider already initialized");
+        }
+    }
+
+    @Override
+    public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
+        consumer.accept(geoRenderProvider.get());
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "lich_skull", 8,
+                state -> state.setAndContinue(IDLE_ANIMATION)));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return animationCache;
     }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
         return InteractionResult.FAIL;
-    }
-
-    @Override
-    public void registerBlocks(Map<Block, Item> blockToItemMap, Item item) {
-        // Render through the vanilla skull block type without replacing the vanilla block->item mapping.
     }
 
     /** Creates exactly one trophy stack with durable encounter/manifestation identity. */

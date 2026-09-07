@@ -20,6 +20,9 @@
     "src/main/resources/assets/enshrouded/textures/block/shroud_vein.png",
     "src/main/resources/assets/enshrouded/textures/block/withered_growth.png",
     "src/main/resources/assets/enshrouded/textures/gui/shroud_hud_icons.png",
+    "src/main/resources/assets/enshrouded/textures/item/lich_skull_manifestation_1.png",
+    "src/main/resources/assets/enshrouded/textures/item/lich_skull_manifestation_1_glowmask.png",
+    "src/main/resources/assets/enshrouded/textures/particle/lich_arcana.png",
     "src/main/resources/assets/enshrouded/textures/particle/red_sludge.png",
     "src/main/resources/assets/enshrouded/textures/particle/shroud_core.png",
     "src/main/resources/assets/enshrouded/textures/particle/shroud_growth.png"

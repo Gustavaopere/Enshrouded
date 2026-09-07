@@ -61,7 +61,7 @@ jobs:
         run: python3 -m unittest scripts/ci/test_third_party_provenance.py
 
       - name: Stage 10 visual stack contract tests
-        run: python3 -m unittest scripts/ci/test_stage10_visual_stack.py
+        run: python3 -m unittest scripts/ci/test_stage10_visual_stack.py scripts/ci/test_stage10_lich_presentation.py
 
       - name: Verify Gradle wrapper
         run: ./gradlew --no-daemon --version
