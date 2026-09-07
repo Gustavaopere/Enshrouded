@@ -17,20 +17,20 @@ import java.util.Locale;
 public final class ShroudHudOverlay {
     private static final ResourceLocation LAYER_ID =
             ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "exposure_hud");
-    private static final ResourceLocation HUD_FRAME_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "textures/gui/shroud_hud_frame.png");
-    private static final ResourceLocation ICON_TEXTURE =
+    private static final ResourceLocation HUD_ATLAS_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Enshrouded.MOD_ID, "textures/gui/shroud_hud_icons.png");
 
+    private static final int ATLAS_WIDTH = 384;
+    private static final int ATLAS_HEIGHT = 64;
     private static final int PANEL_WIDTH = 160;
     private static final int FULL_PANEL_HEIGHT = 60;
     private static final int MINIMAL_PANEL_HEIGHT = 50;
     private static final int MARGIN = 8;
     private static final int SYMBOL_SIZE = 16;
-    private static final int ICON_ORDINARY_U = 0;
-    private static final int ICON_DEADLY_U = 16;
-    private static final int ICON_PASSAGE_U = 32;
-    private static final int ICON_MADNESS_U = 48;
+    private static final int ICON_ORDINARY_U = 320;
+    private static final int ICON_DEADLY_U = 336;
+    private static final int ICON_PASSAGE_U = 352;
+    private static final int ICON_MADNESS_U = 368;
 
     private ShroudHudOverlay() {
     }
@@ -84,15 +84,15 @@ public final class ShroudHudOverlay {
             int y) {
         int frameU = model.zoneKind() == ExposureHudModel.ZoneKind.DEADLY ? PANEL_WIDTH : 0;
         graphics.blit(
-                HUD_FRAME_TEXTURE,
+                HUD_ATLAS_TEXTURE,
                 x,
                 y,
                 frameU,
                 0,
                 PANEL_WIDTH,
                 FULL_PANEL_HEIGHT,
-                PANEL_WIDTH * 2,
-                64
+                ATLAS_WIDTH,
+                ATLAS_HEIGHT
         );
 
         int zoneIconU = model.zoneKind() == ExposureHudModel.ZoneKind.DEADLY
@@ -217,7 +217,7 @@ public final class ShroudHudOverlay {
         int gap = 1;
         int segmentWidth = Math.max(1, (width - 4 * gap) / 5);
         int inactive = minimal ? 0xFF3A3942 : 0xFF413B50;
-        int active = model.madnessSegments() >= 4 ? 0xFFE19A72 : 0xFFC7B6E2;
+        int active = activeSegments >= 4 ? 0xFFE19A72 : 0xFFC7B6E2;
 
         for (int segment = 0; segment < 5; segment++) {
             int left = x + segment * (segmentWidth + gap);
@@ -227,7 +227,17 @@ public final class ShroudHudOverlay {
     }
 
     private static void blitSymbol(GuiGraphics graphics, int x, int y, int textureU) {
-        graphics.blit(ICON_TEXTURE, x, y, textureU, 0, SYMBOL_SIZE, SYMBOL_SIZE, 64, 16);
+        graphics.blit(
+                HUD_ATLAS_TEXTURE,
+                x,
+                y,
+                textureU,
+                0,
+                SYMBOL_SIZE,
+                SYMBOL_SIZE,
+                ATLAS_WIDTH,
+                ATLAS_HEIGHT
+        );
     }
 
     private static int anchorX(EnshroudedClientConfig.HudAnchor anchor, int logicalWidth) {
