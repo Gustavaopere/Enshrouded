@@ -33,6 +33,8 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     private static final RawAnimation RITUAL_SUCCESS = RawAnimation.begin().thenPlay("animation.flame_altar.ritual_success");
     private static final RawAnimation LEVEL_TRANSITION = RawAnimation.begin().thenPlay("animation.flame_altar.level_transition");
     private static final RawAnimation INACTIVE = RawAnimation.begin().thenLoop("animation.flame_altar.inactive");
+    private static final RawAnimation SANCTUARY_ACTIVE = RawAnimation.begin().thenLoop("animation.flame_altar.sanctuary_active");
+    private static final RawAnimation PURIFICATION_RELEASE = RawAnimation.begin().thenPlay("animation.flame_altar.purification_release");
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     private final ItemStackHandler inventory = new ItemStackHandler(1) {
@@ -59,6 +61,9 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
                 .triggerableAnim("ritual_success", RITUAL_SUCCESS)
                 .triggerableAnim("level_transition", LEVEL_TRANSITION)
                 .triggerableAnim("inactive", INACTIVE));
+        controllers.add(new AnimationController<>(this, "sanctuary_ward", 10,
+                state -> state.setAndContinue(SANCTUARY_ACTIVE))
+                .triggerableAnim("purification_release", PURIFICATION_RELEASE));
     }
 
     @Override
