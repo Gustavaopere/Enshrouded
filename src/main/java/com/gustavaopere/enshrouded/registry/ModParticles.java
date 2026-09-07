@@ -10,7 +10,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.Objects;
 
-/** Canonical particle type registry for Stage 07 presentation effects. */
+/** Canonical particle type registry for Stage 07+ presentation effects. */
 public final class ModParticles {
     public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES =
             DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, Enshrouded.MOD_ID);
@@ -18,6 +18,7 @@ public final class ModParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SHROUD_CORE = register("shroud_core");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SHROUD_GROWTH = register("shroud_growth");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> RED_SLUDGE = register("red_sludge");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> LICH_ARCANA = register("lich_arcana");
 
     private ModParticles() {}
 
