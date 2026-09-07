@@ -1,5 +1,9 @@
 {
   "variants": {
-    "": { "model": "enshrouded:block/shroud_vein" }
+    "": [
+      {"model": "enshrouded:block/shroud_vein_ordinary_a", "weight": 3},
+      {"model": "enshrouded:block/shroud_vein_ordinary_b", "weight": 2},
+      {"model": "enshrouded:block/shroud_vein_ordinary_c", "weight": 2}
+    ]
   }
 }

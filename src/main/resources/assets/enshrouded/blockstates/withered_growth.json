@@ -1,5 +1,9 @@
 {
   "variants": {
-    "": { "model": "enshrouded:block/withered_growth" }
+    "": [
+      {"model": "enshrouded:block/withered_growth_deadly_a", "weight": 3},
+      {"model": "enshrouded:block/withered_growth_deadly_b", "weight": 2},
+      {"model": "enshrouded:block/withered_growth_deadly_c", "weight": 2}
+    ]
   }
 }
