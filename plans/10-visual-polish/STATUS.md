@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.07 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.08
+**State:** 10.08 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.09
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -17,6 +17,8 @@
 **10.06 closeout PR:** #92 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.07 implementation PR:** #93 — `Stage 10.07 — HUD / UI art` — MERGED as `341aa508bcd997cf32b7d550c9a37fca19f36ff3`.
 **10.07 closeout PR:** #94 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
+**10.08 implementation PR:** #95 — `Stage 10.08 — Advanced VFX pass` — MERGED as `00439c1593cf8e0699f6abe4e19d4848d1e97149`.
+**10.08 closeout PR:** #96 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 
 ## Planning checkpoint
 
@@ -287,16 +289,57 @@
 - [ ] Full 612-mod client visual smoke.
 - [ ] **ART APPROVED** remains open until the above evidence exists.
 
+## 10.08 — Advanced VFX pass — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
+
+### Authority and presentation architecture
+
+- [x] Snapshot-derived transitions consume only synchronized `ClientExposureState`; they do not recreate Exposure, Shroud severity, Sanctuary or Madness authority on the client.
+- [x] Discrete Core destruction, Flame ritual success and Lich manifestation cues are clientbound-only and emitted only after their canonical server transition succeeds.
+- [x] `AdvancedVfxController`, `ClientAdvancedVfxState` and `AdvancedVfxSequenceBudget` own ephemeral presentation state only; no VFX `SavedData`, serverbound control payload, chunk forcing or world scan exists.
+- [x] First synchronized snapshot establishes a baseline without replaying stale transitions; logout/config reload clears pending/active sequences.
+- [x] Core proximity modifies only the existing local Stage 07 particle planner request and never computes gameplay state.
+
+### Budgets, accessibility and dependency decision
+
+- [x] Cue particle/lifetime/radius/cooldown limits are hard-bounded by `AdvancedVfxCue` and sequence emission is distributed through `AdvancedVfxSequenceBudget`.
+- [x] `REDUCED_SENSORY` caps a complete advanced sequence at 4 particles.
+- [x] `MINIMAL` emits 0 advanced particles while gameplay state remains unchanged.
+- [x] Current physical pack remains 612 mods; Lodestone `1.8.2`, AAA Particles `2.2.3` and AAA Particles: World `2.0.0` are installed neighbors.
+- [x] Lodestone was **not adopted** by Enshrouded for 10.08: native NeoForge/GeckoLib seams satisfied the required effects and full automation without a Lodestone compile/runtime dependency or API import.
+- [x] Lodestone remains future task-gated rather than globally prohibited.
+
+### TDD and validation evidence
+
+- [x] Planner/budget RED: `cc643fe4b60bfad91e2471822212e5b765da64dc`; bounded planner/budget GREEN: `d9d00a5449c4fa06f51855da6e833d585d526e43`.
+- [x] Discrete-cue RED: `89e28ff0e64f783c88d1807c2279db5cba3f7376`, failing before `AdvancedVfxPayload` / `ClientAdvancedVfxState` existed.
+- [x] Temporal renderer implementation HEAD `35bfaacee1a2f3fe5b78e0e618922dc3347c502e` passed Release Readiness `34150710640` and Enshrouded CI `34150710595`.
+- [x] Closeout-contract RED HEAD `8aea9abe6520ddbb8162029db23a3418c49e7cd0` failed Release Readiness `34153754176 / 101841172426` exactly because the canonical 10.08 contract was absent.
+- [x] Final PR #95 HEAD `9a4ff6ef53ff192bb1d28cf1c0e2c5dc8662e5a7` passed Release Readiness `34153873230 / 101841530155` and full Enshrouded CI `34153873227 / 101841529843`.
+- [x] PR #95 merged to `main` as `00439c1593cf8e0699f6abe4e19d4848d1e97149`.
+- [x] Post-merge Release Readiness `34154332957 / 101842896487` passed on exact `main@00439c1593cf8e0699f6abe4e19d4848d1e97149`.
+- [x] Post-merge Enshrouded CI `34154332819 / 101842895697` passed the complete matrix on the same baseline, including GameTests, SavedData two-boot reload, Ars Zero real-distribution profile and dedicated-server save/reload smoke.
+- [x] PR #96 is the documentation-only closeout; it changes no runtime authority.
+
+### Visual/manual acceptance still open
+
+- [ ] Full 612-mod client smoke.
+- [ ] Sodium coexistence and shader-off/shader-on visual comparison.
+- [ ] Full vs `REDUCED_SENSORY` vs `MINIMAL` presentation review.
+- [ ] Fog enabled/disabled and day/night review.
+- [ ] Reconnect/dimension-switch and rapid-boundary-crossing spam/duplication review.
+- [ ] Core destruction, Flame ritual and Lich manifestation near/far review.
+- [ ] **ART APPROVED** remains open and is carried to 10.10.
+
 ## Multiblock boundary carried forward
 
-Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04, 10.05, 10.06 or 10.07. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
+Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04, 10.05, 10.06, 10.07 or 10.08. Stage 10.09 must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
 
 ## Hard boundaries carried into subsequent tasks
 
 - GeckoLib receives presentation state only; animation completion never mutates gameplay authority.
 - AzureLib remains intentionally unused by Enshrouded unless a future ADR replaces the current decision.
 - Fusion may improve environmental materials only when a valid base/fallback resource path exists.
-- Lodestone, OctoLib and Player Animator remain task-gated rather than automatic dependencies.
+- Lodestone was not needed by 10.08 and remains task-gated for future concrete effects; OctoLib and Player Animator likewise remain task-gated rather than automatic dependencies.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
 - Manual full 612-mod pack smoke is the current external release gate before distribution; older 607-mod references above are historical checkpoint evidence.
-- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull, 10.06 world-art family or 10.07 HUD/UI P0 **ART APPROVED** until the required in-game evidence exists.
+- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull, 10.06 world-art family, 10.07 HUD/UI or 10.08 advanced VFX **ART APPROVED** until the required in-game evidence exists.
