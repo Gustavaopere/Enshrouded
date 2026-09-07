@@ -10,9 +10,12 @@ import com.gustavaopere.enshrouded.flame.altar.FlameAltarMenu;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarOffering;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuneBlock;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuntime;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarStructureValidator;
 import com.gustavaopere.enshrouded.flame.ritual.FlameRitual;
 import com.gustavaopere.enshrouded.flame.ritual.RitualOutcome;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionSavedData;
+import com.gustavaopere.enshrouded.protection.ProtectedAreaService;
+import com.gustavaopere.enshrouded.protection.ProtectionDecision;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.registry.ModItems;
 import net.minecraft.core.BlockPos;
@@ -25,6 +28,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -74,6 +78,75 @@ public final class FlameAltarFormationGameTests {
                 "Flame Altar brace must not own a BlockEntity or gameplay state");
         helper.assertTrue(level.getBlockEntity(helper.absolutePos(runeRelative)) == null,
                 "Flame Altar rune must not own a BlockEntity or gameplay state");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_empty", batch = BATCH)
+    public static void threeByThreeValidatorAcceptsOnlyCanonicalSafeLoadedShell(GameTestHelper helper) {
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        BlockPos centerRelative = new BlockPos(3, 1, 3);
+        BlockPos center = helper.absolutePos(centerRelative);
+        BlockPos northRelative = centerRelative.offset(0, 0, -1);
+        BlockPos north = helper.absolutePos(northRelative);
+        BlockPos northwestRelative = centerRelative.offset(-1, 0, -1);
+        BlockPos northwest = helper.absolutePos(northwestRelative);
+
+        placeCanonicalShell(helper, centerRelative);
+        FlameAltarStructureValidator validator = new FlameAltarStructureValidator(ProtectedAreaService.none());
+        helper.assertTrue(validator.validate(level, center).status() == FlameAltarStructureValidator.Status.VALID,
+                "Exact loaded 3x3 Flame Altar shell must validate before any formation mutation occurs");
+
+        helper.setBlock(northwestRelative, Blocks.AIR);
+        var missing = validator.validate(level, center);
+        helper.assertTrue(missing.status() == FlameAltarStructureValidator.Status.MISSING_COMPONENT
+                        && northwest.equals(missing.problemPos()),
+                "Missing corner rune must fail with its bounded local problem position");
+        helper.setBlock(northwestRelative, ModBlocks.FLAME_ALTAR_RUNE.get());
+
+        helper.setBlock(northRelative, ModBlocks.FLAME_ALTAR_BRACE.get().defaultBlockState()
+                .setValue(FlameAltarBraceBlock.FACING, Direction.NORTH));
+        var wrongOrientation = validator.validate(level, center);
+        helper.assertTrue(wrongOrientation.status() == FlameAltarStructureValidator.Status.WRONG_ORIENTATION
+                        && north.equals(wrongOrientation.problemPos()),
+                "North brace facing away from the controller must fail orientation validation");
+        helper.setBlock(northRelative, ModBlocks.FLAME_ALTAR_BRACE.get().defaultBlockState()
+                .setValue(FlameAltarBraceBlock.FACING, Direction.SOUTH));
+
+        helper.setBlock(northwestRelative, ModBlocks.FLAME_ALTAR.get());
+        var duplicate = validator.validate(level, center);
+        helper.assertTrue(duplicate.status() == FlameAltarStructureValidator.Status.DUPLICATE_CONTROLLER
+                        && northwest.equals(duplicate.problemPos()),
+                "A second controller inside the candidate 3x3 must invalidate formation deterministically");
+        helper.setBlock(northwestRelative, ModBlocks.FLAME_ALTAR_RUNE.get());
+
+        FlameAltarStructureValidator protectedValidator = new FlameAltarStructureValidator(
+                (queryLevel, pos, kind) -> pos.equals(north)
+                        ? ProtectionDecision.PROTECTED
+                        : ProtectionDecision.UNPROTECTED
+        );
+        var protectedResult = protectedValidator.validate(level, center);
+        helper.assertTrue(protectedResult.status() == FlameAltarStructureValidator.Status.PROTECTED
+                        && north.equals(protectedResult.problemPos()),
+                "Protected ritual-structure position must fail closed before formation mutation");
+
+        FlameAltarStructureValidator indeterminateValidator = new FlameAltarStructureValidator(
+                (queryLevel, pos, kind) -> pos.equals(north)
+                        ? ProtectionDecision.INDETERMINATE
+                        : ProtectionDecision.UNPROTECTED
+        );
+        var indeterminate = indeterminateValidator.validate(level, center);
+        helper.assertTrue(indeterminate.status() == FlameAltarStructureValidator.Status.PROTECTION_INDETERMINATE
+                        && north.equals(indeterminate.problemPos()),
+                "Indeterminate protection must fail closed rather than being treated as unprotected");
+
+        FlameAltarStructureValidator unloadedValidator = new FlameAltarStructureValidator(
+                ProtectedAreaService.none(),
+                (queryLevel, pos) -> !pos.equals(north)
+        );
+        var unloaded = unloadedValidator.validate(level, center);
+        helper.assertTrue(unloaded.status() == FlameAltarStructureValidator.Status.REQUIRED_CHUNK_UNLOADED
+                        && north.equals(unloaded.problemPos()),
+                "An unavailable required shell position must fail closed without forcing its chunk");
         helper.succeed();
     }
 
@@ -128,6 +201,22 @@ public final class FlameAltarFormationGameTests {
         helper.assertTrue(savedFormation.getBoolean("Formed"),
                 "A valid persisted FORMED intent must remain pending until recovery validation can run");
         helper.succeed();
+    }
+
+    private static void placeCanonicalShell(GameTestHelper helper, BlockPos center) {
+        helper.setBlock(center, ModBlocks.FLAME_ALTAR.get());
+        helper.setBlock(center.offset(0, 0, -1), ModBlocks.FLAME_ALTAR_BRACE.get().defaultBlockState()
+                .setValue(FlameAltarBraceBlock.FACING, Direction.SOUTH));
+        helper.setBlock(center.offset(1, 0, 0), ModBlocks.FLAME_ALTAR_BRACE.get().defaultBlockState()
+                .setValue(FlameAltarBraceBlock.FACING, Direction.WEST));
+        helper.setBlock(center.offset(0, 0, 1), ModBlocks.FLAME_ALTAR_BRACE.get().defaultBlockState()
+                .setValue(FlameAltarBraceBlock.FACING, Direction.NORTH));
+        helper.setBlock(center.offset(-1, 0, 0), ModBlocks.FLAME_ALTAR_BRACE.get().defaultBlockState()
+                .setValue(FlameAltarBraceBlock.FACING, Direction.EAST));
+        helper.setBlock(center.offset(-1, 0, -1), ModBlocks.FLAME_ALTAR_RUNE.get());
+        helper.setBlock(center.offset(1, 0, -1), ModBlocks.FLAME_ALTAR_RUNE.get());
+        helper.setBlock(center.offset(-1, 0, 1), ModBlocks.FLAME_ALTAR_RUNE.get());
+        helper.setBlock(center.offset(1, 0, 1), ModBlocks.FLAME_ALTAR_RUNE.get());
     }
 
     private static synchronized void ensureRitualRegistered() {
