@@ -6,7 +6,7 @@ import com.gustavaopere.enshrouded.flame.altar.FlameAltarBlockEntity;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarBraceBlock;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarFormationPhase;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuneBlock;
-import com.gustavaopere.enshrouded.flame.ward.FlameWardRuntime;
+import com.gustavaopere.enshrouded.flame.ward.FlameWardGameTestAccess;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,7 +37,7 @@ public final class FlameAltarUnformGameTests {
         BlockPos center = helper.absolutePos(centerRelative);
         BlockPos southeastRelative = centerRelative.offset(1, 0, 1);
 
-        FlameWardRuntime.service().clear();
+        FlameWardGameTestAccess.clear();
         try {
             placeCanonicalShell(helper, centerRelative);
             FlameAltarBlockEntity altar = requireAltar(helper, centerRelative);
@@ -78,7 +78,7 @@ public final class FlameAltarUnformGameTests {
             helper.succeed();
         } finally {
             player.closeContainer();
-            FlameWardRuntime.service().clear();
+            FlameWardGameTestAccess.clear();
         }
     }
 
@@ -89,7 +89,7 @@ public final class FlameAltarUnformGameTests {
         BlockPos centerRelative = new BlockPos(3, 1, 3);
         BlockPos center = helper.absolutePos(centerRelative);
 
-        FlameWardRuntime.service().clear();
+        FlameWardGameTestAccess.clear();
         try {
             placeCanonicalShell(helper, centerRelative);
             FlameAltarBlockEntity altar = requireAltar(helper, centerRelative);
@@ -109,7 +109,7 @@ public final class FlameAltarUnformGameTests {
             helper.succeed();
         } finally {
             player.closeContainer();
-            FlameWardRuntime.service().clear();
+            FlameWardGameTestAccess.clear();
         }
     }
 
