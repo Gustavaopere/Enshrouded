@@ -1,6 +1,6 @@
 # Stage 10.06 — Shroud World-Art Family
 
-Status: IMPLEMENTATION PRESENT / PR-HEAD VALIDATED / AWAITING MERGE
+Status: TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / ART APPROVED OPEN
 
 ## Purpose
 
@@ -36,9 +36,11 @@ Ordinary and Deadly are differentiated by silhouette/material composition as wel
 
 ## Variant and performance budget
 
-Each environmental block uses exactly three weighted baked variants. No runtime randomizer, model entity, block entity, ticker, neighbor scan, network payload, or world scan is added.
+Each environmental block uses exactly three weighted baked variants. The final CI contract requires the exact, unique and existing `_a`, `_b` and `_c` model references for each family, so duplicate or typo-prefixed model IDs fail the gate.
 
-Stage 10.06 texture budget is 32×32 per world-art material in this pass, with the CI contract rejecting unexpected sizes above 64×64. The new models are static baked JSON geometry and remain compatible with the existing bounded terrain placement pipeline.
+No runtime randomizer, model entity, block entity, ticker, neighbor scan, network payload, or world scan is added.
+
+Stage 10.06 texture budget is 32×32 per world-art material in this pass, with the CI contract rejecting unexpected sizes above 64×64. The Ordinary/Deadly membrane and crust comparison decodes RGBA pixels and requires structural alpha-topology differences on at least one eighth of pixels; PNG re-encoding or an RGB-only recolor with identical topology does not satisfy the gate. The new models are static baked JSON geometry and remain compatible with the existing bounded terrain placement pipeline.
 
 ## Current pack/runtime reconciliation — 2026-09-07
 
@@ -57,7 +59,7 @@ Fusion is optional. The complete baseline is a vanilla weighted blockstate + van
 
 A later optional Fusion enhancement may improve connected/continuous surfaces only after its exact NeoForge 1.21.1 / Fusion `1.3.15+a` resource contract is independently proven. It must retain the same vanilla fallback and cannot become Shroud authority.
 
-## TDD evidence
+## TDD and review evidence
 
 RED checkpoint:
 - branch HEAD `af8f6140491e3304f1f4b60bf2a40f7affb51b29`;
@@ -70,13 +72,34 @@ First GREEN implementation checkpoint:
 - implementation HEAD `90b81e1d4df50b5c2b4956b0a0a1ce7384dace2e` exposed a legitimate provenance failure for newly authored first-party PNGs;
 - the provenance ledger was corrected rather than weakening the gate.
 
-Validated PR checkpoint before the 612-mod reconciliation edit:
+Reconciled GREEN checkpoint before final review hardening:
 - HEAD `aa7ec50a0bc61de80eda9a4e838106603897f76e`;
 - Level 1 Release Readiness `34078546785 / 101609292301` — `completed/success`;
-- Enshrouded CI `34078546777 / 101609292946` — `completed/success`;
-- the full CI passed wrapper provenance, third-party/first-party provenance, Stage 10 visual contracts, unit tests, performance baselines, diff sanity, NeoForge build, GameTest compilation/server, SavedData two-boot reload, real Ars Zero 2.0.2 isolated profile and dedicated-server save/reload smoke.
+- Enshrouded CI `34078546777 / 101609292946` — `completed/success`.
 
-The final PR HEAD must pass these same gates again after the 612-mod/Fusion reconciliation edits before merge.
+Two P2 review findings were then corrected before merge:
+- weighted blockstates now require exact, unique, existing `_a/_b/_c` references;
+- material-family comparison decodes rendered RGBA pixels and checks alpha topology instead of relying on PNG file hashes.
+
+## Final implementation verification
+
+Final PR #91 HEAD: `1bf6dca57f8ff3548ef41955b0db06b8eb46b1c8`.
+
+On that exact HEAD:
+- Level 1 Release Readiness `34079531152` — `completed/success`;
+- Enshrouded CI `34079531285 / 101612091620` — `completed/success`.
+
+The complete CI passed wrapper provenance, third-party/first-party provenance, Stage 10 visual contracts, unit tests, performance baselines, diff sanity, NeoForge build, GameTest compilation/server, SavedData two-boot reload, real Ars Zero 2.0.2 isolated profile and dedicated-server save/reload smoke.
+
+Both P2 review threads were resolved only after this corrected final HEAD was green.
+
+PR #91 merged as `19b9cee08cf5b5f369497ad4c8c0329eff65253d`.
+
+On exact `main@19b9cee08cf5b5f369497ad4c8c0329eff65253d`:
+- Level 1 Release Readiness `34079910949` — `completed/success`;
+- Enshrouded CI `34079910911 / 101613106937` — `completed/success`.
+
+The complete validation matrix passed again after merge. Therefore the Stage 10.06 technical exit condition is satisfied.
 
 ## Manual visual gates
 
@@ -92,6 +115,8 @@ The following evidence is still **pending** and cannot be promoted by CI:
 
 ## Exit condition
 
-Technical completion requires the Stage 10 world-art contract, release-readiness workflow, full Enshrouded CI, NeoForge build, canonical GameTests, two-boot SavedData reload, real Ars Zero 2.0.2 isolated profile, and dedicated-server save/reload smoke to be green on the exact final PR HEAD and again on the merged `main`.
+Technical completion requires the Stage 10 world-art contract, release-readiness workflow, full Enshrouded CI, NeoForge build, canonical GameTests, two-boot SavedData reload, real Ars Zero 2.0.2 isolated profile, and dedicated-server save/reload smoke to be green on the exact final implementation PR HEAD and again on the merged `main`.
 
-Manual art gates remain separate and must stay `REVIEW_IN_GAME` until real captures exist.
+That technical condition is now met for PR #91 / `main@19b9cee08cf5b5f369497ad4c8c0329eff65253d`.
+
+Manual art gates remain separate and must stay `REVIEW_IN_GAME` until real captures exist. Stage 10.07 is the next canonical task and is not started by this closeout.
