@@ -11,6 +11,7 @@
   "message.enshrouded.flame_altar.applied": "A Chama responde ao ritual.",
   "message.enshrouded.flame_altar.already_completed": "Este ritual já marcou sua progressão.",
   "message.enshrouded.flame_altar.no_matching_ritual": "Nenhum ritual válido da Chama corresponde à oferenda atual.",
+  "message.enshrouded.flame_altar.unformed": "O complexo do Altar da Chama não está formado.",
   "item.enshrouded.lich_skull_manifestation_1": "Crânio do Lich — Primeira Manifestação",
   "item.enshrouded.lich_skull_manifestation_1.tooltip": "Troféu da primeira manifestação derrotada. Aceito pelo Altar da Chama.",
   "item.enshrouded.lich_skull_manifestation_1.authentic": "Troféu autêntico de um encontro do Enshrouded",
