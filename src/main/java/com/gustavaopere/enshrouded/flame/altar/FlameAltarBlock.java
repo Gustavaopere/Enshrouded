@@ -37,10 +37,14 @@ public final class FlameAltarBlock extends Block implements EntityBlock {
             BlockPos pos,
             Player player,
             BlockHitResult hitResult) {
-        if (!level.isClientSide()
+        if (level instanceof ServerLevel serverLevel
                 && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof FlameAltarBlockEntity altar) {
-            serverPlayer.openMenu(altar);
+            if (!altar.isFormed()) {
+                altar.requestFormation(serverLevel);
+            } else {
+                serverPlayer.openMenu(altar);
+            }
         }
         return InteractionResult.SUCCESS;
     }
