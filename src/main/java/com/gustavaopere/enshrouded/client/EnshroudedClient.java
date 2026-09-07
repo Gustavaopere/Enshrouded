@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.client;
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.client.accessibility.AccessibilityPresetController;
 import com.gustavaopere.enshrouded.client.ambient.ShroudAmbientController;
+import com.gustavaopere.enshrouded.client.effects.AdvancedVfxController;
 import com.gustavaopere.enshrouded.client.effects.SanctuaryPresentationController;
 import com.gustavaopere.enshrouded.client.effects.ShroudParticleController;
 import com.gustavaopere.enshrouded.client.hud.ShroudHudOverlay;
@@ -10,6 +11,8 @@ import com.gustavaopere.enshrouded.client.render.ShroudFogController;
 import com.gustavaopere.enshrouded.client.render.flame.FlameAltarRenderer;
 import com.gustavaopere.enshrouded.client.render.shroud.ShroudCoreRenderer;
 import com.gustavaopere.enshrouded.client.render.story.LichSkullRenderProvider;
+import com.gustavaopere.enshrouded.client.state.ClientAdvancedVfxState;
+import com.gustavaopere.enshrouded.client.state.ClientExposureState;
 import com.gustavaopere.enshrouded.client.state.ClientShroudDiscoveryState;
 import com.gustavaopere.enshrouded.client.state.ClientShroudState;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
@@ -37,10 +40,14 @@ public final class EnshroudedClient {
         ShroudAmbientController.register(NeoForge.EVENT_BUS);
         ShroudParticleController.register(NeoForge.EVENT_BUS);
         SanctuaryPresentationController.register(NeoForge.EVENT_BUS);
+        AdvancedVfxController.register(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
             ClientShroudDiscoveryState.INSTANCE.reset();
             ClientShroudState.INSTANCE.reset();
+            ClientExposureState.INSTANCE.reset();
+            ClientAdvancedVfxState.INSTANCE.reset();
             SanctuaryPresentationController.reset();
+            AdvancedVfxController.reset();
         });
     }
 
