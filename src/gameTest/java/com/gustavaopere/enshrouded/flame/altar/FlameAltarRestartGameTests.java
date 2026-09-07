@@ -69,8 +69,23 @@ public final class FlameAltarRestartGameTests {
     private static void verifyReloadedSentinel(GameTestHelper helper, ServerLevel level) {
         FlameAltarBlockEntity altar = requireAltar(helper, level, SENTINEL_CENTER);
 
-        helper.assertTrue(altar.isFormed(),
-                "Second boot must recover the persisted FORMED Flame Altar through BlockEntity onLoad");
+        CompoundTag beforeRetry = altar.saveWithoutMetadata(level.registryAccess());
+        CompoundTag formationBeforeRetry = beforeRetry.getCompound("Formation");
+        boolean persistedFormedBeforeRetry = formationBeforeRetry.getBoolean("Formed");
+        FlameAltarFormationPhase phaseBeforeRetry = altar.formationPhase();
+        boolean formedBeforeRetry = altar.isFormed();
+
+        if (!formedBeforeRetry) {
+            // Diagnostic only: keep this RED if the canonical first onLoad missed recovery, but record
+            // whether a second onLoad after getChunkAt has made the same bounded validator succeed.
+            altar.onLoad();
+            boolean recoveredOnSecondOnLoad = altar.isFormed();
+            helper.fail("Second boot initial onLoad did not recover FORMED: persistedFormed="
+                    + persistedFormedBeforeRetry + ", phase=" + phaseBeforeRetry
+                    + ", retryAfterChunkLoadRecovered=" + recoveredOnSecondOnLoad);
+            return;
+        }
+
         helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.FORMED,
                 "Second boot recovery must settle in FORMED rather than transient VALIDATING/UNFORMED");
         helper.assertTrue(altar.inventory().getStackInSlot(0).is(Items.DIRT)
