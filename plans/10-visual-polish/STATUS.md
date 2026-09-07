@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.06 IMPLEMENTATION PRESENT / FINAL PR REVALIDATION IN PROGRESS / P0 IN-GAME ART REVIEW STILL REQUIRED
+**State:** 10.06 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.07
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -13,7 +13,8 @@
 **10.04 closeout PR:** #88 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.05 implementation PR:** #89 — `Stage 10.05 — Sanctuary / Purification presentation` — MERGED as `771341394045bdef09eb9d9fbb4743aaad1c39f6`.
 **10.05 closeout PR:** #90 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
-**10.06 implementation PR:** #91 — `Stage 10.06 — Shroud world-art family` — OPEN; final PR-head revalidation pending after 612-mod/Fusion reconciliation.
+**10.06 implementation PR:** #91 — `Stage 10.06 — Shroud world-art family` — MERGED as `19b9cee08cf5b5f369497ad4c8c0329eff65253d`.
+**10.06 closeout:** branch `docs/10-06-world-art-closeout`; documentation-only technical closeout in progress; no runtime changes.
 
 ## Planning checkpoint
 
@@ -201,7 +202,7 @@
 - [ ] Reduced-effects / particles-disabled readability remains to be reviewed.
 - [ ] Full 607-mod-pack visual smoke remains an external/manual gate because the complete pack is not vendored into CI.
 
-## 10.06 — Shroud world-art family — IMPLEMENTATION PRESENT / FINAL PR REVALIDATION IN PROGRESS
+## 10.06 — Shroud world-art family — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
 
 ### Authority and resource architecture
 
@@ -228,7 +229,12 @@
 - [x] First GREEN implementation HEAD `90b81e1d4df50b5c2b4956b0a0a1ce7384dace2e` exposed an actual provenance failure for new PNGs; the ledger was fixed rather than weakening the gate.
 - [x] Reconciled checkpoint `aa7ec50a0bc61de80eda9a4e838106603897f76e` passed Release Readiness `34078546785 / 101609292301` and full Enshrouded CI `34078546777 / 101609292946`.
 - [x] Before final merge, the latest attached modlist was rechecked: current pack is 612 mods; GeckoLib remains `4.9.2`; Sodium remains `0.8.13+mc1.21.1`; Fusion is now `1.3.15+a` / `fusion-1.3.15a-neoforge-mc1.21.1.jar`.
-- [ ] Final PR HEAD after this 612-mod/Fusion reconciliation must pass Release Readiness and the complete Enshrouded CI again before merge.
+- [x] Two P2 review findings hardened the contract before merge: exact unique existing `_a/_b/_c` weighted model references, plus decoded-RGBA alpha-topology comparison for Ordinary/Deadly materials instead of file-hash comparison.
+- [x] Final PR #91 HEAD `1bf6dca57f8ff3548ef41955b0db06b8eb46b1c8` passed Release Readiness `34079531152` and full Enshrouded CI `34079531285 / 101612091620`.
+- [x] Both P2 review threads were resolved only after the corrected final HEAD was green.
+- [x] PR #91 merged to `main` as `19b9cee08cf5b5f369497ad4c8c0329eff65253d`.
+- [x] Post-merge Release Readiness `34079910949` passed on exact `main@19b9cee08cf5b5f369497ad4c8c0329eff65253d`.
+- [x] Post-merge Enshrouded CI `34079910911 / 101613106937` passed the complete matrix on the same baseline: provenance, Stage 10 contracts, unit tests, performance, diff sanity, NeoForge build, GameTests, SavedData two-boot reload, real Ars Zero 2.0.2 profile and dedicated-server save/reload smoke.
 
 ### Visual/manual acceptance still open
 
