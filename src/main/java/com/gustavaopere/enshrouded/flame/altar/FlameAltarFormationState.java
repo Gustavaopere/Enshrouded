@@ -14,10 +14,6 @@ public record FlameAltarFormationState(int schemaVersion, boolean formed) {
         return new FlameAltarFormationState(CURRENT_SCHEMA_VERSION, false);
     }
 
-    public static FlameAltarFormationState formed() {
-        return new FlameAltarFormationState(CURRENT_SCHEMA_VERSION, true);
-    }
-
     public static FlameAltarFormationState fromPersisted(int schemaVersion, boolean formed) {
         if (schemaVersion != CURRENT_SCHEMA_VERSION) {
             return unformed();
