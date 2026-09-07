@@ -27,6 +27,27 @@ public final class FlameWardMutationGameTests {
     }
 
     @GameTest(template = "foundation_empty", batch = WARD_MUTATION_BATCH)
+    public static void unformedAltarDoesNotCreateSanctuary(GameTestHelper helper) {
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        BlockPos altarRelative = new BlockPos(2, 1, 2);
+        BlockPos center = helper.absolutePos(altarRelative);
+
+        FlameWardRuntime.service().clear();
+        try {
+            helper.setBlock(altarRelative, ModBlocks.FLAME_ALTAR.get());
+
+            helper.assertTrue(
+                    !FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "A merely placed UNFORMED Flame Altar must not create Sanctuary before explicit formation"
+            );
+            helper.succeed();
+        } finally {
+            helper.destroyBlock(altarRelative);
+            FlameWardRuntime.service().clear();
+        }
+    }
+
+    @GameTest(template = "foundation_empty", batch = WARD_MUTATION_BATCH)
     public static void wardVetoesThreatMutationButNotSafePurification(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos altarRelative = new BlockPos(2, 1, 2);
