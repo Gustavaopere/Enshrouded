@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.client.accessibility;
 
 import com.gustavaopere.enshrouded.client.ambient.ShroudAmbientController;
+import com.gustavaopere.enshrouded.client.effects.AdvancedVfxController;
 import com.gustavaopere.enshrouded.client.effects.ShroudParticleController;
 import com.gustavaopere.enshrouded.client.render.ShroudFogController;
 import com.gustavaopere.enshrouded.config.EnshroudedClientConfig;
@@ -94,6 +95,7 @@ public final class AccessibilityPresetController {
         ShroudFogController.reset();
         ShroudAmbientController.reset();
         ShroudParticleController.reset();
+        AdvancedVfxController.reset();
     }
 
     public record SettingsBundle(

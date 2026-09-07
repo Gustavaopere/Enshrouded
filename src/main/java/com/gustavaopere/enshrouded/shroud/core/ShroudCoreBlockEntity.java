@@ -4,6 +4,8 @@ import com.gustavaopere.enshrouded.api.shroud.ShroudQuery;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
+import com.gustavaopere.enshrouded.presentation.AdvancedVfxCue;
+import com.gustavaopere.enshrouded.presentation.AdvancedVfxServerEmitter;
 import com.gustavaopere.enshrouded.registry.ModBlockEntities;
 import com.gustavaopere.enshrouded.shroud.expansion.ShroudGridGeometry;
 import com.gustavaopere.enshrouded.shroud.query.DefaultShroudQuery;
@@ -172,6 +174,7 @@ public final class ShroudCoreBlockEntity extends BlockEntity implements GeoBlock
             savedData.replace(retirement.state());
             if (core.lifecycleState() == CoreLifecycleState.ACTIVE) {
                 NeoForge.EVENT_BUS.post(new ShroudCoreDestroyedEvent(serverLevel, coreId));
+                AdvancedVfxServerEmitter.emit(serverLevel, worldPosition, AdvancedVfxCue.CORE_DESTROYED);
                 triggerAuthoritativeCollapsePresentation();
             }
         }

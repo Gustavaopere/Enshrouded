@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.network;
 
+import com.gustavaopere.enshrouded.client.state.ClientAdvancedVfxState;
 import com.gustavaopere.enshrouded.client.state.ClientExposureState;
 import com.gustavaopere.enshrouded.client.state.ClientShroudDiscoveryState;
 import com.gustavaopere.enshrouded.client.state.ClientShroudState;
@@ -10,7 +11,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /**
  * Enshrouded network registration. Level 1 exposes only authoritative clientbound presentation
- * snapshots; there is no serverbound mutation/query command payload.
+ * snapshots/cues; there is no serverbound mutation/query command payload.
  */
 public final class ModNetworking {
     public static final String PROTOCOL_VERSION = "1";
@@ -32,5 +33,9 @@ public final class ModNetworking {
                 ShroudDiscoveryPayload.TYPE,
                 ShroudDiscoveryPayload.STREAM_CODEC,
                 (payload, context) -> ClientShroudDiscoveryState.INSTANCE.accept(payload));
+        registrar.playToClient(
+                AdvancedVfxPayload.TYPE,
+                AdvancedVfxPayload.STREAM_CODEC,
+                (payload, context) -> ClientAdvancedVfxState.INSTANCE.accept(payload));
     }
 }

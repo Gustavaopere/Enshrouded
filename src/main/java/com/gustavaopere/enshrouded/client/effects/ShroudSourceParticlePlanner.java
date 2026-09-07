@@ -14,25 +14,22 @@ public final class ShroudSourceParticlePlanner {
         RED_SLUDGE(3);
 
         private final int baseCount;
-
-        SourceKind(int baseCount) {
-            this.baseCount = baseCount;
-        }
+        SourceKind(int baseCount) { this.baseCount = baseCount; }
     }
 
-    public static int emissionCount(
-            SourceKind kind,
-            EnshroudedClientConfig.ParticleSettings settings,
-            double distanceSquared) {
+    public static int emissionCount(SourceKind kind, EnshroudedClientConfig.ParticleSettings settings, double distanceSquared) {
         Objects.requireNonNull(kind, "kind");
         Objects.requireNonNull(settings, "settings");
-        if (!settings.enabled() || settings.maxCount() <= 0 || !Double.isFinite(distanceSquared) || distanceSquared < 0.0D) {
-            return 0;
-        }
+        if (!settings.enabled() || settings.maxCount() <= 0 || !Double.isFinite(distanceSquared) || distanceSquared < 0.0D) return 0;
         double maxDistance = settings.maxDistance();
-        if (distanceSquared > maxDistance * maxDistance) {
-            return 0;
+        if (distanceSquared > maxDistance * maxDistance) return 0;
+
+        int requested = kind.baseCount;
+        if (kind == SourceKind.CORE) {
+            double distance = Math.sqrt(distanceSquared);
+            if (distance <= maxDistance * 0.25D) requested = 4;
+            else if (distance <= maxDistance * 0.50D) requested = 3;
         }
-        return Math.min(kind.baseCount, settings.maxCount());
+        return Math.min(requested, settings.maxCount());
     }
 }
