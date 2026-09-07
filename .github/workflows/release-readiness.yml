@@ -29,6 +29,9 @@ jobs:
       - name: Third-party provenance contract tests
         run: python3 -m unittest scripts/ci/test_third_party_provenance.py
 
+      - name: Stage 10 Sanctuary presentation contract tests
+        run: python3 -m unittest scripts/ci/test_stage10_sanctuary_presentation.py
+
       - name: Verify third-party provenance
         run: python3 scripts/ci/verify_third_party_provenance.py
 
