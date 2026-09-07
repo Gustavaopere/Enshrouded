@@ -4,6 +4,7 @@ import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSample;
 import com.gustavaopere.enshrouded.api.shroud.ShroudSeverity;
 import com.gustavaopere.enshrouded.config.EnshroudedConfig;
+import com.gustavaopere.enshrouded.flame.ward.FlameWardRuntime;
 import com.gustavaopere.enshrouded.gametest.GameTestBootstrap;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.shroud.core.CoreLifecycleState;
@@ -54,13 +55,17 @@ public final class FlameWardExposureGameTests {
             helper.assertTrue(latent.sourceId().orElseThrow().equals(coreId), "Precondition: expected test core must own the isolated logical cell");
 
             helper.setBlock(altarRelative, ModBlocks.FLAME_ALTAR.get());
+            // This test owns the canonical Shroud-query masking contract, not Stage 10.09 formation.
+            // Activate the already-existing ward provider explicitly so lifecycle tests can require
+            // an UNFORMED physical altar to remain inactive.
+            FlameWardRuntime.onAltarLoaded(level, altarPos);
             ShroudSample warded = query.sample(level, altarPos, null);
-            helper.assertTrue(warded.sanctuarySuppressed(), "Loaded Flame Altar must suppress effective Shroud inside its ward");
+            helper.assertTrue(warded.sanctuarySuppressed(), "An active Flame ward must suppress effective Shroud inside its radius");
             assertLatentSamplePreserved(helper, latent, warded);
 
             helper.destroyBlock(altarRelative);
             ShroudSample revealed = query.sample(level, altarPos, null);
-            helper.assertTrue(!revealed.sanctuarySuppressed(), "Removing the altar must reveal the still-present logical Shroud");
+            helper.assertTrue(!revealed.sanctuarySuppressed(), "Removing the active altar anchor must reveal the still-present logical Shroud");
             assertLatentSamplePreserved(helper, latent, revealed);
             helper.assertTrue(data.state().equals(injected),
                     "Sanctuary activation/removal must not rewrite canonical logical Shroud state");
@@ -69,6 +74,7 @@ public final class FlameWardExposureGameTests {
             if (level.getBlockState(altarPos).is(ModBlocks.FLAME_ALTAR.get())) {
                 level.destroyBlock(altarPos, false);
             }
+            FlameWardRuntime.onAltarRemoved(level, altarPos);
             data.replace(original);
         }
     }
@@ -86,10 +92,11 @@ public final class FlameWardExposureGameTests {
 
         try {
             helper.setBlock(altarRelative, ModBlocks.FLAME_ALTAR.get());
+            FlameWardRuntime.onAltarLoaded(level, altarPos);
 
             ShroudSample sample = DefaultShroudQuery.levelOne(GEOMETRY).sample(level, playerPos, null);
             helper.assertTrue(sample.sanctuarySuppressed(),
-                    "Exposure input must observe the physical Flame Altar Sanctuary");
+                    "Exposure input must observe the canonical active Flame ward");
             helper.assertTrue(sample.severity() != ShroudSeverity.CLEAR,
                     "Sanctuary must retain latent logical Shroud severity in the sample consumed by exposure");
 
@@ -118,6 +125,7 @@ public final class FlameWardExposureGameTests {
             if (level.getBlockState(altarPos).is(ModBlocks.FLAME_ALTAR.get())) {
                 level.destroyBlock(altarPos, false);
             }
+            FlameWardRuntime.onAltarRemoved(level, altarPos);
             data.replace(original);
         }
     }
