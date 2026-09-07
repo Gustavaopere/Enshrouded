@@ -14,7 +14,7 @@
 **10.05 implementation PR:** #89 — `Stage 10.05 — Sanctuary / Purification presentation` — MERGED as `771341394045bdef09eb9d9fbb4743aaad1c39f6`.
 **10.05 closeout PR:** #90 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.06 implementation PR:** #91 — `Stage 10.06 — Shroud world-art family` — MERGED as `19b9cee08cf5b5f369497ad4c8c0329eff65253d`.
-**10.06 closeout:** branch `docs/10-06-world-art-closeout`; documentation-only technical closeout in progress; no runtime changes.
+**10.06 closeout PR:** #92 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 
 ## Planning checkpoint
 
