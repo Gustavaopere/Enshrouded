@@ -1,7 +1,5 @@
 package com.gustavaopere.enshrouded.story.reward;
 
-import com.gustavaopere.enshrouded.client.render.story.LichSkullRenderer;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -26,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -42,25 +41,24 @@ public final class LichSkullItem extends Item implements GeoItem {
     public static final int LEVEL_ONE_MANIFESTATION = 1;
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
+    private final AtomicReference<GeoRenderProvider> geoRenderProvider = new AtomicReference<>();
 
     public LichSkullItem(Properties properties) {
         super(properties);
         SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
 
+    /** Client bootstrap supplies the renderer without introducing client-only Minecraft classes here. */
+    public void setGeoRenderProvider(GeoRenderProvider provider) {
+        Objects.requireNonNull(provider, "provider");
+        if (!geoRenderProvider.compareAndSet(null, provider)) {
+            throw new IllegalStateException("Lich Skull GeoRenderProvider already initialized");
+        }
+    }
+
     @Override
     public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
-        consumer.accept(new GeoRenderProvider() {
-            private LichSkullRenderer renderer;
-
-            @Override
-            public BlockEntityWithoutLevelRenderer getGeoItemRenderer() {
-                if (renderer == null) {
-                    renderer = new LichSkullRenderer();
-                }
-                return renderer;
-            }
-        });
+        consumer.accept(geoRenderProvider.get());
     }
 
     @Override
