@@ -1,6 +1,6 @@
 # Stage 10.05 — Sanctuary / Purification presentation
 
-Status during implementation: **IN PROGRESS — PR #89**.
+Status: **TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED — P0 IN-GAME ART REVIEW STILL REQUIRED**.
 
 ## Authority and scope
 
@@ -86,12 +86,22 @@ Required repository verification after implementation:
 8. dedicated-server smoke GREEN;
 9. PR CI / Release Readiness GREEN.
 
+## Verification / closeout evidence
+
+- TDD RED was observed before implementation in Release Readiness `34074014415 / 101596544083`; the new 10.05 contract failed because the required presentation files did not yet exist.
+- Final implementation PR #89 HEAD `aafc70f24e52e3dd5b70be0188f01eae6cbbbe67` passed Level 1 Release Readiness `34074557757 / 101598031506`.
+- The same PR HEAD passed Enshrouded CI `34074557737 / 101598073190`, including Stage 10 contracts, unit tests, performance baselines, diff sanity, NeoForge build, GameTests, two-boot SavedData reload, the real Ars Zero 2.0.2 profile and dedicated-server save/reload smoke.
+- PR #89 merged to `main` as `771341394045bdef09eb9d9fbb4743aaad1c39f6`.
+- Post-merge Level 1 Release Readiness `34074967881 / 101599175586` passed on `main@771341394045bdef09eb9d9fbb4743aaad1c39f6`.
+- Post-merge Enshrouded CI `34074967864 / 101599175335` passed the complete matrix on the same baseline.
+- Automated technical verification does not promote the art to P0 `ART APPROVED`; the manual evidence below remains required.
+
 ## Manual art gates
 
 The following remain visual review gates and must not be falsely marked automated:
 
-- in-game screenshot of active Sanctuary ward focus;
-- in-game screenshot of Sanctuary over latent Shroud;
-- in-game capture of terminal purification release;
-- reduced-effects/particles-disabled verification;
-- full 607-mod client smoke.
+- [ ] in-game screenshot of active Sanctuary ward focus;
+- [ ] in-game screenshot of Sanctuary over latent Shroud;
+- [ ] in-game capture of terminal purification release;
+- [ ] reduced-effects/particles-disabled verification;
+- [ ] full 607-mod client smoke.
