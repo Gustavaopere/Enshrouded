@@ -88,6 +88,7 @@ public final class ManifestationEncounterService {
             return Optional.empty();
         }
 
+        LichManifestationPresentation.onSpawned(level, manifestation.entity(), encounterId);
         return Optional.of(new ActiveEncounter(owner, encounterId, manifestation));
     }
 
@@ -132,6 +133,7 @@ public final class ManifestationEncounterService {
         if (arenaRule != null) {
             arenaRule.cleanup(level, encounterId);
         }
+        LichManifestationPresentation.onDefeated(level, actor, encounterId);
         return Optional.of(result);
     }
 
