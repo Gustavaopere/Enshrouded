@@ -22,8 +22,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
  *
  * <p>The sentinel lives outside the disposable GameTest template so the external reload harness can
  * restart the same world. The first boot forms the canonical 3x3 structure through the real
- * controller boundary; the second boot proves block + BlockEntity NBT + onLoad recovery + Sanctuary
- * restoration without a second SavedData authority.</p>
+ * controller boundary; the second boot proves block + BlockEntity NBT + bounded post-load recovery
+ * + Sanctuary restoration without a second SavedData authority.</p>
  */
 @GameTestHolder(Enshrouded.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -44,7 +44,13 @@ public final class FlameAltarRestartGameTests {
             return;
         }
 
-        verifyReloadedSentinel(helper, level);
+        // NeoForge invokes BlockEntity#onLoad before the first block-entity tick. The initial
+        // validation may therefore observe hasChunk=false while the chunk is still registering.
+        // Wait long enough for the bounded local retry path to run automatically; never invoke
+        // onLoad manually from the test.
+        helper.startSequence()
+                .thenExecuteAfter(10, () -> assertReloadedSentinel(helper, level))
+                .thenSucceed();
     }
 
     private static void createFirstBootSentinel(GameTestHelper helper, ServerLevel level) {
@@ -66,26 +72,11 @@ public final class FlameAltarRestartGameTests {
         helper.succeed();
     }
 
-    private static void verifyReloadedSentinel(GameTestHelper helper, ServerLevel level) {
+    private static void assertReloadedSentinel(GameTestHelper helper, ServerLevel level) {
         FlameAltarBlockEntity altar = requireAltar(helper, level, SENTINEL_CENTER);
 
-        CompoundTag beforeRetry = altar.saveWithoutMetadata(level.registryAccess());
-        CompoundTag formationBeforeRetry = beforeRetry.getCompound("Formation");
-        boolean persistedFormedBeforeRetry = formationBeforeRetry.getBoolean("Formed");
-        FlameAltarFormationPhase phaseBeforeRetry = altar.formationPhase();
-        boolean formedBeforeRetry = altar.isFormed();
-
-        if (!formedBeforeRetry) {
-            // Diagnostic only: keep this RED if the canonical first onLoad missed recovery, but record
-            // whether a second onLoad after getChunkAt has made the same bounded validator succeed.
-            altar.onLoad();
-            boolean recoveredOnSecondOnLoad = altar.isFormed();
-            helper.fail("Second boot initial onLoad did not recover FORMED: persistedFormed="
-                    + persistedFormedBeforeRetry + ", phase=" + phaseBeforeRetry
-                    + ", retryAfterChunkLoadRecovered=" + recoveredOnSecondOnLoad);
-            return;
-        }
-
+        helper.assertTrue(altar.isFormed(),
+                "Second boot must recover persisted FORMED state through the bounded post-load retry path");
         helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.FORMED,
                 "Second boot recovery must settle in FORMED rather than transient VALIDATING/UNFORMED");
         helper.assertTrue(altar.inventory().getStackInSlot(0).is(Items.DIRT)
@@ -103,7 +94,6 @@ public final class FlameAltarRestartGameTests {
                 "Restarted Flame Altar must persist recovered FORMED state for subsequent restarts");
 
         System.out.println("ENSHROUDED_FLAME_ALTAR_FORMED_RELOADED");
-        helper.succeed();
     }
 
     private static void placeCanonicalShell(ServerLevel level, BlockPos center) {
