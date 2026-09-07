@@ -1,6 +1,6 @@
 # Stage 10.08 — Advanced VFX pass
 
-Status: IMPLEMENTATION PR GREEN BEFORE CLOSEOUT GATE / MERGE PENDING / ART APPROVED OPEN
+Status: TECHNICALLY COMPLETE / IMPLEMENTATION MERGED / POST-MERGE VERIFIED / ART APPROVED OPEN
 
 ## Scope
 
@@ -111,7 +111,18 @@ Implementation development used multiple explicit RED → GREEN checkpoints:
 
 `scripts/ci/test_stage10_advanced_vfx.py` is included in both Enshrouded CI and Level 1 Release Readiness. It locks the task-local Lodestone decision, clientbound-only presentation boundary, hard cue limits and presence of this contract.
 
-Final implementation-head and merge/post-merge evidence are filled only after the exact final branch HEAD and subsequent `main` have passed their required workflows.
+### Final implementation and post-merge evidence
+
+- implementation PR: #95 — `Stage 10.08 — Advanced VFX pass`;
+- final implementation HEAD: `9a4ff6ef53ff192bb1d28cf1c0e2c5dc8662e5a7`;
+- final PR-head Level 1 Release Readiness: `34153873230 / 101841530155` — `completed/success`;
+- final PR-head Enshrouded CI: `34153873227 / 101841529843` — `completed/success` across provenance, Stage 10 contracts, unit tests, performance baselines, diff sanity, NeoForge build, GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution profile and dedicated-server save/reload smoke;
+- PR #95 had no unresolved review threads and no pending review submission at the final gate;
+- implementation merge: `00439c1593cf8e0699f6abe4e19d4848d1e97149`;
+- post-merge Level 1 Release Readiness: `34154332957 / 101842896487` — `completed/success` on exact `main@00439c1593cf8e0699f6abe4e19d4848d1e97149`;
+- post-merge Enshrouded CI: `34154332819 / 101842895697` — `completed/success` across the complete matrix on that same `main` baseline.
+
+The Stage 10.08 technical implementation checkpoint is therefore closed. This documentation closeout records verified evidence only and does not change runtime behavior or promote visual quality to `ART APPROVED`.
 
 ## Manual art / compatibility gates
 
