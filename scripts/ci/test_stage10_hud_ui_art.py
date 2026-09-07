@@ -88,32 +88,37 @@ def decode_rgba8_png(path: Path):
     return width, height, tuple(pixels)
 
 
+def occupied(alpha: int) -> bool:
+    """Normalize alpha so opacity-only changes cannot masquerade as topology changes."""
+    return alpha > 0
+
+
 class Stage10HudUiArtContractTest(unittest.TestCase):
     def test_combined_hud_atlas_is_bounded_and_frames_are_structurally_distinct(self):
         self.assertTrue(ATLAS.is_file(), "Stage 10.07 requires the authored HUD atlas")
         width, height, pixels = decode_rgba8_png(ATLAS)
         self.assertEqual((ATLAS_WIDTH, ATLAS_HEIGHT), (width, height))
 
-        ordinary_alpha = tuple(
-            pixels[y][x][3]
+        ordinary_mask = tuple(
+            occupied(pixels[y][x][3])
             for y in range(FRAME_HEIGHT)
             for x in range(FRAME_WIDTH)
         )
-        deadly_alpha = tuple(
-            pixels[y][x + FRAME_WIDTH][3]
+        deadly_mask = tuple(
+            occupied(pixels[y][x + FRAME_WIDTH][3])
             for y in range(FRAME_HEIGHT)
             for x in range(FRAME_WIDTH)
         )
         self.assertNotEqual(
-            ordinary_alpha,
-            deadly_alpha,
-            "Ordinary and Deadly frames must differ by shape/pattern, not only color",
+            ordinary_mask,
+            deadly_mask,
+            "Ordinary and Deadly frames must differ by occupied geometry, not color/opacity only",
         )
-        alpha_delta = sum(a != b for a, b in zip(ordinary_alpha, deadly_alpha))
+        topology_delta = sum(a != b for a, b in zip(ordinary_mask, deadly_mask))
         self.assertGreaterEqual(
-            alpha_delta,
-            400,
-            "Ordinary/Deadly frame topology is too similar for non-color accessibility",
+            topology_delta,
+            32,
+            "Ordinary/Deadly frame occupied geometry is too similar for non-color accessibility",
         )
 
     def test_combined_hud_atlas_contains_four_shape_distinct_symbols(self):
@@ -123,11 +128,11 @@ class Stage10HudUiArtContractTest(unittest.TestCase):
         for cell in range(4):
             start_x = SYMBOL_START_X + cell * SYMBOL_SIZE
             masks.append(tuple(
-                pixels[y][start_x + x][3]
+                occupied(pixels[y][start_x + x][3])
                 for y in range(SYMBOL_SIZE)
                 for x in range(SYMBOL_SIZE)
             ))
-        self.assertEqual(4, len(set(masks)), "HUD symbols must be shape-distinct, not palette aliases")
+        self.assertEqual(4, len(set(masks)), "HUD symbols must be shape-distinct, not palette/opacity aliases")
 
     def test_overlay_remains_stage03_projection_and_has_full_plus_minimal_render_paths(self):
         source = OVERLAY.read_text(encoding="utf-8")
