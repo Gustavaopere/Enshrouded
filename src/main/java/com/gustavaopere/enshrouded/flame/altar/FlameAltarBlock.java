@@ -1,5 +1,6 @@
 package com.gustavaopere.enshrouded.flame.altar;
 
+import com.gustavaopere.enshrouded.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,6 +11,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +31,22 @@ public final class FlameAltarBlock extends Block implements EntityBlock {
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new FlameAltarBlockEntity(pos, state);
+    }
+
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level,
+            BlockState state,
+            BlockEntityType<T> type) {
+        if (level.isClientSide || type != ModBlockEntities.FLAME_ALTAR.get()) {
+            return null;
+        }
+        return (tickerLevel, pos, tickerState, blockEntity) -> {
+            if (tickerLevel instanceof ServerLevel serverLevel
+                    && blockEntity instanceof FlameAltarBlockEntity altar) {
+                FlameAltarBlockEntity.serverTick(serverLevel, altar);
+            }
+        };
     }
 
     @Override
