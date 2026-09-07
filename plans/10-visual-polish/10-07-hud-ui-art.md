@@ -1,6 +1,6 @@
 # Stage 10.07 — HUD / UI art
 
-Status: IMPLEMENTATION PRESENT / AWAITING FINAL PR VALIDATION
+Status: TECHNICALLY COMPLETE / IMPLEMENTATION MERGED / POST-MERGE VERIFIED / ART APPROVED OPEN
 
 ## Scope
 
@@ -29,6 +29,8 @@ Ordinary and Deadly Shroud differ by silhouette/pattern in addition to palette; 
 
 The existing `AccessibilityProfile.MINIMAL` contract is preserved: **MINIMAL remains readable**. Reduced sensory profiles may suppress optional environmental effects but cannot hide the synchronized hazard/timer information.
 
+The automated visual contract decodes the authored atlas and normalizes alpha into an occupied/transparent topology mask (`alpha > 0`). Ordinary/Deadly frames and the four HUD symbols therefore cannot satisfy the non-color distinction gate through palette or opacity-only changes.
+
 UI scale remains bounded by the existing `EnshroudedClientConfig` client-only setting. PT-BR and EN HUD translation-key parity is preserved.
 
 ## Asset and dependency budget
@@ -48,16 +50,33 @@ Deliberate TDD RED checkpoint:
 
 - exact RED head: `13252ccc1d58b4e1c5b4f1a0e31097c968f22bd8`;
 - Level 1 Release Readiness run `34107462335`, job `101695661987`;
+- Enshrouded CI run `34107462334`, job `101695662104`;
 - provenance contract passed first;
-- failure occurred exactly at `Stage 10 presentation contract tests`, before implementation.
+- failures occurred exactly at the new Stage 10 presentation/visual contract before the implementation existed.
 
-Required technical exit evidence still pending:
+Final PR-head evidence:
 
-1. exact final PR-head Enshrouded CI green;
-2. exact final PR-head Level 1 Release Readiness green;
-3. implementation merge to `main`;
-4. exact post-merge `main` CI green;
-5. documentation closeout with persisted Notion delta.
+- implementation PR: #93 — `Stage 10.07 — HUD / UI art`;
+- final implementation HEAD: `cda923713f6228e3c34885fc7da3d8592081c78b`;
+- Level 1 Release Readiness `34140834386 / 101802215801` — `completed/success`;
+- Enshrouded CI `34140834405 / 101802215875` — `completed/success`, including provenance, Stage 10 visual contracts, unit tests, performance baselines, diff sanity, NeoForge build, GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution profile and dedicated-server save/reload smoke;
+- the P2 alpha-normalization review was resolved only after the corrected head passed both workflows.
+
+Implementation merge and post-merge evidence:
+
+- PR #93 merged to `main` as `341aa508bcd997cf32b7d550c9a37fca19f36ff3`;
+- Level 1 Release Readiness `34141675351` — `completed/success` on the exact merge SHA;
+- Enshrouded CI `34141675549 / 101804820155` — `completed/success` on the same merge SHA, including the complete server/reload/profile matrix.
+
+The technical implementation checkpoint is therefore closed. The documentation closeout records this evidence without changing runtime behavior.
+
+## Current pack reconciliation
+
+The current physical modlist baseline remains **612 mods**. Relevant presentation/runtime versions at closeout are:
+
+- GeckoLib `4.9.2`;
+- Sodium `0.8.13+mc1.21.1`;
+- Fusion `1.3.15+a` (`fusion-1.3.15a-neoforge-mc1.21.1.jar`).
 
 ## Manual art gates
 
@@ -71,4 +90,4 @@ The following remain **pending** until an in-game review is explicitly performed
 - readability near other HUD mods and common overlays;
 - final art-direction approval.
 
-Stage 10.08 is not part of this cycle and must not start automatically.
+Stage 10.08 is the next canonical task after this closeout, but it must not start automatically in this cycle.
