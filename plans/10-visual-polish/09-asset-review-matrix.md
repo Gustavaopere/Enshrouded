@@ -40,7 +40,7 @@ Use this matrix as the canonical visual-audit status for assets discovered durin
 | GeckoLib 4 | 4.9.2 | installed | **PRIMARY** animated 3D runtime |
 | AzureLib | 3.1.11 | installed | evaluated alternative; do not mix by default |
 | Fusion | 1.3.15+a | installed | optional environmental connected/continuous/overlay materials; no gameplay authority |
-| Lodestone | 1.8.2 | installed | advanced VFX candidate after proof |
+| Lodestone | 1.8.2 | installed | **NOT ADOPTED IN 10.08** after native proof; remains future task-gated |
 | OctoLib | 0.6.2 | installed | optional UI tween utility |
 | Player Animator | 2.0.4+1.21.1 | installed | optional ritual/player interaction animation |
 | Veil | 4.3.2 transitive | transitively present | no hard dependency without explicit ADR |
@@ -99,6 +99,18 @@ Stage 10.06 technical verification is complete on final PR #91 HEAD `1bf6dca57f8
 | MINIMAL accessibility path | `ShroudHudOverlay.renderMinimalHud()`; `AccessibilityProfile.MINIMAL` | client-only presentation/config | removes optional ornament while retaining zone identity, countdown, Madness and Passage warning; Ordinary/Deadly remains shape-distinct | pending reduced-effects comparison | **REVIEW_IN_GAME** |
 
 Stage 10.07 technical verification is complete on final PR #93 HEAD `cda923713f6228e3c34885fc7da3d8592081c78b`: Release Readiness `34140834386 / 101802215801` and Enshrouded CI `34140834405 / 101802215875` both completed successfully after the P2 alpha-topology hardening. PR #93 merged as `341aa508bcd997cf32b7d550c9a37fca19f36ff3`; post-merge Release Readiness `34141675351` and Enshrouded CI `34141675549 / 101804820155` passed the complete matrix again on that exact `main`, including dedicated-server save/reload smoke. Current pack baseline remains **612 mods** with GeckoLib `4.9.2`, Sodium `0.8.13+mc1.21.1` and Fusion `1.3.15+a`. Screenshots at representative GUI scales, MINIMAL/reduced-effects comparison, coexistence with other HUD overlays and the full 612-mod visual smoke remain open; `ART APPROVED` is not inferred from CI.
+
+## Stage 10.08 reconciled audit
+
+| Asset/system | Exact repository evidence | Runtime owner / provenance | Technical state | Screenshot evidence | Final visual state |
+|---|---|---|---|---|---|
+| Snapshot-derived transition sequences | `AdvancedVfxTransitionPlanner`; `AdvancedVfxController`; `ClientAdvancedVfxState` | presentation projection of synchronized Stage 03 exposure/Madness state; no gameplay authority | `CLEAR → SHROUD`, `SHROUD → DEADLY`, Sanctuary entry and Madness escalation are baseline-safe, cooldown-bounded and do not replay on first snapshot/reload | pending | **REVIEW_IN_GAME** |
+| Discrete authoritative event cues | `AdvancedVfxPayload`; `AdvancedVfxServerEmitter`; `AdvancedVfxCue` | ephemeral clientbound presentation strictly downstream of canonical Core destruction, Flame ritual success and Lich encounter activation | radius-targeted bounded cues; no serverbound VFX path, SavedData, chunk forcing, world scan or provider replacement | pending | **REVIEW_IN_GAME** |
+| Temporal sequence budget / reduced effects | `AdvancedVfxSequenceBudget`; `AdvancedVfxController`; `AccessibilityPresetController` | client-only presentation using the single Stage 07 config authority | total cue allowance is spread across bounded lifetime; `REDUCED_SENSORY` caps the complete sequence at 4 particles; `MINIMAL` emits 0 advanced particles | pending full/reduced/minimal comparison | **REVIEW_IN_GAME** |
+| Core-proximity density ramp | `ShroudSourceParticlePlanner` | existing Stage 07 local source planner; authoritative Core/exposure state remains server-side | local requested density is 2/3/4 by distance tier and remains clamped by the canonical client particle count/distance settings | pending near/far comparison | **REVIEW_IN_GAME** |
+| Lodestone dependency decision | `build.gradle`; `neoforge.mods.toml`; `10-08-advanced-vfx.md`; `scripts/ci/test_stage10_advanced_vfx.py` | Lodestone 1.8.2 is installed in the pack but is not an Enshrouded runtime/compile provider for 10.08 | native NeoForge/GeckoLib presentation passed the full automation matrix without Lodestone API imports; future use remains task-gated | dependency decision complete; real client coexistence still pending | **OPTIONAL_ENHANCEMENT** |
+
+Stage 10.08 technical verification is complete on final PR #95 HEAD `9a4ff6ef53ff192bb1d28cf1c0e2c5dc8662e5a7`: Release Readiness `34153873230 / 101841530155` and Enshrouded CI `34153873227 / 101841529843` both completed successfully. PR #95 merged as `00439c1593cf8e0699f6abe4e19d4848d1e97149`; post-merge Release Readiness `34154332957 / 101842896487` and Enshrouded CI `34154332819 / 101842895697` passed the complete matrix again on that exact `main`, including GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution profile and dedicated-server save/reload smoke. The current pack remains 612 mods; Lodestone 1.8.2 is present but deliberately not adopted by Enshrouded for 10.08. Full client screenshots, Sodium/shader coexistence, fog modes, reconnect/dimension behavior, rapid-boundary crossing and the full 612-mod visual smoke remain manual gates; no row is promoted to `KEEP` from CI alone and `ART APPROVED` remains open.
 
 ## Audit expansion rule
 
