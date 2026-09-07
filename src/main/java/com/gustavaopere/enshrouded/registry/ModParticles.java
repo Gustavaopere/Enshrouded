@@ -19,6 +19,7 @@ public final class ModParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SHROUD_GROWTH = register("shroud_growth");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> RED_SLUDGE = register("red_sludge");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> LICH_ARCANA = register("lich_arcana");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SANCTUARY_MOTE = register("sanctuary_mote");
 
     private ModParticles() {}
 
