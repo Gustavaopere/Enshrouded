@@ -4,6 +4,7 @@ import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.progression.ProgressionOwner;
 import com.gustavaopere.enshrouded.api.progression.ProgressionRuntimeBindings;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarBlockEntity;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarFormationState;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarMenu;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarOffering;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuntime;
@@ -14,6 +15,7 @@ import com.gustavaopere.enshrouded.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -57,6 +59,34 @@ public final class FlameAltarFormationGameTests {
                 "UNFORMED altar must not consume a valid synthetic ritual offering");
         helper.assertTrue(after.equals(before),
                 "UNFORMED altar must not mutate authoritative Flame progression");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_empty", batch = BATCH)
+    public static void persistedFormedIntentRequiresRecoveryBeforeGameplay(GameTestHelper helper) {
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        BlockPos relative = new BlockPos(1, 1, 1);
+        helper.setBlock(relative, ModBlocks.FLAME_ALTAR.get());
+        FlameAltarBlockEntity altar = requireAltar(helper, relative);
+
+        CompoundTag persisted = altar.saveWithoutMetadata(level.registryAccess());
+        CompoundTag formation = new CompoundTag();
+        formation.putInt("SchemaVersion", FlameAltarFormationState.CURRENT_SCHEMA_VERSION);
+        formation.putBoolean("Formed", true);
+        persisted.put("Formation", formation);
+
+        altar.loadWithComponents(persisted, level.registryAccess());
+        helper.assertTrue(!altar.isFormed(),
+                "Persisted FORMED intent must not bypass bounded world revalidation after reload");
+
+        CompoundTag reserialized = altar.saveWithoutMetadata(level.registryAccess());
+        helper.assertTrue(reserialized.contains("Formation"),
+                "Formation recovery intent must survive BlockEntity persistence round-trip");
+        CompoundTag savedFormation = reserialized.getCompound("Formation");
+        helper.assertTrue(savedFormation.getInt("SchemaVersion") == FlameAltarFormationState.CURRENT_SCHEMA_VERSION,
+                "Formation recovery persistence must retain the current schema version");
+        helper.assertTrue(savedFormation.getBoolean("Formed"),
+                "A valid persisted FORMED intent must remain pending until recovery validation can run");
         helper.succeed();
     }
 
