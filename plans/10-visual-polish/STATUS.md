@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.04 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.05 SANCTUARY / PURIFICATION
+**State:** 10.05 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / P0 IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.06 SHROUD WORLD-ART FAMILY
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -11,6 +11,8 @@
 **10.03 closeout PR:** #86 — records final technical/post-merge verification only; no runtime changes.
 **10.04 implementation PR:** #87 — `Stage 10.04 — Lich Skull and manifestation presentation` — MERGED as `a54e8f32e85c6b07dd3ace89a301743bfeb669ca`
 **10.04 closeout PR:** #88 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
+**10.05 implementation PR:** #89 — `Stage 10.05 — Sanctuary / Purification presentation` — MERGED as `771341394045bdef09eb9d9fbb4743aaad1c39f6`.
+**10.05 closeout PR:** #90 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 
 ## Planning checkpoint
 
@@ -64,7 +66,7 @@
 - [x] Original GeckoLib geo asset with stepped pedestal, four-direction cradle, rune channels, flame volume, broken ritual halo and floating fragments.
 - [x] Polished first-party material atlas using dark stone/charcoal, bronze/brass, amber runes and hot flame hierarchy.
 - [x] Selective first-party glowmask for runes, flame, halo seams and fragment fissures rather than full-model emissive wash.
-- [x] Editable Blockbench source contains all 26 runtime cuboids and both base/emissive texture references.
+- [x] At the 10.02 closeout the editable Blockbench source covered all 26 then-runtime cuboids and both base/emissive texture references; Stage 10.05 subsequently extended both runtime geometry and editable source together, and the CI contract now compares their counts dynamically.
 - [x] First-party PNGs registered in provenance.
 - [x] Old polished-blackstone-bricks + magma placeholder removed from the Flame Altar presentation.
 - [x] Automated Stage 10 contract covers render path, model/animation assets, provenance, editable-source completeness and authority → presentation ordering.
@@ -159,9 +161,48 @@
 - [ ] Reduced-effects readability remains to be reviewed in-game.
 - [ ] Full 607-mod-pack visual smoke remains an external/manual gate because the complete pack is not vendored into CI.
 
+## 10.05 — Sanctuary / Purification presentation — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
+
+### Runtime and authority
+
+- [x] `FlameWardRuntime` remains the loaded-altar Sanctuary lifecycle owner and `FlameWardService` remains the server-authoritative ward query provider.
+- [x] `ShroudPurificationRuntime` remains the only logical purification/regression owner; `TerrainRestorationService` remains bounded best-effort terrain healing.
+- [x] Client presentation consumes only synchronized `ShroudSample.sanctuarySuppressed` plus the underlying authoritative intensity from `ClientShroudState`; it has no server-write path.
+- [x] Sanctuary suppression does not delete latent Shroud state: protected contamination remains visually expressible while gameplay exposure is suppressed by the canonical ward.
+- [x] No second Sanctuary provider, second purification state, second terrain pipeline or chunk-forcing path was added.
+- [x] Purification Shrine gameplay/multiblock authority is explicitly deferred to 10.09 rather than silently invented in 10.05.
+
+### Presentation package
+
+- [x] Existing Flame Altar hero asset is extended with `ward_focus`, `ward_ring`, `purification_aperture` and `ward_fragments`, keeping the canonical altar as the visible Sanctuary focus.
+- [x] Editable Blockbench source and runtime GeckoLib geometry were extended together; the visual-stack contract now checks source element count against actual runtime cube count instead of a stale hardcoded count.
+- [x] `animation.flame_altar.sanctuary_active` supplies continuous ward motion and `animation.flame_altar.purification_release` is authored as a presentation-only one-shot reserved for an explicit canonical trigger.
+- [x] `SanctuaryPresentationController` emits at most 6 `sanctuary_mote` particles every 6 ticks, respects existing particle settings and performs no global scan or server packet emission.
+- [x] `ShroudPurificationPresentation` emits at most 24 motes exactly downstream of a persisted canonical `DESTROYED -> PURIFIED` transition and skips the burst when the core center is not loaded.
+- [x] `enshrouded:sanctuary_mote` reuses an existing first-party particle sprite, adding no new third-party binary/provenance surface.
+- [x] `09-asset-review-matrix.md` records every 10.05 touched visual surface as `REVIEW_IN_GAME` rather than promoting compile success to art approval.
+
+### TDD / final gates
+
+- [x] TDD RED was observed in Release Readiness `34074014415 / 101596544083` before the required 10.05 implementation files existed.
+- [x] The initial RED-state review concern was answered with the subsequent GREEN implementation evidence and its only inline thread was resolved.
+- [x] Final PR #89 HEAD `aafc70f24e52e3dd5b70be0188f01eae6cbbbe67` passed Release Readiness `34074557757 / 101598031506`.
+- [x] The same PR HEAD passed Enshrouded CI `34074557737 / 101598073190`: Stage 10 contracts, unit tests, performance baselines, diff sanity, NeoForge build, GameTests, two-boot reload, real Ars Zero 2.0.2 profile and dedicated-server save/reload smoke.
+- [x] PR #89 merged to `main` as `771341394045bdef09eb9d9fbb4743aaad1c39f6`.
+- [x] Post-merge Release Readiness `34074967881 / 101599175586` passed on `main@771341394045bdef09eb9d9fbb4743aaad1c39f6`.
+- [x] Post-merge Enshrouded CI `34074967864 / 101599175335` passed the complete matrix on the same baseline.
+
+### Visual/manual acceptance still open
+
+- [ ] P0 **ART APPROVED** requires an in-game screenshot of the active Sanctuary ward focus.
+- [ ] Sanctuary over latent Shroud must be captured and reviewed at realistic FOV/distance.
+- [ ] Terminal purification release must be captured in-game.
+- [ ] Reduced-effects / particles-disabled readability remains to be reviewed.
+- [ ] Full 607-mod-pack visual smoke remains an external/manual gate because the complete pack is not vendored into CI.
+
 ## Multiblock boundary carried forward
 
-Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03 or 10.04. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct.
+Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04 or 10.05. The future formation task must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
 
 ## Hard boundaries carried into subsequent tasks
 
@@ -171,4 +212,4 @@ Full player-built 3×3/5×5 formation/validation is deliberately not implemented
 - Lodestone, OctoLib and Player Animator remain task-gated rather than automatic dependencies.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
 - Manual full 607-mod pack smoke remains an external release gate before distribution.
-- Do not mark Flame Altar, Shroud Core or Lich Skull P0 **ART APPROVED** until the required in-game evidence exists.
+- Do not mark the Flame Altar/Sanctuary focus, Shroud Core or Lich Skull P0 **ART APPROVED** until the required in-game evidence exists.
