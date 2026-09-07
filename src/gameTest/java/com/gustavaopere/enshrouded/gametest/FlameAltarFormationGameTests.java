@@ -14,7 +14,9 @@ import com.gustavaopere.enshrouded.flame.ritual.FlameRitual;
 import com.gustavaopere.enshrouded.flame.ritual.RitualOutcome;
 import com.gustavaopere.enshrouded.flame.state.FlameProgressionSavedData;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
+import com.gustavaopere.enshrouded.registry.ModItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -54,6 +56,17 @@ public final class FlameAltarFormationGameTests {
         helper.assertTrue(runeState.hasProperty(FlameAltarRuneBlock.FORMED)
                         && !runeState.getValue(FlameAltarRuneBlock.FORMED),
                 "Fresh Flame Altar rune must begin as presentation-only UNFORMED material");
+        helper.assertTrue(braceState.hasProperty(FlameAltarBraceBlock.FACING),
+                "Cardinal Flame Altar brace must expose a horizontal facing property");
+        for (Direction direction : new Direction[]{Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST}) {
+            BlockState oriented = braceState.setValue(FlameAltarBraceBlock.FACING, direction);
+            helper.assertTrue(oriented.getValue(FlameAltarBraceBlock.FACING) == direction,
+                    "Flame Altar brace must represent every horizontal cardinal orientation");
+        }
+        helper.assertTrue(ModItems.FLAME_ALTAR_BRACE.get().getBlock() == ModBlocks.FLAME_ALTAR_BRACE.get(),
+                "Flame Altar brace must have a player-placeable BlockItem bound to the brace block");
+        helper.assertTrue(ModItems.FLAME_ALTAR_RUNE.get().getBlock() == ModBlocks.FLAME_ALTAR_RUNE.get(),
+                "Flame Altar rune must have a player-placeable BlockItem bound to the rune block");
 
         helper.setBlock(braceRelative, braceState);
         helper.setBlock(runeRelative, runeState);
