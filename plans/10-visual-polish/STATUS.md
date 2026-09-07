@@ -12,7 +12,7 @@
 **10.04 implementation PR:** #87 — `Stage 10.04 — Lich Skull and manifestation presentation` — MERGED as `a54e8f32e85c6b07dd3ace89a301743bfeb669ca`
 **10.04 closeout PR:** #88 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.05 implementation PR:** #89 — `Stage 10.05 — Sanctuary / Purification presentation` — MERGED as `771341394045bdef09eb9d9fbb4743aaad1c39f6`.
-**10.05 closeout PR:** pending — documentation-only closeout branch `docs/10-05-sanctuary-closeout`; no runtime changes.
+**10.05 closeout PR:** #90 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 
 ## Planning checkpoint
 
