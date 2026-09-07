@@ -108,7 +108,7 @@ class Stage10ShroudWorldArtContractTest(unittest.TestCase):
 
     def test_contract_keeps_manual_pack_and_reduced_effects_gates_open(self):
         text = CONTRACT.read_text(encoding="utf-8").lower()
-        self.assertIn("607-mod", text)
+        self.assertIn("612-mod", text)
         self.assertIn("reduced-effects", text)
         self.assertIn("screenshots", text)
         self.assertIn("pending", text)
