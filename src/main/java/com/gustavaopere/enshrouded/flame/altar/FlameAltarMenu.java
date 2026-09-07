@@ -1,5 +1,7 @@
 package com.gustavaopere.enshrouded.flame.altar;
 
+import com.gustavaopere.enshrouded.presentation.AdvancedVfxCue;
+import com.gustavaopere.enshrouded.presentation.AdvancedVfxServerEmitter;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import com.gustavaopere.enshrouded.registry.ModMenus;
 import net.minecraft.network.chat.Component;
@@ -87,6 +89,7 @@ public final class FlameAltarMenu extends AbstractContainerMenu {
         refreshData(after);
         if (altar != null && result.status() == FlameAltarService.Status.APPLIED) {
             altar.triggerAuthoritativePresentation(after.flameLevel() > before.flameLevel());
+            AdvancedVfxServerEmitter.emit(serverPlayer.serverLevel(), altar.getBlockPos(), AdvancedVfxCue.FLAME_RITUAL_SUCCESS);
         }
         serverPlayer.displayClientMessage(Component.translatable(messageKey(result.status())), false);
         return true;
