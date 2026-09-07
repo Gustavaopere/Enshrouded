@@ -110,11 +110,20 @@ class Stage10VisualStackContractTests(unittest.TestCase):
         self.assertIn(glowmask, self.provenance["first_party_binaries"])
 
         source_path = ROOT / "art/blockbench/flame_altar.bbmodel"
+        geo_path = ROOT / "src/main/resources/assets/enshrouded/geo/flame_altar.geo.json"
         self.assertTrue(source_path.is_file(), "missing editable Blockbench source")
         source = json.loads(source_path.read_text(encoding="utf-8"))
+        geo = json.loads(geo_path.read_text(encoding="utf-8"))
         self.assertEqual("Flame Altar", source["name"])
         self.assertEqual("geometry.flame_altar", source["model_identifier"])
-        self.assertEqual(26, len(source["elements"]), "Blockbench source must cover every runtime cube")
+        runtime_cube_count = sum(
+            len(bone.get("cubes", [])) for bone in geo["minecraft:geometry"][0]["bones"]
+        )
+        self.assertEqual(
+            runtime_cube_count,
+            len(source["elements"]),
+            "Blockbench source must cover every runtime cube",
+        )
         element_names = {element["name"] for element in source["elements"]}
         self.assertTrue({"pedestal_focus", "cradle_north", "cradle_south", "flame_tip", "halo_se", "fragment_south"}.issubset(element_names))
         texture_names = {texture_entry["name"] for texture_entry in source["textures"]}
