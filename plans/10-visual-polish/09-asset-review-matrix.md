@@ -39,7 +39,7 @@ Use this matrix as the canonical visual-audit status for assets discovered durin
 |---|---:|---|---|
 | GeckoLib 4 | 4.9.2 | installed | **PRIMARY** animated 3D runtime |
 | AzureLib | 3.1.11 | installed | evaluated alternative; do not mix by default |
-| Fusion | 1.3.15 | installed | optional environmental connected/continuous/overlay materials |
+| Fusion | 1.3.15+a | installed | optional environmental connected/continuous/overlay materials; no gameplay authority |
 | Lodestone | 1.8.2 | installed | advanced VFX candidate after proof |
 | OctoLib | 0.6.2 | installed | optional UI tween utility |
 | Player Animator | 2.0.4+1.21.1 | installed | optional ritual/player interaction animation |
@@ -72,6 +72,20 @@ Stage 10.04 technical verification is complete on implementation PR #87 and post
 | Sanctuary over latent Shroud | `ShroudSample.sanctuarySuppressed`; `SanctuaryPresentationController`; canonical query/sync path | underlying intensity remains authoritative Shroud data; Sanctuary is a synchronized suppression fact | protected contamination remains visually legible instead of pretending the Shroud was deleted | pending | **REVIEW_IN_GAME** |
 
 Stage 10.05 technical verification is complete on implementation PR #89, merged as `771341394045bdef09eb9d9fbb4743aaad1c39f6`. Post-merge Level 1 Release Readiness `34074967881 / 101599175586` and Enshrouded CI `34074967864 / 101599175335` both passed on that exact `main` baseline. No new third-party binary or second Sanctuary/purification authority was introduced. These rows remain `REVIEW_IN_GAME` until active ward, latent-Shroud, terminal-release, reduced-effects and full 607-mod-pack visual evidence exists.
+
+## Stage 10.06 reconciled audit
+
+| Asset/system | Exact repository evidence | Runtime owner / provenance | Technical state | Screenshot evidence | Final visual state |
+|---|---|---|---|---|---|
+| Ordinary Shroud growth family | `blockstates/shroud_growth.json`; `models/block/shroud_growth_ordinary_[a-c].json`; `textures/block/shroud_growth_ordinary_[a-c].png` | Enshrouded first-party static baked resources; Stage 02 terrain mutation remains authority | three bounded weighted authored variants; no ticker/storage/network/randomizer | pending | **REVIEW_IN_GAME** |
+| Ordinary Shroud vein family | `blockstates/shroud_vein.json`; `models/block/shroud_vein_ordinary_[a-c].json`; `textures/block/shroud_vein_ordinary_[a-c].png` | Enshrouded first-party static baked resources; no parallel spread state | three weighted surface/root variants replacing single-cross repetition | pending | **REVIEW_IN_GAME** |
+| Ordinary membrane/crust materials | `textures/block/shroud_membrane_ordinary.png`; `textures/block/shroud_crust_ordinary.png` | Enshrouded first-party binaries registered in provenance | 32×32 bounded support materials used by authored models | pending | **REVIEW_IN_GAME** |
+| Deadly/Red withered-growth family | `blockstates/withered_growth.json`; `models/block/withered_growth_deadly_[a-c].json`; `textures/block/withered_growth_deadly_[a-c].png` | Enshrouded first-party presentation of existing Deadly ecology; not purification | three weighted variants with distinct silhouette/material composition from Ordinary | pending | **REVIEW_IN_GAME** |
+| Deadly membrane/crust materials | `textures/block/shroud_membrane_deadly.png`; `textures/block/shroud_crust_deadly.png` | Enshrouded first-party binaries registered in provenance | distinct authored binaries, not byte-identical recolor aliases | pending | **REVIEW_IN_GAME** |
+| Red Sludge world material | `textures/block/red_sludge_still.png`; `textures/block/red_sludge_flow.png`; existing `RedSludgeFluidType` | existing Red Sludge gameplay/fluid authority unchanged; texture binaries first-party/provenance tracked | upgraded to 32×32 Deadly-family material; no fluid/runtime rule change | pending | **REVIEW_IN_GAME** |
+| Fusion optional continuity path | `10-06-shroud-world-art-family.md`; vanilla blockstates/models above | Fusion `1.3.15+a` is optional presentation infrastructure only | complete vanilla fallback exists; no Fusion-only gameplay/resource requirement | pending coexistence check | **OPTIONAL_ENHANCEMENT / REVIEW_IN_GAME** |
+
+Stage 10.06 PR-head technical validation reached GREEN on `aa7ec50a0bc61de80eda9a4e838106603897f76e`: Release Readiness `34078546785 / 101609292301` and Enshrouded CI `34078546777 / 101609292946` both completed successfully. The final head is revalidated after reconciliation with the current **612-mod** pack. Manual Ordinary/Deadly surface captures, seam inspection, reduced-effects readability, Sodium/Fusion coexistence and the full 612-mod client smoke remain open; no row is promoted to `KEEP` from CI alone.
 
 ## Audit expansion rule
 
