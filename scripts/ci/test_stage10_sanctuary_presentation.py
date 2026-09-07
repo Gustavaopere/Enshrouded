@@ -87,7 +87,10 @@ class Stage10SanctuaryPresentationContractTests(unittest.TestCase):
         max_particles = re.search(r"MAX_RELEASE_PARTICLES\s*=\s*(\d+)", presentation)
         self.assertIsNotNone(max_particles)
         self.assertLessEqual(int(max_particles.group(1)), 32)
-        self.assertIn("sendParticles(ModParticles.SANCTUARY_MOTE.get()", presentation)
+        self.assertRegex(
+            presentation,
+            r"sendParticles\s*\(\s*ModParticles\.SANCTUARY_MOTE\.get\(\)",
+        )
         self.assertNotIn("forceChunk", presentation)
         self.assertNotIn("getChunk(", presentation)
         for forbidden in ("savedData.replace", "ShroudCoreService", "FlameWardRuntime.onAltarLoaded"):
@@ -103,7 +106,7 @@ class Stage10SanctuaryPresentationContractTests(unittest.TestCase):
         self.assertIn("latent", document.lower())
         self.assertIn("10.09", document)
         self.assertIn("DEFERIDO", document)
-        self.assertIn("não cria", document.lower())
+        self.assertIn("does not create", document.lower())
 
 
 if __name__ == "__main__":
