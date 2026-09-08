@@ -10,6 +10,7 @@ Operational baseline used to author this handoff:
 
 - repository `main`: `b7ec63b4844f1efb8706b248f26db48b8d8bca5e`;
 - physical pack authority checked on 2026-09-08: **600 mods**;
+- previous same-day 602-mod snapshot is retained as historical reconciliation evidence only;
 - NeoForge: **21.1.248**;
 - Stage state: **10.09 logic/authority implemented; shell art and set-piece consumers open; 10.10 not started**.
 
