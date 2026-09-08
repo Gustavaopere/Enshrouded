@@ -379,6 +379,7 @@
 - [x] The PR #98 reconciliation checkpoint physical-pack baseline was **603 mods** on NeoForge `21.1.248`; that checkpoint superseded the earlier 607/612 counts and is itself historical relative to the current 600-mod physical authority. The pertinent Notion dossier was rechecked and remains editorial relative to runtime/modlist authority.
 - [x] Reconciliation PR #98 final HEAD `43bf73df5d4c3c93a731ee5d88397b5633badd1c` passed Release Readiness `34231676426` and Enshrouded CI `34231676553 / 102079337614`; it merged as `fa9552daa0372bf5061708a93ce5c263257df5d2`.
 - [x] Independent post-merge verification on exact `main@fa9552daa0372bf5061708a93ce5c263257df5d2` passed Release Readiness `34234079530` and Enshrouded CI `34234079616 / 102087197147`, including GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution and dedicated-server save/reload.
+- [x] A later same-day 602-mod physical snapshot was reconciled during PR #102 preparation and was superseded by the current 600-mod physical authority before merge.
 
 ### Implementation/art handoffs still open before 10.10
 
