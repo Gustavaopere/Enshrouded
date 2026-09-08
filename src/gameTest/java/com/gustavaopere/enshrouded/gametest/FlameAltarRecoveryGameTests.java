@@ -6,6 +6,7 @@ import com.gustavaopere.enshrouded.flame.altar.FlameAltarBlockEntity;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarBraceBlock;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarFormationPhase;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarFormationState;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarRecoveryGameTestAccess;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuneBlock;
 import com.gustavaopere.enshrouded.flame.ward.FlameWardGameTestAccess;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
@@ -17,6 +18,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -31,7 +33,7 @@ public final class FlameAltarRecoveryGameTests {
     }
 
     @GameTest(template = "foundation_empty", batch = BATCH)
-    public static void validPersistedFormedIntentRecoversOnLoadAndRestoresSanctuary(GameTestHelper helper) {
+    public static void validPersistedFormedIntentRecoversAfterDeferredChunkLoadAndRestoresSanctuary(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos centerRelative = new BlockPos(3, 1, 3);
         BlockPos center = helper.absolutePos(centerRelative);
@@ -44,14 +46,18 @@ public final class FlameAltarRecoveryGameTests {
             loadPersistedFormedIntent(level, altar);
 
             helper.assertTrue(!altar.isFormed(),
-                    "Persisted FORMED intent must stay fail-closed before the BlockEntity recovery hook runs");
+                    "Persisted FORMED intent must stay fail-closed before the deferred chunk recovery boundary runs");
             helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.UNFORMED,
                     "Reloaded controller must begin runtime recovery in UNFORMED phase");
 
             altar.onLoad();
+            helper.assertTrue(!altar.isFormed(),
+                    "BlockEntity onLoad must not claim formation authority before the chunk-load recovery boundary");
+
+            FlameAltarRecoveryGameTestAccess.recoverAltarsIntersecting(level, new ChunkPos(center));
 
             helper.assertTrue(altar.isFormed(),
-                    "A physically valid persisted altar must recover FORMED during the canonical onLoad lifecycle");
+                    "A physically valid persisted altar must recover FORMED at the bounded deferred chunk-load boundary");
             helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.FORMED,
                     "Successful recovery must finish in FORMED rather than leave transient VALIDATING state");
             assertShellPresentation(helper, centerRelative, true);
@@ -66,7 +72,7 @@ public final class FlameAltarRecoveryGameTests {
     }
 
     @GameTest(template = "foundation_empty", batch = BATCH)
-    public static void deterministicInvalidShellRevokesPersistedFormedIntentOnLoad(GameTestHelper helper) {
+    public static void deterministicInvalidShellRevokesPersistedFormedIntentAtDeferredChunkRecovery(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos centerRelative = new BlockPos(3, 1, 3);
         BlockPos center = helper.absolutePos(centerRelative);
@@ -80,6 +86,11 @@ public final class FlameAltarRecoveryGameTests {
             loadPersistedFormedIntent(level, altar);
 
             altar.onLoad();
+            CompoundTag beforeRecovery = altar.saveWithoutMetadata(level.registryAccess());
+            helper.assertTrue(beforeRecovery.getCompound("Formation").getBoolean("Formed"),
+                    "onLoad must retain persisted recovery intent until deterministic world evidence is evaluated");
+
+            FlameAltarRecoveryGameTestAccess.recoverAltarsIntersecting(level, new ChunkPos(center));
 
             helper.assertTrue(!altar.isFormed(),
                     "Persisted FORMED intent must not survive recovery when a required component is physically missing");
