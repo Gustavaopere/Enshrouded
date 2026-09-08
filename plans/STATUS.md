@@ -177,7 +177,7 @@ Stage 09.05 establishes a machine-readable provenance ledger and makes release a
 - No public NeoForge `ModConfigSpec`/`registerConfig` surface exists in the current Level 1 implementation.
 - New cross-stage pending contracts: none.
 
-Stage 09.04 establishes Enshrouded `1.0.0` release metadata, an independent fail-closed release-readiness workflow, final release/checklist notes, language-key parity validation and the current 607-entry compatibility profile. The final release validator requires all five Hardening closeouts, including 09.04 itself. It does not claim a literal 607-JAR CI boot because the complete pack distribution is not stored in the repository. `MANUAL_CURRENT_PACK_SMOKE_REQUIRED` remains an explicit external distribution gate before shipping the surrounding modpack.
+Stage 09.04 establishes Enshrouded `1.0.0` release metadata, an independent fail-closed release-readiness workflow, final release/checklist notes, language-key parity validation and the then-current 607-entry compatibility profile. The final release validator requires all five Hardening closeouts, including 09.04 itself. It does not claim a literal 607-JAR CI boot because the complete pack distribution is not stored in the repository. `MANUAL_CURRENT_PACK_SMOKE_REQUIRED` remains an explicit external distribution gate before shipping the surrounding modpack.
 
 ## Stage 10 — explicit post-Level-1 work — active
 
@@ -197,7 +197,7 @@ Current reconciled runtime baseline before PR #98 documentation merge is `main@e
 - [x] A separate Purification Shrine/controller remains intentionally deferred; Sanctuary/purification retains the existing canonical Flame complex/ward/purification authority.
 - [ ] Stage 10.10 has **not** started. It is the final visual/compatibility QA gate and must not silently absorb missing 10.09 implementation or user-art work.
 
-The current physical pack baseline used by Stage 10 reconciliation is **612 top-level entries** on NeoForge `21.1.248`. Older 607-entry statements above are preserved as historical snapshots of the earlier Level-1/Stage-10 checkpoints rather than rewritten retroactively.
+The latest physical modlist checked on 2026-09-08 is the current pack authority: **603 mods** on NeoForge `21.1.248`. Older 607/612 counts in historical Stage 09/Stage 10 evidence are preserved only as snapshots of those earlier checkpoints and do not override the current physical file.
 
 ## Open cross-stage contracts
 
@@ -212,7 +212,7 @@ Continue **Stage 10.09 only**. Merge/reconcile its truthful documentation checkp
 
 The repository Level 1 milestone was completed and independently verified before Stage 10 began. The earlier `main@47189826fe03cb633d32fd8eb695f275f4aaa96f` entry above is the Stage 09 implementation checkpoint, not the current repository HEAD. Subsequent documentation closeout and post-Level-1 Stage 10 work do not invalidate that completed milestone.
 
-The surrounding pack's current Stage 10 reconciliation baseline is 612 top-level entries and still requires the explicitly documented external/manual full-pack smoke before modpack distribution. That distribution smoke is not represented as completed GitHub Actions evidence.
+The surrounding pack's current Stage 10 reconciliation baseline is **603 mods** and still requires the explicitly documented external/manual full-pack smoke before modpack distribution. That distribution smoke is not represented as completed GitHub Actions evidence.
 
 ## Rules for updating this file
 
