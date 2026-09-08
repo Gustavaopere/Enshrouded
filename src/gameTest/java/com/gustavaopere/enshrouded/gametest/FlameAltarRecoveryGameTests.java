@@ -33,7 +33,7 @@ public final class FlameAltarRecoveryGameTests {
     }
 
     @GameTest(template = "foundation_empty", batch = BATCH)
-    public static void validPersistedFormedIntentRecoversAfterDeferredChunkLoadAndRestoresSanctuary(GameTestHelper helper) {
+    public static void validPersistedFormedIntentRecoversAfterIndexedChunkLoadAndRestoresSanctuary(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos centerRelative = new BlockPos(3, 1, 3);
         BlockPos center = helper.absolutePos(centerRelative);
@@ -47,13 +47,9 @@ public final class FlameAltarRecoveryGameTests {
             loadPersistedFormedIntent(level, altar);
 
             helper.assertTrue(!altar.isFormed(),
-                    "Persisted FORMED intent must stay fail-closed before the deferred chunk recovery boundary runs");
+                    "Persisted FORMED intent must stay fail-closed before indexed recovery runs");
             helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.UNFORMED,
                     "Reloaded controller must begin runtime recovery in UNFORMED phase");
-
-            altar.onLoad();
-            helper.assertTrue(!altar.isFormed(),
-                    "BlockEntity onLoad must not claim formation authority before deferred recovery executes");
 
             FlameAltarRecoveryGameTestAccess.waitForChunk(level, center, recoveryChunk);
             FlameAltarRecoveryGameTestAccess.recoverWaitingForLoadedChunk(level, recoveryChunk);
@@ -74,7 +70,7 @@ public final class FlameAltarRecoveryGameTests {
     }
 
     @GameTest(template = "foundation_empty", batch = BATCH)
-    public static void deterministicInvalidShellRevokesPersistedFormedIntentAtDeferredChunkRecovery(GameTestHelper helper) {
+    public static void deterministicInvalidShellRevokesPersistedIntentAtIndexedChunkRecovery(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos centerRelative = new BlockPos(3, 1, 3);
         BlockPos center = helper.absolutePos(centerRelative);
@@ -88,10 +84,9 @@ public final class FlameAltarRecoveryGameTests {
             helper.setBlock(northwestRelative, Blocks.AIR);
             loadPersistedFormedIntent(level, altar);
 
-            altar.onLoad();
             CompoundTag beforeRecovery = altar.saveWithoutMetadata(level.registryAccess());
             helper.assertTrue(beforeRecovery.getCompound("Formation").getBoolean("Formed"),
-                    "onLoad must retain persisted recovery intent until deterministic world evidence is evaluated");
+                    "Persisted intent must remain until indexed recovery evaluates deterministic world evidence");
 
             FlameAltarRecoveryGameTestAccess.waitForChunk(level, center, recoveryChunk);
             FlameAltarRecoveryGameTestAccess.recoverWaitingForLoadedChunk(level, recoveryChunk);
