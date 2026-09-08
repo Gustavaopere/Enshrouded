@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
@@ -17,6 +18,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.common.util.LogicalSidedProvider;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
@@ -125,9 +128,23 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     @Override
     public void onLoad() {
         super.onLoad();
-        // loadAdditional restores only a persisted recovery intent. World validation is deliberately
-        // deferred to FlameAltarChunkRecoveryEvents because NeoForge may invoke onLoad before every
-        // block entity in the required chunk footprint is visible to level queries.
+        if (!(level instanceof ServerLevel serverLevel) || !hasPendingFormationRecovery()) {
+            return;
+        }
+
+        // NeoForge may invoke BlockEntity#onLoad before every block entity in the 3x3 footprint is
+        // visible to level queries. Schedule exactly one bounded retry for the next server tick.
+        // If a required adjacent chunk is still unavailable, the intent remains fail-closed and the
+        // later ChunkEvent.Load path retries when that evidence actually arrives.
+        var server = serverLevel.getServer();
+        LogicalSidedProvider.WORKQUEUE.get(LogicalSide.SERVER).tell(new TickTask(
+                server.getTickCount() + 1,
+                () -> {
+                    if (!isRemoved() && level == serverLevel) {
+                        retryPendingFormationRecovery(serverLevel);
+                    }
+                }
+        ));
     }
 
     boolean hasPendingFormationRecovery() {
