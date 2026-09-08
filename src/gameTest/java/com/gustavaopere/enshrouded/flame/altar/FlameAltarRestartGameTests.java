@@ -11,8 +11,10 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -31,6 +33,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class FlameAltarRestartGameTests {
     private static final BlockPos SENTINEL_CENTER = new BlockPos(392, 96, 392);
     private static final int OFFERING_COUNT = 3;
+    private static final int SENTINEL_TICKET_DISTANCE = 3;
 
     private FlameAltarRestartGameTests() {
     }
@@ -38,19 +41,52 @@ public final class FlameAltarRestartGameTests {
     @GameTest(template = "foundation_empty")
     public static void formedFlameAltarSurvivesRealServerRestart(GameTestHelper helper) {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        ChunkPos sentinelChunk = new ChunkPos(SENTINEL_CENTER);
+
+        // The sentinel intentionally lives far outside the disposable GameTest template. Keep only
+        // that chunk alive while this test observes the normal restart lifecycle; otherwise the
+        // GameTest runner may evict it between the deferred recovery tick and the assertion, causing
+        // requireAltar() to lazily materialize the same persisted NBT a second time. This ticket is
+        // test-only, is always removed below, and does not change the production no-forced-chunks
+        // contract of FlameAltarChunkRecoveryEvents.
+        level.getChunkSource().addRegionTicket(
+                TicketType.FORCED,
+                sentinelChunk,
+                SENTINEL_TICKET_DISTANCE,
+                sentinelChunk
+        );
         level.getChunkAt(SENTINEL_CENTER);
 
         if (!level.getBlockState(SENTINEL_CENTER).is(ModBlocks.FLAME_ALTAR.get())) {
-            createFirstBootSentinel(helper, level);
+            try {
+                createFirstBootSentinel(helper, level);
+            } finally {
+                level.getChunkSource().removeRegionTicket(
+                        TicketType.FORCED,
+                        sentinelChunk,
+                        SENTINEL_TICKET_DISTANCE,
+                        sentinelChunk
+                );
+            }
             return;
         }
 
-        // NeoForge invokes BlockEntity#onLoad before the first block-entity tick. The initial
-        // validation may therefore observe hasChunk=false while the chunk is still registering.
-        // Wait long enough for the bounded local retry path to run automatically; never invoke
-        // onLoad manually from the test.
+        // NeoForge invokes BlockEntity#onLoad before the first block-entity tick. Recovery itself is
+        // deferred to the bounded post-server-tick path; the test ticket merely prevents an unrelated
+        // eviction from resetting the observation window while that real path settles.
         helper.startSequence()
-                .thenExecuteAfter(10, () -> assertReloadedSentinel(helper, level))
+                .thenExecuteAfter(10, () -> {
+                    try {
+                        assertReloadedSentinel(helper, level);
+                    } finally {
+                        level.getChunkSource().removeRegionTicket(
+                                TicketType.FORCED,
+                                sentinelChunk,
+                                SENTINEL_TICKET_DISTANCE,
+                                sentinelChunk
+                        );
+                    }
+                })
                 .thenSucceed();
     }
 
