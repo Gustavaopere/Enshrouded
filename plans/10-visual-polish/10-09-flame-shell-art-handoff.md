@@ -9,7 +9,7 @@ It does **not** introduce gameplay authority, a second Flame/Sanctuary controlle
 Operational baseline used to author this handoff:
 
 - repository `main`: `b7ec63b4844f1efb8706b248f26db48b8d8bca5e`;
-- physical pack authority checked on 2026-09-08: **603 mods**;
+- physical pack authority checked on 2026-09-08: **602 mods**;
 - NeoForge: **21.1.248**;
 - Stage state: **10.09 logic/authority implemented; shell art and set-piece consumers open; 10.10 not started**.
 
@@ -241,7 +241,7 @@ Manual evidence required before changing `USER_ART_HANDOFF` / `REVIEW_IN_GAME` t
 - Sanctuary/purification readability in full, reduced-sensory and minimal presentation modes;
 - Sodium/shader coexistence;
 - resource reload and reconnect;
-- current full **603-mod** client visual smoke.
+- current full **602-mod** client visual smoke.
 
 Compilation or CI alone cannot promote the art to approved.
 
