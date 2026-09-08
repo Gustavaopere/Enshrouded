@@ -10,9 +10,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.LogicalSide;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.util.LogicalSidedProvider;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 
 /**
@@ -32,7 +30,7 @@ public final class FlameAltarChunkRecoveryEvents {
 
         ChunkPos loadedPos = event.getChunk().getPos();
         var server = serverLevel.getServer();
-        LogicalSidedProvider.WORKQUEUE.get(LogicalSide.SERVER).tell(new TickTask(
+        server.schedule(new TickTask(
                 server.getTickCount() + 1,
                 () -> recoverAltarsIntersecting(serverLevel, loadedPos)
         ));
