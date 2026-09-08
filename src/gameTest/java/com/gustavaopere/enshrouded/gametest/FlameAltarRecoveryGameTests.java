@@ -37,6 +37,7 @@ public final class FlameAltarRecoveryGameTests {
         ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
         BlockPos centerRelative = new BlockPos(3, 1, 3);
         BlockPos center = helper.absolutePos(centerRelative);
+        ChunkPos recoveryChunk = new ChunkPos(center);
 
         FlameWardGameTestAccess.clear();
         try {
@@ -52,12 +53,13 @@ public final class FlameAltarRecoveryGameTests {
 
             altar.onLoad();
             helper.assertTrue(!altar.isFormed(),
-                    "BlockEntity onLoad must not claim formation authority before the chunk-load recovery boundary");
+                    "BlockEntity onLoad must not claim formation authority before deferred recovery executes");
 
-            FlameAltarRecoveryGameTestAccess.recoverAltarsIntersecting(level, new ChunkPos(center));
+            FlameAltarRecoveryGameTestAccess.waitForChunk(level, center, recoveryChunk);
+            FlameAltarRecoveryGameTestAccess.recoverWaitingForLoadedChunk(level, recoveryChunk);
 
             helper.assertTrue(altar.isFormed(),
-                    "A physically valid persisted altar must recover FORMED at the bounded deferred chunk-load boundary");
+                    "A physically valid persisted altar must recover FORMED at its indexed chunk-load boundary");
             helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.FORMED,
                     "Successful recovery must finish in FORMED rather than leave transient VALIDATING state");
             assertShellPresentation(helper, centerRelative, true);
@@ -77,6 +79,7 @@ public final class FlameAltarRecoveryGameTests {
         BlockPos centerRelative = new BlockPos(3, 1, 3);
         BlockPos center = helper.absolutePos(centerRelative);
         BlockPos northwestRelative = centerRelative.offset(-1, 0, -1);
+        ChunkPos recoveryChunk = new ChunkPos(center);
 
         FlameWardGameTestAccess.clear();
         try {
@@ -90,7 +93,8 @@ public final class FlameAltarRecoveryGameTests {
             helper.assertTrue(beforeRecovery.getCompound("Formation").getBoolean("Formed"),
                     "onLoad must retain persisted recovery intent until deterministic world evidence is evaluated");
 
-            FlameAltarRecoveryGameTestAccess.recoverAltarsIntersecting(level, new ChunkPos(center));
+            FlameAltarRecoveryGameTestAccess.waitForChunk(level, center, recoveryChunk);
+            FlameAltarRecoveryGameTestAccess.recoverWaitingForLoadedChunk(level, recoveryChunk);
 
             helper.assertTrue(!altar.isFormed(),
                     "Persisted FORMED intent must not survive recovery when a required component is physically missing");
@@ -104,6 +108,38 @@ public final class FlameAltarRecoveryGameTests {
             CompoundTag formation = reserialized.getCompound("Formation");
             helper.assertTrue(!formation.getBoolean("Formed"),
                     "A deterministic structural invalidation must revoke persisted FORMED recovery intent");
+            helper.succeed();
+        } finally {
+            FlameWardGameTestAccess.clear();
+        }
+    }
+
+    @GameTest(template = "foundation_empty", batch = BATCH)
+    public static void unrelatedChunkLoadDoesNotWakeIndexedPendingAltar(GameTestHelper helper) {
+        ServerLevel level = GameTestBootstrap.requireServerLevel(helper);
+        BlockPos centerRelative = new BlockPos(3, 1, 3);
+        BlockPos center = helper.absolutePos(centerRelative);
+        ChunkPos subscribedChunk = new ChunkPos(center);
+        ChunkPos unrelatedChunk = new ChunkPos(subscribedChunk.x + 2, subscribedChunk.z + 2);
+
+        FlameWardGameTestAccess.clear();
+        try {
+            placeCanonicalShell(helper, centerRelative);
+            FlameAltarBlockEntity altar = requireAltar(helper, centerRelative);
+            loadPersistedFormedIntent(level, altar);
+            FlameAltarRecoveryGameTestAccess.waitForChunk(level, center, subscribedChunk);
+
+            FlameAltarRecoveryGameTestAccess.recoverWaitingForLoadedChunk(level, unrelatedChunk);
+            helper.assertTrue(!altar.isFormed(),
+                    "An unrelated chunk load must not wake or validate an indexed pending Flame Altar");
+            helper.assertTrue(!FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "An unrelated chunk load must not activate Sanctuary");
+
+            FlameAltarRecoveryGameTestAccess.recoverWaitingForLoadedChunk(level, subscribedChunk);
+            helper.assertTrue(altar.isFormed(),
+                    "Only the exact subscribed chunk may wake the pending Flame Altar recovery");
+            helper.assertTrue(FlameWardRuntimeBindings.query().suppresses(level, center),
+                    "The indexed recovery wakeup must restore Sanctuary after successful validation");
             helper.succeed();
         } finally {
             FlameWardGameTestAccess.clear();
