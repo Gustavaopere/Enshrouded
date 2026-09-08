@@ -32,8 +32,6 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     private static final String FORMATION_TAG = "Formation";
     private static final String FORMATION_SCHEMA_TAG = "SchemaVersion";
     private static final String FORMATION_FORMED_TAG = "Formed";
-    private static final int FORMATION_RECOVERY_RETRY_ATTEMPTS = 12;
-    private static final int FORMATION_RECOVERY_RETRY_INTERVAL_TICKS = 5;
     private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("animation.flame_altar.idle");
     private static final RawAnimation RITUAL_AVAILABLE = RawAnimation.begin().thenLoop("animation.flame_altar.ritual_available");
     private static final RawAnimation RITUAL_CHARGE = RawAnimation.begin().thenPlay("animation.flame_altar.ritual_charge");
@@ -53,8 +51,6 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     private FlameAltarFormationState formationState = FlameAltarFormationState.unformed();
     private FlameAltarFormationState pendingFormationRecovery = FlameAltarFormationState.unformed();
     private FlameAltarFormationPhase formationPhase = FlameAltarFormationPhase.UNFORMED;
-    private int formationRecoveryAttemptsRemaining;
-    private int formationRecoveryRetryDelay;
 
     public FlameAltarBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FLAME_ALTAR.get(), pos, state);
@@ -106,7 +102,6 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         formationState = new FlameAltarFormationState(FlameAltarFormationState.CURRENT_SCHEMA_VERSION, true);
         pendingFormationRecovery = FlameAltarFormationState.unformed();
         formationPhase = FlameAltarFormationPhase.FORMED;
-        clearRecoveryRetryBudget();
         setShellFormedPresentation(level, true);
         setChanged();
         FlameWardRuntime.onAltarLoaded(level, worldPosition);
@@ -120,7 +115,6 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         formationState = FlameAltarFormationState.unformed();
         pendingFormationRecovery = FlameAltarFormationState.unformed();
         formationPhase = FlameAltarFormationPhase.UNFORMED;
-        clearRecoveryRetryBudget();
         setShellFormedPresentation(level, false);
         FlameWardRuntime.onAltarRemoved(level, worldPosition);
         if (hadFormation) {
@@ -131,59 +125,38 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!(level instanceof ServerLevel serverLevel) || !pendingFormationRecovery.formed()) {
-            return;
-        }
+        // loadAdditional restores only a persisted recovery intent. World validation is deliberately
+        // deferred to FlameAltarChunkRecoveryEvents because NeoForge may invoke onLoad before every
+        // block entity in the required chunk footprint is visible to level queries.
+    }
 
-        formationRecoveryAttemptsRemaining = FORMATION_RECOVERY_RETRY_ATTEMPTS;
-        formationRecoveryRetryDelay = 0;
-        attemptFormationRecovery(serverLevel);
+    boolean hasPendingFormationRecovery() {
+        return pendingFormationRecovery.formed() && !isFormed();
     }
 
     /**
-     * Server ticker used only for bounded retries after a transient load-time recovery failure.
-     * Normal formed/unformed altars return immediately and perform no structure scan.
+     * Revalidates a persisted formation intent after the relevant chunk load has reached a safe,
+     * deferred server tick. This never acquires chunks; the validator remains fail-closed.
      */
-    static void serverTick(ServerLevel level, FlameAltarBlockEntity altar) {
-        if (!altar.pendingFormationRecovery.formed()
-                || altar.isFormed()
-                || altar.formationRecoveryAttemptsRemaining <= 0) {
-            return;
-        }
-        if (altar.formationRecoveryRetryDelay > 0) {
-            altar.formationRecoveryRetryDelay--;
+    void retryPendingFormationRecovery(ServerLevel serverLevel) {
+        if (!hasPendingFormationRecovery()) {
             return;
         }
 
-        altar.formationRecoveryAttemptsRemaining--;
-        altar.attemptFormationRecovery(level);
-    }
-
-    private void attemptFormationRecovery(ServerLevel serverLevel) {
         formationPhase = FlameAltarFormationPhase.VALIDATING;
         FlameAltarStructureValidator.Result result = validateFormation(serverLevel);
         switch (result.status()) {
             case VALID -> commitFormation(serverLevel);
             case REQUIRED_CHUNK_UNLOADED, PROTECTION_INDETERMINATE -> {
-                // The persisted bit is recovery intent, not gameplay authority. The first onLoad can
-                // occur before the chunk is fully visible to hasChunk(). Stay fail-closed and retain
-                // intent, then retry a finite number of times from this block entity only. No retry
-                // forces or acquires a missing chunk.
+                // Keep only the persisted recovery intent. A later adjacent ChunkEvent.Load may
+                // supply the missing evidence; until then gameplay stays explicitly UNFORMED.
                 formationState = FlameAltarFormationState.unformed();
                 formationPhase = FlameAltarFormationPhase.UNFORMED;
                 setShellFormedPresentation(serverLevel, false);
                 FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
-                if (formationRecoveryAttemptsRemaining > 0) {
-                    formationRecoveryRetryDelay = FORMATION_RECOVERY_RETRY_INTERVAL_TICKS;
-                }
             }
             default -> unform(serverLevel);
         }
-    }
-
-    private void clearRecoveryRetryBudget() {
-        formationRecoveryAttemptsRemaining = 0;
-        formationRecoveryRetryDelay = 0;
     }
 
     private void setShellFormedPresentation(ServerLevel level, boolean formed) {
@@ -245,7 +218,6 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         if (level instanceof ServerLevel serverLevel) {
             FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
         }
-        clearRecoveryRetryBudget();
         super.setRemoved();
     }
 
@@ -286,7 +258,6 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         formationState = FlameAltarFormationState.unformed();
         pendingFormationRecovery = FlameAltarFormationState.unformed();
         formationPhase = FlameAltarFormationPhase.UNFORMED;
-        clearRecoveryRetryBudget();
         if (tag.contains(FORMATION_TAG)) {
             CompoundTag formation = tag.getCompound(FORMATION_TAG);
             pendingFormationRecovery = FlameAltarFormationState.fromPersisted(
