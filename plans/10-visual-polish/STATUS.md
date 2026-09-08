@@ -398,7 +398,7 @@
 ## Hard boundaries carried forward
 
 - GeckoLib receives presentation state only; animation completion never mutates gameplay authority.
-- AzureLib remains intentionally unused by Enshrouded unless a future ADR replaces the current decision.
+- AzureLib remains intentionally unused by Enshroued unless a future ADR replaces the current decision.
 - Fusion may improve environmental materials only when a valid base/fallback resource path exists.
 - Lodestone was not needed by 10.08 and remains task-gated for future concrete effects; OctoLib and Player Animator likewise remain task-gated rather than automatic dependencies.
 - The Flame complex has one authoritative controller and one Sanctuary provider; shell components cannot become parallel authorities.
