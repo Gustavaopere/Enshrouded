@@ -21,7 +21,7 @@ Still open and therefore **not** silently counted as complete:
 - `flame_altar_brace` / `flame_altar_rune` blockstates, block models, item models, textures and visibly distinct `FORMED=false|true` presentation;
 - production placement/worldgen consumption for `ShroudCoreNestLayout`;
 - production placement/worldgen or approved encounter-location consumption for `LichManifestationLandmarkLayout`;
-- final in-game screenshots and full 612-mod client visual smoke.
+- final in-game screenshots and full 603-mod client visual smoke.
 
 The shell render assets are a user-owned art handoff. This repository checkpoint must not invent substitute placeholder art to make automated review green.
 
@@ -181,7 +181,7 @@ Independent post-merge verification on that exact `main` also passed:
 - Level 1 Release Readiness `34226166892` — `completed/success`;
 - Enshrouded CI `34226166913 / job 102060710827` — `completed/success` across the complete matrix.
 
-The physical pack baseline consulted for this checkpoint is **612 mods** on NeoForge `21.1.248`.
+The latest physical modlist consulted for this checkpoint contains **603 mods** on NeoForge `21.1.248`. Earlier 607/612 pack counts in prior Stage 10 dossiers are historical checkpoint evidence, not the current physical baseline.
 
 ## Open handoffs / next work
 
@@ -190,6 +190,6 @@ Stage 10.09 remains operationally open for two distinct reasons; neither is hidd
 1. **User art handoff — Flame shell render resources.** Supply the approved brace/rune blockstates, block/item models and textures, including a visibly distinct formed/unformed presentation. Automated CI cannot substitute for this art decision.
 2. **Placement architecture — Core Nest and Lich landmark.** Select/approve a production consumer before implementation. The current layout classes deliberately do not mutate the world. Any later implementation must be bounded, fail-closed and authority-preserving.
 
-After those handoffs are satisfied or explicitly re-scoped by the user, Stage 10.10 can perform the final visual/compatibility acceptance matrix: screenshots, renderer/shader/Sodium coexistence, reconnect/resource reload, accessibility variants and full 612-mod client smoke.
+After those handoffs are satisfied or explicitly re-scoped by the user, Stage 10.10 can perform the final visual/compatibility acceptance matrix: screenshots, renderer/shader/Sodium coexistence, reconnect/resource reload, accessibility variants and full 603-mod client smoke.
 
 `ART APPROVED` remains open. No document may infer automatic worldgen or rendered formed-state assets from the Stage 10.09 layout/Java contracts alone.
