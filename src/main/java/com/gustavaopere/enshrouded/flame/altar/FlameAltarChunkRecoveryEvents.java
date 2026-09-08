@@ -3,7 +3,6 @@ package com.gustavaopere.enshrouded.flame.altar;
 import com.gustavaopere.enshrouded.Enshrouded;
 import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -29,11 +28,9 @@ public final class FlameAltarChunkRecoveryEvents {
         }
 
         ChunkPos loadedPos = event.getChunk().getPos();
-        var server = serverLevel.getServer();
-        server.schedule(new TickTask(
-                server.getTickCount() + 1,
+        serverLevel.getServer().executeIfPossible(
                 () -> recoverAltarsIntersecting(serverLevel, loadedPos)
-        ));
+        );
     }
 
     static void recoverAltarsIntersecting(ServerLevel level, ChunkPos loadedPos) {
