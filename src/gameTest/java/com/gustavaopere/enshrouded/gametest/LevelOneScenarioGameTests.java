@@ -70,6 +70,7 @@ public final class LevelOneScenarioGameTests {
     private static final UUID EXPANSION_RELOAD_CORE_ID = UUID.fromString("71090101-0000-4000-8000-000000000001");
     private static final UUID EXPANSION_RELOAD_REGION_ID = UUID.fromString("71090101-0000-4000-8000-000000000002");
     private static final BlockPos EXPANSION_RELOAD_CENTER = new BlockPos(28672, 80, 28672);
+    private static final int EXPANSION_RELOAD_RADIUS = 512;
     private static final UUID EXPOSURE_RELOAD_PLAYER_ID = UUID.fromString("71090101-0000-4000-8000-000000000003");
     private static final String EXPOSURE_RELOAD_PLAYER_NAME = "Enshrouded09Exposure";
 
@@ -224,7 +225,7 @@ public final class LevelOneScenarioGameTests {
                     EXPANSION_RELOAD_REGION_ID,
                     EXPANSION_RELOAD_CENTER,
                     1,
-                    128,
+                    EXPANSION_RELOAD_RADIUS,
                     0x0901EADL
             ).state();
             state = ShroudCoreService.activate(state, EXPANSION_RELOAD_CORE_ID).state();
