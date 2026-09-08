@@ -318,7 +318,7 @@
 
 - [x] Planner/budget RED: `cc643fe4b60bfad91e2471822212e5b765da64dc`; bounded planner/budget GREEN: `d9d00a5449c4fa06f51855da6e833d585d526e43`.
 - [x] Discrete-cue RED: `89e28ff0e64f783c88d1807c2279db5cba3f7376`, failing before `AdvancedVfxPayload` / `ClientAdvancedVfxState` existed.
-- [x] Temporal renderer implementation HEAD `35bfaacee1a2f3fe5b78e0e618922dc3347c502e` passed Release Readiness `34150710640` and Enshrouded CI `34150710595`.
+- [x] Temporal renderer implementation HEAD `35bfaacee1a2f3fe5b78e0e618922dc3347c502e` passed Release Readiness `34150710640` and Enshroued CI `34150710595`.
 - [x] Closeout-contract RED HEAD `8aea9abe6520ddbb8162029db23a3418c49e7cd0` failed Release Readiness `34153754176 / 101841172426` exactly because the canonical 10.08 contract was absent.
 - [x] Final PR #95 HEAD `9a4ff6ef53ff192bb1d28cf1c0e2c5dc8662e5a7` passed Release Readiness `34153873230 / 101841530155` and full Enshrouded CI `34153873227 / 101841529843`.
 - [x] PR #95 merged to `main` as `00439c1593cf8e0699f6abe4e19d4848d1e97149`.
@@ -374,11 +374,11 @@
 - [x] PR #97 merged to `main` as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`; independent post-merge Release Readiness `34189278455` and Enshrouded CI `34189278499` passed on that exact baseline.
 - [x] Restart-harness correction PR #99 is integrated in the current lineage at `650c5c99308415a94ed51c9abd9abea1b5b26c10`.
 - [x] Acquisition RED `92eab5e772184b47261196973926f2d1be659d30` ran 365 tests and failed exactly the two new resource tests because the recipes/loot tables did not yet exist.
-- [x] Acquisition GREEN PR #100 HEAD `2b647d9e4dde39f4205b5082eca1ba9481b1e7d6` passed Release Readiness `34225536910` and Enshrouded CI `34225536909 / 102058621586`.
-- [x] PR #100 merged as `ed122c42f0eee0e706219361e30c9e1f05416a6d`; independent post-merge Release Readiness `34226166892` and Enshrouded CI `34226166913 / 102060710827` passed the complete matrix on the same exact `main`.
+- [x] Acquisition GREEN PR #100 HEAD `2b647d9e4dde39f4205b5082eca1ba9481b1e7d6` passed Release Readiness `34225536910` and Enshroued CI `34225536909 / 102058621586`.
+- [x] PR #100 merged as `ed122c42f0eee0e706219361e30c9e1f05416a6d`; independent post-merge Release Readiness `34226166892` and Enshroued CI `34226166913 / 102060710827` passed the complete matrix on the same exact `main`.
 - [x] The PR #98 reconciliation checkpoint physical-pack baseline was **603 mods** on NeoForge `21.1.248`; that checkpoint superseded the earlier 607/612 counts and is itself historical relative to the current 602-mod physical authority. The pertinent Notion dossier was rechecked and remains editorial relative to runtime/modlist authority.
-- [x] Reconciliation PR #98 final HEAD `43bf73df5d4c3c93a731ee5d88397b5633badd1c` passed Release Readiness `34231676426` and Enshroued CI `34231676553 / 102079337614`; it merged as `fa9552daa0372bf5061708a93ce5c263257df5d2`.
-- [x] Independent post-merge verification on exact `main@fa9552daa0372bf5061708a93ce5c263257df5d2` passed Release Readiness `34234079530` and Enshrouded CI `34234079616 / 102087197147`, including GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution and dedicated-server save/reload.
+- [x] Reconciliation PR #98 final HEAD `43bf73df5d4c3c93a731ee5d88397b5633badd1c` passed Release Readiness `34231676426` and Enshrouded CI `34231676553 / 102079337614`; it merged as `fa9552daa0372bf5061708a93ce5c263257df5d2`.
+- [x] Independent post-merge verification on exact `main@fa9552daa0372bf5061708a93ce5c263257df5d2` passed Release Readiness `34234079530` and Enshroued CI `34234079616 / 102087197147`, including GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution and dedicated-server save/reload.
 
 ### Implementation/art handoffs still open before 10.10
 
@@ -398,7 +398,7 @@
 ## Hard boundaries carried forward
 
 - GeckoLib receives presentation state only; animation completion never mutates gameplay authority.
-- AzureLib remains intentionally unused by Enshrouded unless a future ADR replaces the current decision.
+- AzureLib remains intentionally unused by Enshroued unless a future ADR replaces the current decision.
 - Fusion may improve environmental materials only when a valid base/fallback resource path exists.
 - Lodestone was not needed by 10.08 and remains task-gated for future concrete effects; OctoLib and Player Animator likewise remain task-gated rather than automatic dependencies.
 - The Flame complex has one authoritative controller and one Sanctuary provider; shell components cannot become parallel authorities.
