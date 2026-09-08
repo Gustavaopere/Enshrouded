@@ -1,8 +1,8 @@
 # Project Status
 
-Last structural update: 2026-09-06.
+Last structural update: 2026-09-08.
 
-The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HISTORY-THROUGH-08.02.md`](STATUS-HISTORY-THROUGH-08.02.md). Completed-task dossiers and `plans/PENDING.md` remain the authoritative provenance for individual contracts.
+The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HISTORY-THROUGH-08.02.md`](STATUS-HISTORY-THROUGH-08.02.md). Completed-task dossiers and `plans/PENDING.md` remain the authoritative provenance for individual Level-1 contracts. Post-Level-1 Stage 10 visual work is tracked canonically under [`10-visual-polish/STATUS.md`](10-visual-polish/STATUS.md).
 
 ## Current checkpoint
 
@@ -16,7 +16,8 @@ The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HIS
 - [x] 06 Lich & Story — 4/4 verified and merged.
 - [x] 07 Client Experience — 4/4 verified and merged.
 - [x] 08 Integrations — 5/5 reviewed, verified and merged.
-- [x] 09 Hardening — 5/5 verified and merged at the implementation level; final documentation closeout is this checkpoint.
+- [x] 09 Hardening — 5/5 verified and merged; Level 1 remains a completed historical milestone.
+- [~] 10 Visual Polish — explicit post-Level-1 work is active by user instruction. 10.01–10.08 technical implementation is merged. 10.09 has its logic/authority checkpoint, restart-harness correction and survival-acquisition correction merged, but remains operationally **OPEN** for the user-owned Flame shell render package and approved production consumers for the Shroud Core Nest and Lich landmark. Stage 10.10 has not started.
 
 ## 08 Integrations — complete
 
@@ -176,21 +177,42 @@ Stage 09.05 establishes a machine-readable provenance ledger and makes release a
 - No public NeoForge `ModConfigSpec`/`registerConfig` surface exists in the current Level 1 implementation.
 - New cross-stage pending contracts: none.
 
-Stage 09.04 establishes Enshrouded `1.0.0` release metadata, an independent fail-closed release-readiness workflow, final release/checklist notes, language-key parity validation and the current 607-entry compatibility profile. The final release validator requires all five Hardening closeouts, including 09.04 itself. It does not claim a literal 607-JAR CI boot because the complete pack distribution is not stored in the repository. `MANUAL_CURRENT_PACK_SMOKE_REQUIRED` remains an explicit external distribution gate before shipping the surrounding modpack.
+Stage 09.04 establishes Enshrouded `1.0.0` release metadata, an independent fail-closed release-readiness workflow, final release/checklist notes, language-key parity validation and the then-current 607-entry compatibility profile. The final release validator requires all five Hardening closeouts, including 09.04 itself. It does not claim a literal 607-JAR CI boot because the complete pack distribution is not stored in the repository. `MANUAL_CURRENT_PACK_SMOKE_REQUIRED` remains an explicit external distribution gate before shipping the surrounding modpack.
+
+## Stage 10 — explicit post-Level-1 work — active
+
+Stage 10 began only after explicit user instruction and therefore does not contradict the historical rule against automatically starting future work. It is post-Level-1 visual/presentation work and does not reopen completed Level-1 gameplay authorities.
+
+Current reconciled runtime baseline before PR #98 documentation merge is `main@ed122c42f0eee0e706219361e30c9e1f05416a6d`.
+
+- [x] Stage 10.01–10.08 technical implementation is merged; detailed provenance remains in `plans/10-visual-polish/STATUS.md` and the individual dossiers.
+- [x] Stage 10.09 original logic/authority implementation PR #97 merged as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`.
+- [x] Stage 10.09 restart-harness correction PR #99 is integrated in the current lineage at `650c5c99308415a94ed51c9abd9abea1b5b26c10`.
+- [x] Stage 10.09 Flame shell survival-acquisition correction PR #100 final HEAD `2b647d9e4dde39f4205b5082eca1ba9481b1e7d6` passed Release Readiness `34225536910` and Enshrouded CI `34225536909 / 102058621586`, then merged as `ed122c42f0eee0e706219361e30c9e1f05416a6d`.
+- [x] Independent post-merge #100 Release Readiness `34226166892` and Enshrouded CI `34226166913 / 102060710827` passed the complete matrix on exact `main@ed122c42f0eee0e706219361e30c9e1f05416a6d`.
+- [~] PR #98 — `docs/10-09-multiblock-set-pieces-closeout` — is the active documentation reconciliation. It records actual implemented vs open work and changes no gameplay authority. Final PR-head/merge/post-merge evidence is intentionally not pre-declared here.
+- [ ] User-owned Flame shell render handoff remains open: brace/rune blockstates, block/item models, textures and visibly distinct formed/unformed presentation.
+- [ ] Shroud Core Nest production consumer remains open. `ShroudCoreNestLayout` is bounded/data-only and must not be described as an in-world set piece until an approved placement/worldgen consumer exists.
+- [ ] Lich manifestation landmark production placement/encounter-location consumer remains open. The existing Stage 06 Story/manifestation lifecycle remains the sole authority.
+- [x] A separate Purification Shrine/controller remains intentionally deferred; Sanctuary/purification retains the existing canonical Flame complex/ward/purification authority.
+- [ ] Stage 10.10 has **not** started. It is the final visual/compatibility QA gate and must not silently absorb missing 10.09 implementation or user-art work.
+
+The latest physical modlist checked on 2026-09-08 is the current pack authority: **603 mods** on NeoForge `21.1.248`. Older 607/612 counts in historical Stage 09/Stage 10 evidence are preserved only as snapshots of those earlier checkpoints and do not override the current physical file.
 
 ## Open cross-stage contracts
 
-- No cross-stage contract currently remains open in `plans/PENDING.md`.
+- No Level-1 cross-stage contract currently remains open in `plans/PENDING.md`.
+- Stage 10 operational handoffs are intentionally tracked in the Stage 10 status/dossiers instead of being misrepresented as old Level-1 pending contracts.
 
 ## Immediate next step
 
-There is no remaining Level-1-required implementation task. Do **not** start a future/Level-2 task automatically. Any post-Level-1 work starts only on explicit instruction and must be reconciled against `plans/FUTURE-LEVELS.md` and the then-current `main`.
+Continue **Stage 10.09 only**. Merge/reconcile its truthful documentation checkpoint, then satisfy or explicitly re-scope the user-owned Flame shell render handoff and approve/implement production consumers for the Shroud Core Nest and Lich landmark. Do **not** start Stage 10.10 automatically while those Stage 10.09 handoffs remain open.
 
-## Level 1 release gate
+## Level 1 release gate — historical completed milestone
 
-The **repository Level 1 milestone is complete at the implementation checkpoint** `main@47189826fe03cb633d32fd8eb695f275f4aaa96f`, with both independent post-merge workflows GREEN. This documentation checkpoint marks Stage 09 as 5/5; after PR #79 is merged and the exact resulting `main` passes both workflows independently, the repository closeout is final.
+The repository Level 1 milestone was completed and independently verified before Stage 10 began. The earlier `main@47189826fe03cb633d32fd8eb695f275f4aaa96f` entry above is the Stage 09 implementation checkpoint, not the current repository HEAD. Subsequent documentation closeout and post-Level-1 Stage 10 work do not invalidate that completed milestone.
 
-The surrounding 607-mod pack still requires the explicitly documented external/manual full-pack smoke before modpack distribution. That distribution smoke is not represented as completed GitHub Actions evidence.
+The surrounding pack's current Stage 10 reconciliation baseline is **603 mods** and still requires the explicitly documented external/manual full-pack smoke before modpack distribution. That distribution smoke is not represented as completed GitHub Actions evidence.
 
 ## Rules for updating this file
 

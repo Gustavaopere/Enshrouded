@@ -1,6 +1,8 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.08 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.09
+**State:** 10.09 LOGIC/AUTHORITY IMPLEMENTED / ACQUISITION FIX MERGED + VERIFIED / SHELL ART + SET-PIECE CONSUMERS OPEN — 10.10 NOT STARTED
+
+**Current physical-pack authority:** 603 mods on NeoForge `21.1.248` from the latest 2026-09-08 physical modlist. References to 607/612 below are retained as checkpoint-time evidence for earlier Stage 10 tasks, not as the current pack count.
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -19,6 +21,10 @@
 **10.07 closeout PR:** #94 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.08 implementation PR:** #95 — `Stage 10.08 — Advanced VFX pass` — MERGED as `00439c1593cf8e0699f6abe4e19d4848d1e97149`.
 **10.08 closeout PR:** #96 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
+**10.09 implementation PR:** #97 — `Stage 10.09 — Multiblock and set-piece pass` — MERGED as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`.
+**10.09 restart-harness correction PR:** #99 — MERGED into the current lineage as `650c5c99308415a94ed51c9abd9abea1b5b26c10`.
+**10.09 survival-acquisition correction PR:** #100 — MERGED as `ed122c42f0eee0e706219361e30c9e1f05416a6d`; independent post-merge Release Readiness `34226166892` and Enshrouded CI `34226166913 / 102060710827` GREEN.
+**10.09 reconciliation PR:** #98 — records the actual implemented checkpoint and the still-open art/production-consumer handoffs; no runtime authority changes intended.
 
 ## Planning checkpoint
 
@@ -44,7 +50,7 @@
 
 ## 10.01 — Visual Bible + dependency ADR — COMPLETE
 
-- [x] Reconciled implementation start against current 607-mod pack and Notion Enshrouded dossier.
+- [x] Reconciled implementation start against the then-current 607-mod pack and Notion Enshrouded dossier.
 - [x] Promoted GeckoLib `4.9.2` from compatibility-fixture-only usage to the Enshrouded primary production animation runtime.
 - [x] Declared GeckoLib as a required external NeoForge dependency with accepted range `[4.9.2,5.0.0)`; it is not shaded into the Enshrouded JAR.
 - [x] Reused the same version property for the Ars Zero real-distribution fixture to prevent dependency drift.
@@ -232,7 +238,7 @@
 - [x] RED HEAD `af8f6140491e3304f1f4b60bf2a40f7affb51b29`: Enshrouded CI `34077847446 / 101607351530` failed at the new Stage 10 visual contract; Release Readiness `34077847501 / 101607351673` failed at the new presentation contract.
 - [x] First GREEN implementation HEAD `90b81e1d4df50b5c2b4956b0a0a1ce7384dace2e` exposed an actual provenance failure for new PNGs; the ledger was fixed rather than weakening the gate.
 - [x] Reconciled checkpoint `aa7ec50a0bc61de80eda9a4e838106603897f76e` passed Release Readiness `34078546785 / 101609292301` and full Enshrouded CI `34078546777 / 101609292946`.
-- [x] Before final merge, the latest attached modlist was rechecked: current pack is 612 mods; GeckoLib remains `4.9.2`; Sodium remains `0.8.13+mc1.21.1`; Fusion is now `1.3.15+a` / `fusion-1.3.15a-neoforge-mc1.21.1.jar`.
+- [x] Before final merge, the then-latest attached modlist was rechecked: that checkpoint pack was 612 mods; GeckoLib was `4.9.2`; Sodium was `0.8.13+mc1.21.1`; Fusion was `1.3.15+a` / `fusion-1.3.15a-neoforge-mc1.21.1.jar`.
 - [x] Two P2 review findings hardened the contract before merge: exact unique existing `_a/_b/_c` weighted model references, plus decoded-RGBA alpha-topology comparison for Ordinary/Deadly materials instead of file-hash comparison.
 - [x] Final PR #91 HEAD `1bf6dca57f8ff3548ef41955b0db06b8eb46b1c8` passed Release Readiness `34079531152` and full Enshrouded CI `34079531285 / 101612091620`.
 - [x] Both P2 review threads were resolved only after the corrected final HEAD was green.
@@ -246,8 +252,8 @@
 - [ ] Deadly withered-growth + Red Sludge screenshots.
 - [ ] Large-surface seam/tile/checkerboard inspection.
 - [ ] Reduced-effects readability.
-- [ ] Sodium/Fusion coexistence visual check on the current versions.
-- [ ] Full 612-mod client visual smoke.
+- [ ] Sodium/Fusion coexistence visual check on the checkpoint versions above.
+- [ ] Full 612-mod client visual smoke required at that checkpoint.
 - [ ] **ART APPROVED** remains open until the above evidence exists.
 
 ## 10.07 — HUD / UI art — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
@@ -279,14 +285,14 @@
 - [x] PR #93 merged to `main` as `341aa508bcd997cf32b7d550c9a37fca19f36ff3`.
 - [x] Post-merge Release Readiness `34141675351` passed on exact `main@341aa508bcd997cf32b7d550c9a37fca19f36ff3`.
 - [x] Post-merge Enshrouded CI `34141675549 / 101804820155` passed the complete matrix on the same baseline.
-- [x] Current pack reconciliation remains 612 mods with GeckoLib `4.9.2`, Sodium `0.8.13+mc1.21.1` and Fusion `1.3.15+a`.
+- [x] At the Stage 10.07 checkpoint, pack reconciliation was 612 mods with GeckoLib `4.9.2`, Sodium `0.8.13+mc1.21.1` and Fusion `1.3.15+a`.
 
 ### Visual/manual acceptance still open
 
 - [ ] Ordinary vs Deadly screenshots at representative GUI scales.
 - [ ] MINIMAL / reduced-effects comparison.
 - [ ] Readability/coexistence near other HUD mods and common overlays.
-- [ ] Full 612-mod client visual smoke.
+- [ ] Full 612-mod client visual smoke required at that checkpoint.
 - [ ] **ART APPROVED** remains open until the above evidence exists.
 
 ## 10.08 — Advanced VFX pass — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
@@ -304,7 +310,7 @@
 - [x] Cue particle/lifetime/radius/cooldown limits are hard-bounded by `AdvancedVfxCue` and sequence emission is distributed through `AdvancedVfxSequenceBudget`.
 - [x] `REDUCED_SENSORY` caps a complete advanced sequence at 4 particles.
 - [x] `MINIMAL` emits 0 advanced particles while gameplay state remains unchanged.
-- [x] Current physical pack remains 612 mods; Lodestone `1.8.2`, AAA Particles `2.2.3` and AAA Particles: World `2.0.0` are installed neighbors.
+- [x] At the Stage 10.08 checkpoint, the physical pack had 612 mods; Lodestone `1.8.2`, AAA Particles `2.2.3` and AAA Particles: World `2.0.0` were installed neighbors.
 - [x] Lodestone was **not adopted** by Enshrouded for 10.08: native NeoForge/GeckoLib seams satisfied the required effects and full automation without a Lodestone compile/runtime dependency or API import.
 - [x] Lodestone remains future task-gated rather than globally prohibited.
 
@@ -322,24 +328,81 @@
 
 ### Visual/manual acceptance still open
 
-- [ ] Full 612-mod client smoke.
+- [ ] Full 612-mod client smoke required at that checkpoint.
 - [ ] Sodium coexistence and shader-off/shader-on visual comparison.
 - [ ] Full vs `REDUCED_SENSORY` vs `MINIMAL` presentation review.
 - [ ] Fog enabled/disabled and day/night review.
 - [ ] Reconnect/dimension-switch and rapid-boundary-crossing spam/duplication review.
 - [ ] Core destruction, Flame ritual and Lich manifestation near/far review.
-- [ ] **ART APPROVED** remains open and is carried to 10.10.
+- [ ] **ART APPROVED** remains open and is carried forward to the final Stage 10 acceptance gate.
 
-## Multiblock boundary carried forward
+## 10.09 — Multiblock / set-piece pass — LOGIC CHECKPOINT IMPLEMENTED / STAGE OPEN
 
-Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04, 10.05, 10.06, 10.07 or 10.08. Stage 10.09 must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
+### Flame complex authority and lifecycle
 
-## Hard boundaries carried into subsequent tasks
+- [x] `FlameAltarBlockEntity` remains the single physical controller; braces and runes own no BlockEntity, ritual inventory, progression or Sanctuary authority.
+- [x] The canonical 3×3 structure is center Altar + four inward-facing cardinal braces + four corner runes.
+- [x] A complete shell remains `UNFORMED` until explicit controller interaction performs bounded validation.
+- [x] A valid first interaction commits `FORMED` and activates the existing canonical Flame Ward/Sanctuary path; subsequent interaction opens the existing ritual menu.
+- [x] Missing components, wrong orientation, duplicate controller, protected positions, indeterminate protection and unavailable required chunks all fail closed before formation mutation.
+- [x] `FlameAltarStructureValidator` reads only the nine footprint positions and never force-loads chunks.
+- [x] Breaking a required shell part deterministically unforms the nearby formed controller; breaking the controller clears surviving shell presentation and Sanctuary.
+- [x] Replacing a part does not passively reform; explicit controller interaction is required again.
+- [x] Structural unform/reform does not consume or duplicate the ritual offering.
+- [x] Persisted `FORMED` is recovery intent only: live authority is restored only after bounded post-load revalidation.
+- [x] Missing required chunks use targeted retry indexing; production recovery does not force-load chunks.
+- [x] A separate Purification Shrine controller/provider was intentionally not introduced; purification remains integrated with the same Flame complex and canonical Flame Ward/purification runtime.
+- [x] PR #100 supplies survival acquisition for the full required shell: recipes yield four braces and four runes, and both components self-drop through their block loot tables.
+- [ ] Brace/rune blockstates, block models, item models, textures and a visibly distinct `FORMED=false|true` presentation remain the **user-owned art handoff**. Automated CI must not substitute placeholder art for this requirement.
+
+### Set-piece composition contracts and open consumers
+
+- [x] `ShroudCoreNestLayout` provides bounded Ordinary/Deadly composition with exactly one `CORE_ANCHOR`; decorative ribs, root veins, sludge basins, hanging growths and ruins never become cores.
+- [x] `LichManifestationLandmarkLayout` provides bounded ritual-dais / broken-halo / spectral-anchor / portal-frame / bone-motif composition with exactly one `ENCOUNTER_ORIGIN`.
+- [x] Both layout classes are immutable/data-only and add no `ServerLevel`, SavedData, chunk loading, automatic worldgen, boss spawning or reward authority.
+- [x] Existing Shroud Core and Stage 06 manifestation/Story services remain canonical.
+- [ ] An approved production consumer for `ShroudCoreNestLayout` is still required before the Nest can be claimed as an in-world set piece. Any future consumer must remain bounded, loaded-chunk safe and route terrain mutation/protection through the canonical authority.
+- [ ] An approved production placement/encounter-location consumer for `LichManifestationLandmarkLayout` is still required before the landmark can be claimed in-world. It must feed the existing Stage 06 lifecycle and must not create a second boss/Story/reward authority.
+- [ ] These two missing consumers are Stage 10.09 implementation/architecture handoffs. **Stage 10.10 does not own them and must not silently absorb them as manual QA.**
+
+### TDD and validation evidence
+
+- [x] Formation authority RED began at `ddfd78dfc986285efb95293c3c15431062e2cacf`.
+- [x] Set-piece RED `a501f11d6bd03501c2f4683d937095fe40b026f6` failed at unit compilation before the two layout classes existed.
+- [x] Two-boot Shroud test isolation fix `9dd54e27203207fb08c53b1cc5a85b30110857ce` corrected sentinel attribution without changing expansion runtime.
+- [x] Final PR #97 HEAD `7d9317fd0d211aaf6dce36298b84767408b2be20` passed Release Readiness `34188303297 / 101940989577` and Enshrouded CI `34188303299 / 101941000504`.
+- [x] PR #97 merged to `main` as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`; independent post-merge Release Readiness `34189278455` and Enshrouded CI `34189278499` passed on that exact baseline.
+- [x] Restart-harness correction PR #99 is integrated in the current lineage at `650c5c99308415a94ed51c9abd9abea1b5b26c10`.
+- [x] Acquisition RED `92eab5e772184b47261196973926f2d1be659d30` ran 365 tests and failed exactly the two new resource tests because the recipes/loot tables did not yet exist.
+- [x] Acquisition GREEN PR #100 HEAD `2b647d9e4dde39f4205b5082eca1ba9481b1e7d6` passed Release Readiness `34225536910` and Enshrouded CI `34225536909 / 102058621586`.
+- [x] PR #100 merged as `ed122c42f0eee0e706219361e30c9e1f05416a6d`; independent post-merge Release Readiness `34226166892` and Enshrouded CI `34226166913 / 102060710827` passed the complete matrix on the same exact `main`.
+- [x] Current physical pack baseline is **603 mods** on NeoForge `21.1.248`; the latest physical file supersedes the earlier 607/612 checkpoint counts. The pertinent Notion dossier was rechecked and remains editorial relative to runtime/modlist authority.
+- [ ] PR #98 is the active documentation reconciliation; its purpose is to record implemented vs open work accurately, not to declare Stage 10.09 complete.
+
+### Implementation/art handoffs still open before 10.10
+
+- [ ] User-authored Flame shell render package: brace/rune blockstates, block/item models, textures and formed/unformed distinction.
+- [ ] Approved/implemented production consumer for Shroud Core Nest.
+- [ ] Approved/implemented production consumer for the Lich manifestation landmark.
+
+### Manual final-acceptance work after those handoffs
+
+- [ ] Unformed vs formed Flame complex screenshots at representative FOV/distance and from multiple directions.
+- [ ] The FORMED 3×3 must read as one authored ritual construction; a visible cube-grid/checkerboard remains a rejection criterion.
+- [ ] Sanctuary/purification readability under full, reduced-sensory and minimal presentation settings.
+- [ ] Sodium/shader/resource-reload/reconnect coexistence.
+- [ ] Full **603-mod** client visual smoke.
+- [ ] **ART APPROVED** remains open.
+
+## Hard boundaries carried forward
 
 - GeckoLib receives presentation state only; animation completion never mutates gameplay authority.
 - AzureLib remains intentionally unused by Enshrouded unless a future ADR replaces the current decision.
 - Fusion may improve environmental materials only when a valid base/fallback resource path exists.
 - Lodestone was not needed by 10.08 and remains task-gated for future concrete effects; OctoLib and Player Animator likewise remain task-gated rather than automatic dependencies.
+- The Flame complex has one authoritative controller and one Sanctuary provider; shell components cannot become parallel authorities.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
-- Manual full 612-mod pack smoke is the current external release gate before distribution; older 607-mod references above are historical checkpoint evidence.
-- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull, 10.06 world-art family, 10.07 HUD/UI or 10.08 advanced VFX **ART APPROVED** until the required in-game evidence exists.
+- Shroud Core Nest and Lich landmark are currently data-only composition contracts; do not claim automatic worldgen/placement until an approved consumer is implemented and validated.
+- Stage 10.10 is a final visual/compatibility acceptance gate; it must not be started while 10.09 implementation/art handoffs above remain open unless the user explicitly re-scopes them.
+- Manual full **603-mod** pack smoke is the current external release gate before distribution; older 607/612 references above are historical checkpoint evidence.
+- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull, 10.06 world-art family, 10.07 HUD/UI, 10.08 advanced VFX or 10.09 multiblock/set-piece presentation **ART APPROVED** until the required in-game evidence exists.
