@@ -38,7 +38,7 @@ public final class FlameAltarChunkRecoveryEvents {
         ));
     }
 
-    private static void recoverAltarsIntersecting(ServerLevel level, ChunkPos loadedPos) {
+    static void recoverAltarsIntersecting(ServerLevel level, ChunkPos loadedPos) {
         for (int chunkDx = -1; chunkDx <= 1; chunkDx++) {
             for (int chunkDz = -1; chunkDz <= 1; chunkDz++) {
                 var chunk = level.getChunk(
