@@ -3,6 +3,7 @@ package com.gustavaopere.enshrouded.flame.altar;
 import com.gustavaopere.enshrouded.Enshrouded;
 import com.gustavaopere.enshrouded.api.shroud.FlameWardRuntimeBindings;
 import com.gustavaopere.enshrouded.gametest.GameTestBootstrap;
+import com.gustavaopere.enshrouded.protection.ProtectionRuntimeBindings;
 import com.gustavaopere.enshrouded.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -74,9 +75,21 @@ public final class FlameAltarRestartGameTests {
 
     private static void assertReloadedSentinel(GameTestHelper helper, ServerLevel level) {
         FlameAltarBlockEntity altar = requireAltar(helper, level, SENTINEL_CENTER);
+        FlameAltarStructureValidator.Result diagnosticValidation = new FlameAltarStructureValidator(
+                ProtectionRuntimeBindings.protectedAreas()
+        ).validate(level, SENTINEL_CENTER);
+        CompoundTag diagnosticPersisted = altar.saveWithoutMetadata(level.registryAccess());
+        CompoundTag diagnosticFormation = diagnosticPersisted.getCompound("Formation");
 
         helper.assertTrue(altar.isFormed(),
-                "Second boot must recover persisted FORMED state through the bounded post-load retry path");
+                "Second boot must recover persisted FORMED state through the bounded post-load retry path"
+                        + " [pending=" + altar.hasPendingFormationRecovery()
+                        + ", phase=" + altar.formationPhase()
+                        + ", validator=" + diagnosticValidation.status()
+                        + ", problemPos=" + diagnosticValidation.problemPos()
+                        + ", persistedSchema=" + diagnosticFormation.getInt("SchemaVersion")
+                        + ", persistedFormed=" + diagnosticFormation.getBoolean("Formed")
+                        + "]");
         helper.assertTrue(altar.formationPhase() == FlameAltarFormationPhase.FORMED,
                 "Second boot recovery must settle in FORMED rather than transient VALIDATING/UNFORMED");
         helper.assertTrue(altar.inventory().getStackInSlot(0).is(Items.DIRT)
