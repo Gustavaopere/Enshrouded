@@ -17,7 +17,7 @@ The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HIS
 - [x] 07 Client Experience — 4/4 verified and merged.
 - [x] 08 Integrations — 5/5 reviewed, verified and merged.
 - [x] 09 Hardening — 5/5 verified and merged; Level 1 remains a completed historical milestone.
-- [~] 10 Visual Polish — explicit post-Level-1 work is active by user instruction. 10.01–10.08 technical implementation is merged. 10.09 has its logic/authority checkpoint, restart-harness correction and survival-acquisition correction merged, but remains operationally **OPEN** for the user-owned Flame shell render package and approved production consumers for the Shroud Core Nest and Lich landmark. Stage 10.10 has not started.
+- [~] 10 Visual Polish — explicit post-Level-1 work is active by user instruction. 10.01–10.08 technical implementation is merged. 10.09 logic/authority, restart-harness correction, survival acquisition and truthful reconciliation are merged and independently verified, but Stage 10.09 remains operationally **OPEN** for the user-owned Flame shell render package and approved production consumers for the Shroud Core Nest and Lich landmark. Stage 10.10 has not started.
 
 ## 08 Integrations — complete
 
@@ -183,14 +183,15 @@ Stage 09.04 establishes Enshrouded `1.0.0` release metadata, an independent fail
 
 Stage 10 began only after explicit user instruction and therefore does not contradict the historical rule against automatically starting future work. It is post-Level-1 visual/presentation work and does not reopen completed Level-1 gameplay authorities.
 
-Current reconciled runtime baseline before PR #98 documentation merge is `main@ed122c42f0eee0e706219361e30c9e1f05416a6d`.
+Current reconciled runtime/documentation baseline is `main@fa9552daa0372bf5061708a93ce5c263257df5d2` after the Stage 10.09 reconciliation merge and independent post-merge verification.
 
 - [x] Stage 10.01–10.08 technical implementation is merged; detailed provenance remains in `plans/10-visual-polish/STATUS.md` and the individual dossiers.
 - [x] Stage 10.09 original logic/authority implementation PR #97 merged as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`.
 - [x] Stage 10.09 restart-harness correction PR #99 is integrated in the current lineage at `650c5c99308415a94ed51c9abd9abea1b5b26c10`.
 - [x] Stage 10.09 Flame shell survival-acquisition correction PR #100 final HEAD `2b647d9e4dde39f4205b5082eca1ba9481b1e7d6` passed Release Readiness `34225536910` and Enshrouded CI `34225536909 / 102058621586`, then merged as `ed122c42f0eee0e706219361e30c9e1f05416a6d`.
 - [x] Independent post-merge #100 Release Readiness `34226166892` and Enshrouded CI `34226166913 / 102060710827` passed the complete matrix on exact `main@ed122c42f0eee0e706219361e30c9e1f05416a6d`.
-- [~] PR #98 — `docs/10-09-multiblock-set-pieces-closeout` — is the active documentation reconciliation. It records actual implemented vs open work and changes no gameplay authority. Final PR-head/merge/post-merge evidence is intentionally not pre-declared here.
+- [x] Stage 10.09 reconciliation PR #98 branch `docs/10-09-multiblock-set-pieces-closeout`, final HEAD `43bf73df5d4c3c93a731ee5d88397b5633badd1c`, passed Release Readiness `34231676426` and Enshrouded CI `34231676553 / 102079337614`, including GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution and dedicated-server save/reload.
+- [x] PR #98 merged as `fa9552daa0372bf5061708a93ce5c263257df5d2`. Independent post-merge Release Readiness `34234079530` and Enshrouded CI `34234079616 / 102087197147` passed the complete matrix on exact `main@fa9552daa0372bf5061708a93ce5c263257df5d2`.
 - [ ] User-owned Flame shell render handoff remains open: brace/rune blockstates, block/item models, textures and visibly distinct formed/unformed presentation.
 - [ ] Shroud Core Nest production consumer remains open. `ShroudCoreNestLayout` is bounded/data-only and must not be described as an in-world set piece until an approved placement/worldgen consumer exists.
 - [ ] Lich manifestation landmark production placement/encounter-location consumer remains open. The existing Stage 06 Story/manifestation lifecycle remains the sole authority.
@@ -206,7 +207,7 @@ The latest physical modlist checked on 2026-09-08 is the current pack authority:
 
 ## Immediate next step
 
-Continue **Stage 10.09 only**. Merge/reconcile its truthful documentation checkpoint, then satisfy or explicitly re-scope the user-owned Flame shell render handoff and approve/implement production consumers for the Shroud Core Nest and Lich landmark. Do **not** start Stage 10.10 automatically while those Stage 10.09 handoffs remain open.
+Continue **Stage 10.09 only**. The truthful documentation reconciliation is merged and independently verified; remaining executable work is blocked on the user-owned Flame shell render handoff and on an explicit architecture/design decision selecting production consumers for the Shroud Core Nest and Lich landmark. Do **not** start Stage 10.10 automatically while those Stage 10.09 handoffs remain open.
 
 ## Level 1 release gate — historical completed milestone
 
