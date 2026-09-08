@@ -22,14 +22,16 @@ printf 'eula=true\n' > "$RUN_DIR/eula.txt"
 
 # The first boot intentionally persists mid-purification and mid-expansion sentinels. The GameTest
 # server keeps ticking production runtimes after those individual tests succeed, so use a
-# world-local SERVER config only in this two-boot harness to keep both sentinels mid-flight until
-# shutdown. This does not change production defaults or the ordinary GameTest-server CI gate.
-# NeoForge may normalize the partial TOML file on load; the second-boot sentinels are the
-# authoritative behavioral proof that the harness budgets remained low enough for restart checks.
+# world-local SERVER config only in this two-boot harness to keep those sentinels mid-flight until
+# shutdown. Growth remains high enough for the canonical Level-1 vertical-slice GameTest to reach
+# its ordinary SHROUD band, while staying well below the production default of 32 work units/tick.
+# This does not change production defaults or the ordinary GameTest-server CI gate. NeoForge may
+# normalize the partial TOML file on load; the second-boot sentinels are the behavioral proof that
+# the harness budgets preserve the restart fixtures without starving normal GameTest behavior.
 cat > "$RUN_DIR/world/serverconfig/enshrouded-server.toml" <<'EOF'
 [shroudCore]
-growthGlobalWorkPerTick = 1
-growthWorkPerTick = 1
+growthGlobalWorkPerTick = 8
+growthWorkPerTick = 8
 regressionWorkPerTick = 1
 EOF
 
