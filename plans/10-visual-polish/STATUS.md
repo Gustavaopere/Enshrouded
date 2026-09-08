@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.08 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.09
+**State:** 10.09 TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED / IN-GAME ART REVIEW STILL REQUIRED — NEXT: 10.10
 
 **Planning PR:** #80 — `Stage 10 — Art Direction, Hero Assets and Visual Polish` — MERGED
 **10.01 implementation PR:** #81 — `Stage 10.01 — Visual Bible and GeckoLib Runtime Contract` — MERGED
@@ -19,6 +19,8 @@
 **10.07 closeout PR:** #94 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.08 implementation PR:** #95 — `Stage 10.08 — Advanced VFX pass` — MERGED as `00439c1593cf8e0699f6abe4e19d4848d1e97149`.
 **10.08 closeout PR:** #96 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
+**10.09 implementation PR:** #97 — `Stage 10.09 — Multiblock and set-piece pass` — MERGED as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`.
+**10.09 closeout PR:** #98 — documentation-only closeout for final technical/post-merge verification; no runtime changes intended.
 
 ## Planning checkpoint
 
@@ -330,16 +332,61 @@
 - [ ] Core destruction, Flame ritual and Lich manifestation near/far review.
 - [ ] **ART APPROVED** remains open and is carried to 10.10.
 
-## Multiblock boundary carried forward
+## 10.09 — Multiblock / set-piece pass — TECHNICALLY COMPLETE / MERGED / POST-MERGE VERIFIED
 
-Full player-built 3×3/5×5 formation/validation is deliberately not implemented inside 10.02, 10.03, 10.04, 10.05, 10.06, 10.07 or 10.08. Stage 10.09 must preserve the Flame Altar BlockEntity as the authoritative anchor and use the agreed UX: components placed by the player → explicit activation/validation → FORMED state. A FORMED altar that still reads as a Minecraft cube grid/checkerboard is rejected even if mechanically correct. A Purification Shrine may only be introduced in 10.09 if it preserves one canonical authority path with bounded, idempotent, fail-closed formation logic.
+### Flame complex authority and lifecycle
 
-## Hard boundaries carried into subsequent tasks
+- [x] `FlameAltarBlockEntity` remains the single physical controller; braces and runes own no BlockEntity, ritual inventory, progression or Sanctuary authority.
+- [x] The canonical 3×3 structure is center Altar + four inward-facing cardinal braces + four corner runes.
+- [x] A complete shell remains `UNFORMED` until explicit controller interaction performs bounded validation.
+- [x] A valid first interaction commits `FORMED` and activates the existing canonical Flame Ward/Sanctuary path; subsequent interaction opens the existing ritual menu.
+- [x] Missing components, wrong orientation, duplicate controller, protected positions, indeterminate protection and unavailable required chunks all fail closed before formation mutation.
+- [x] `FlameAltarStructureValidator` reads only the nine footprint positions and never force-loads chunks.
+- [x] Breaking a required shell part deterministically unforms the nearby formed controller; breaking the controller clears surviving shell presentation and Sanctuary.
+- [x] Replacing a part does not passively reform; explicit controller interaction is required again.
+- [x] Structural unform/reform does not consume or duplicate the ritual offering.
+- [x] Persisted `FORMED` is recovery intent only: live authority is restored only after bounded post-load revalidation.
+- [x] Missing required chunks use targeted retry indexing; production recovery does not force-load chunks.
+- [x] A separate Purification Shrine controller/provider was intentionally not introduced; Stage 10.05 purification presentation remains integrated with the same Flame complex and canonical Flame Ward runtime.
+
+### Set-piece composition contracts
+
+- [x] `ShroudCoreNestLayout` provides bounded Ordinary/Deadly composition with exactly one `CORE_ANCHOR`; decorative ribs, root veins, sludge basins, hanging growths and ruins never become cores.
+- [x] `LichManifestationLandmarkLayout` provides bounded ritual-dais / broken-halo / spectral-anchor / portal-frame / bone-motif composition with exactly one `ENCOUNTER_ORIGIN`.
+- [x] Both set-piece layout classes are immutable/data-only: no `ServerLevel`, SavedData, placement, chunk loading, automatic worldgen, boss spawning or reward authority.
+- [x] Existing Shroud Core and Stage 06 manifestation/Story services remain canonical.
+- [x] No synthetic placement GameTest was introduced solely for data-only layouts, avoiding creation of a world-mutation path that 10.09 does not implement.
+
+### TDD and validation evidence
+
+- [x] Formation authority RED began at `ddfd78dfc986285efb95293c3c15431062e2cacf`.
+- [x] Set-piece RED `a501f11d6bd03501c2f4683d937095fe40b026f6` failed at unit compilation before the two layout classes existed.
+- [x] Two-boot Shroud test isolation fix `9dd54e27203207fb08c53b1cc5a85b30110857ce` corrected sentinel attribution without changing expansion runtime.
+- [x] Final PR #97 HEAD `7d9317fd0d211aaf6dce36298b84767408b2be20` passed Release Readiness `34188303297 / 101940989577` and Enshrouded CI `34188303299 / 101941000504`.
+- [x] PR #97 merged to `main` as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`.
+- [x] Independent post-merge Release Readiness `34189278455 / 101943814346` passed on exact `main@452766e29c9de00fc0cb441c6bc397cb990a6d9f`.
+- [x] Independent post-merge Enshrouded CI `34189278499 / 101943814741` passed the complete matrix on the same baseline, including GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution profile and dedicated-server save/reload smoke.
+- [x] Current physical pack baseline is 612 mods on NeoForge `21.1.248`; current Notion catalog was reconciled before closeout.
+- [x] PR #98 is the documentation-only closeout; it changes no runtime authority.
+
+### Visual/manual/world acceptance still open
+
+- [ ] Unformed vs formed Flame complex screenshots at representative FOV/distance and from multiple directions.
+- [ ] The FORMED 3×3 must read as one authored ritual construction; a visible cube-grid/checkerboard remains a rejection criterion.
+- [ ] Sanctuary/purification readability must be reviewed under full, reduced-sensory and minimal presentation settings.
+- [ ] Shroud Core Nest and Lich landmark require in-world visual review only when an approved placement/worldgen consumer exists; the current data-only layouts do not imply generated structures.
+- [ ] Sodium/shader/resource-reload/reconnect coexistence remains for 10.10.
+- [ ] Full 612-mod client visual smoke remains external/manual.
+- [ ] **ART APPROVED** remains open and is owned by 10.10 final acceptance.
+
+## Hard boundaries carried into 10.10
 
 - GeckoLib receives presentation state only; animation completion never mutates gameplay authority.
 - AzureLib remains intentionally unused by Enshrouded unless a future ADR replaces the current decision.
 - Fusion may improve environmental materials only when a valid base/fallback resource path exists.
 - Lodestone was not needed by 10.08 and remains task-gated for future concrete effects; OctoLib and Player Animator likewise remain task-gated rather than automatic dependencies.
+- The Flame complex has one authoritative controller and one Sanctuary provider; shell components cannot become parallel authorities.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
+- Shroud Core Nest and Lich landmark are currently data-only composition contracts; do not claim automatic worldgen/placement until an approved consumer is implemented and validated.
 - Manual full 612-mod pack smoke is the current external release gate before distribution; older 607-mod references above are historical checkpoint evidence.
-- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull, 10.06 world-art family, 10.07 HUD/UI or 10.08 advanced VFX **ART APPROVED** until the required in-game evidence exists.
+- Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull, 10.06 world-art family, 10.07 HUD/UI, 10.08 advanced VFX or 10.09 multiblock/set-piece presentation **ART APPROVED** until the required in-game evidence exists.
