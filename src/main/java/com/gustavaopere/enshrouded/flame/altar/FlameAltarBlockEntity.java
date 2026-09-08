@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
@@ -130,19 +129,16 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
             return;
         }
 
-        // NeoForge may invoke BlockEntity#onLoad before every block entity in the 3x3 footprint is
-        // visible to level queries. Schedule exactly one bounded retry for the next server tick.
-        // MinecraftServer#schedule honors TickTask timing; pushing a timed task through WORKQUEUE
-        // only enqueues work and does not provide this delayed execution contract.
+        // BlockEntity#onLoad can run while its chunk is still finalizing block-entity visibility.
+        // MinecraftServer#executeIfPossible always queues through the server event loop instead of
+        // running inline, giving the loaded controller one bounded post-load recovery attempt.
+        // If neighboring evidence is still unavailable, ChunkEvent.Load supplies the later retry.
         var server = serverLevel.getServer();
-        server.schedule(new TickTask(
-                server.getTickCount() + 1,
-                () -> {
-                    if (!isRemoved() && level == serverLevel) {
-                        retryPendingFormationRecovery(serverLevel);
-                    }
-                }
-        ));
+        server.executeIfPossible(() -> {
+            if (!isRemoved() && level == serverLevel) {
+                retryPendingFormationRecovery(serverLevel);
+            }
+        });
     }
 
     boolean hasPendingFormationRecovery() {
@@ -151,7 +147,7 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
 
     /**
      * Revalidates a persisted formation intent after the relevant chunk load has reached a safe,
-     * deferred server tick. This never acquires chunks; the validator remains fail-closed.
+     * deferred server boundary. This never acquires chunks; the validator remains fail-closed.
      */
     void retryPendingFormationRecovery(ServerLevel serverLevel) {
         if (!hasPendingFormationRecovery()) {
