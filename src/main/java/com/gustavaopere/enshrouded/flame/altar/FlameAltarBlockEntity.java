@@ -132,16 +132,11 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
             return;
         }
 
-        // BlockEntity#onLoad can run while its chunk is still finalizing block-entity visibility.
-        // executeIfPossible provides one queued, bounded post-load attempt. If a footprint chunk is
-        // still unavailable, retryPendingFormationRecovery indexes exactly that missing chunk.
+        // BlockEntity#onLoad can run before neighbouring footprint chunks have finished their load
+        // lifecycle. Register exactly this controller for one post-server-tick recovery attempt;
+        // a still-missing footprint chunk is then transferred to the exact ChunkPos recovery index.
         FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
-        var server = serverLevel.getServer();
-        server.executeIfPossible(() -> {
-            if (!isRemoved() && level == serverLevel) {
-                retryPendingFormationRecovery(serverLevel);
-            }
-        });
+        FlameAltarChunkRecoveryEvents.deferInitialRecovery(serverLevel, worldPosition);
     }
 
     boolean hasPendingFormationRecovery() {
