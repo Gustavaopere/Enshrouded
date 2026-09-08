@@ -55,6 +55,7 @@ public final class FlameAltarChunkRecoveryEvents {
 
             Set<BlockPos> waiting = INITIAL_RECOVERY_BY_LEVEL.remove(level);
             if (waiting != null && !waiting.isEmpty()) {
+                System.out.println("ENSHROUDED_FLAME_ALTAR_RECOVERY_STAGE server_tick_consume positions=" + waiting);
                 recoverWaiting(level, waiting);
             }
         }
@@ -89,6 +90,7 @@ public final class FlameAltarChunkRecoveryEvents {
         INITIAL_RECOVERY_BY_LEVEL
                 .computeIfAbsent(level, ignored -> new LinkedHashSet<>())
                 .add(altarPos.immutable());
+        System.out.println("ENSHROUDED_FLAME_ALTAR_RECOVERY_STAGE onload_deferred pos=" + altarPos);
     }
 
     static void waitForChunk(ServerLevel level, BlockPos altarPos, ChunkPos missingChunk) {
@@ -133,9 +135,14 @@ public final class FlameAltarChunkRecoveryEvents {
                 continue;
             }
 
+            System.out.println("ENSHROUDED_FLAME_ALTAR_RECOVERY_STAGE chunk_pending_found pos=" + pos);
             // This is the only deliberate lazy-BE promotion. It loads no chunk and creates no new
             // authority; NeoForge subsequently calls FlameAltarBlockEntity#onLoad normally.
-            chunk.getBlockEntity(pos);
+            var promoted = chunk.getBlockEntity(pos);
+            System.out.println("ENSHROUDED_FLAME_ALTAR_RECOVERY_STAGE chunk_promoted pos=" + pos
+                    + " type=" + (promoted == null ? "null" : promoted.getClass().getName())
+                    + " pending=" + (promoted instanceof FlameAltarBlockEntity altar
+                    && altar.hasPendingFormationRecovery()));
         }
     }
 
@@ -166,11 +173,17 @@ public final class FlameAltarChunkRecoveryEvents {
     private static void recoverWaiting(ServerLevel level, Set<BlockPos> waiting) {
         for (BlockPos altarPos : waiting) {
             if (!level.getChunkSource().hasChunk(altarPos.getX() >> 4, altarPos.getZ() >> 4)) {
+                System.out.println("ENSHROUDED_FLAME_ALTAR_RECOVERY_STAGE retry_skipped_unloaded pos=" + altarPos);
                 continue;
             }
             if (level.getBlockEntity(altarPos) instanceof FlameAltarBlockEntity altar
                     && altar.hasPendingFormationRecovery()) {
+                System.out.println("ENSHROUDED_FLAME_ALTAR_RECOVERY_STAGE retry_invoked pos=" + altarPos);
                 altar.retryPendingFormationRecovery(level);
+                System.out.println("ENSHROUDED_FLAME_ALTAR_RECOVERY_STAGE retry_finished pos=" + altarPos
+                        + " formed=" + altar.isFormed()
+                        + " pending=" + altar.hasPendingFormationRecovery()
+                        + " phase=" + altar.formationPhase());
             }
         }
     }
