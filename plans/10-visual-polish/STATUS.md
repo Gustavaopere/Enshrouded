@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.09 LOGIC/AUTHORITY IMPLEMENTED / ACQUISITION FIX MERGED + VERIFIED / SHELL ART + SET-PIECE CONSUMERS OPEN — 10.10 NOT STARTED
+**State:** 10.09 LOGIC/AUTHORITY IMPLEMENTED / ACQUISITION FIX + RECONCILIATION MERGED + VERIFIED / SHELL ART + SET-PIECE CONSUMERS OPEN — 10.10 NOT STARTED
 
 **Current physical-pack authority:** 603 mods on NeoForge `21.1.248` from the latest 2026-09-08 physical modlist. References to 607/612 below are retained as checkpoint-time evidence for earlier Stage 10 tasks, not as the current pack count.
 
@@ -23,8 +23,8 @@
 **10.08 closeout PR:** #96 — documentation-only closeout for final technical/post-merge verification; no runtime changes.
 **10.09 implementation PR:** #97 — `Stage 10.09 — Multiblock and set-piece pass` — MERGED as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`.
 **10.09 restart-harness correction PR:** #99 — MERGED into the current lineage as `650c5c99308415a94ed51c9abd9abea1b5b26c10`.
-**10.09 survival-acquisition correction PR:** #100 — MERGED as `ed122c42f0eee0e706219361e30c9e1f05416a6d`; independent post-merge Release Readiness `34226166892` and Enshrouded CI `34226166913 / 102060710827` GREEN.
-**10.09 reconciliation PR:** #98 — records the actual implemented checkpoint and the still-open art/production-consumer handoffs; no runtime authority changes intended.
+**10.09 survival-acquisition correction PR:** #100 — MERGED as `ed122c42f0eee0e706219361e30c9e1f05416a6d`; independent post-merge Release Readiness `34226166892` and Enshroued CI `34226166913 / 102060710827` GREEN.
+**10.09 reconciliation PR:** #98 — final HEAD `43bf73df5d4c3c93a731ee5d88397b5633badd1c`; MERGED as `fa9552daa0372bf5061708a93ce5c263257df5d2`; independent post-merge Release Readiness `34234079530` and Enshrouded CI `34234079616 / 102087197147` GREEN. It records the actual implemented checkpoint and the still-open art/production-consumer handoffs without changing runtime authority.
 
 ## Planning checkpoint
 
@@ -278,10 +278,10 @@
 
 ### TDD and validation evidence
 
-- [x] Deliberate RED head `13252ccc1d58b4e1c5b4f1a0e31097c968f22bd8` failed exactly in the new Stage 10.07 contract: Release Readiness `34107462335 / 101695661987` and Enshrouded CI `34107462334 / 101695662104`.
+- [x] Deliberate RED head `13252ccc1d58b4e1c5b4f1a0e31097c968f22bd8` failed exactly in the new Stage 10.07 contract: Release Readiness `34107462335 / 101695661987` and Enshroued CI `34107462334 / 101695662104`.
 - [x] Final P2 review hardened alpha comparisons to normalized occupied topology; the thread was resolved only after the corrected head was green.
 - [x] Final PR #93 HEAD `cda923713f6228e3c34885fc7da3d8592081c78b` passed Release Readiness `34140834386 / 101802215801`.
-- [x] The same head passed Enshrouded CI `34140834405 / 101802215875`, including provenance, Stage 10 contracts, unit tests, performance, diff sanity, NeoForge build, GameTests, SavedData two-boot reload, real Ars Zero 2.0.2 profile and dedicated-server smoke.
+- [x] The same head passed Enshroued CI `34140834405 / 101802215875`, including provenance, Stage 10 contracts, unit tests, performance, diff sanity, NeoForge build, GameTests, SavedData two-boot reload, real Ars Zero 2.0.2 profile and dedicated-server smoke.
 - [x] PR #93 merged to `main` as `341aa508bcd997cf32b7d550c9a37fca19f36ff3`.
 - [x] Post-merge Release Readiness `34141675351` passed on exact `main@341aa508bcd997cf32b7d550c9a37fca19f36ff3`.
 - [x] Post-merge Enshrouded CI `34141675549 / 101804820155` passed the complete matrix on the same baseline.
@@ -374,10 +374,11 @@
 - [x] PR #97 merged to `main` as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`; independent post-merge Release Readiness `34189278455` and Enshrouded CI `34189278499` passed on that exact baseline.
 - [x] Restart-harness correction PR #99 is integrated in the current lineage at `650c5c99308415a94ed51c9abd9abea1b5b26c10`.
 - [x] Acquisition RED `92eab5e772184b47261196973926f2d1be659d30` ran 365 tests and failed exactly the two new resource tests because the recipes/loot tables did not yet exist.
-- [x] Acquisition GREEN PR #100 HEAD `2b647d9e4dde39f4205b5082eca1ba9481b1e7d6` passed Release Readiness `34225536910` and Enshrouded CI `34225536909 / 102058621586`.
+- [x] Acquisition GREEN PR #100 HEAD `2b647d9e4dde39f4205b5082eca1ba9481b1e7d6` passed Release Readiness `34225536910` and Enshroued CI `34225536909 / 102058621586`.
 - [x] PR #100 merged as `ed122c42f0eee0e706219361e30c9e1f05416a6d`; independent post-merge Release Readiness `34226166892` and Enshrouded CI `34226166913 / 102060710827` passed the complete matrix on the same exact `main`.
 - [x] Current physical pack baseline is **603 mods** on NeoForge `21.1.248`; the latest physical file supersedes the earlier 607/612 checkpoint counts. The pertinent Notion dossier was rechecked and remains editorial relative to runtime/modlist authority.
-- [ ] PR #98 is the active documentation reconciliation; its purpose is to record implemented vs open work accurately, not to declare Stage 10.09 complete.
+- [x] Reconciliation PR #98 final HEAD `43bf73df5d4c3c93a731ee5d88397b5633badd1c` passed Release Readiness `34231676426` and Enshroued CI `34231676553 / 102079337614`; it merged as `fa9552daa0372bf5061708a93ce5c263257df5d2`.
+- [x] Independent post-merge verification on exact `main@fa9552daa0372bf5061708a93ce5c263257df5d2` passed Release Readiness `34234079530` and Enshroued CI `34234079616 / 102087197147`, including GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution and dedicated-server save/reload.
 
 ### Implementation/art handoffs still open before 10.10
 
