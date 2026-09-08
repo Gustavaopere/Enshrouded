@@ -11,6 +11,7 @@
   "message.enshrouded.flame_altar.applied": "The Flame answers the ritual.",
   "message.enshrouded.flame_altar.already_completed": "This ritual has already marked your progression.",
   "message.enshrouded.flame_altar.no_matching_ritual": "No valid Flame ritual matches the current offering.",
+  "message.enshrouded.flame_altar.unformed": "The Flame Altar complex is not formed.",
   "item.enshrouded.lich_skull_manifestation_1": "Lich Skull — First Manifestation",
   "item.enshrouded.lich_skull_manifestation_1.tooltip": "Trophy of the first defeated manifestation. Accepted by the Flame Altar.",
   "item.enshrouded.lich_skull_manifestation_1.authentic": "Authentic Enshrouded encounter trophy",

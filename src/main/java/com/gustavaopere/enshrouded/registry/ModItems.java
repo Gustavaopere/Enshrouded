@@ -12,6 +12,8 @@ public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Enshrouded.MOD_ID);
 
     public static final DeferredItem<BlockItem> FLAME_ALTAR = ITEMS.registerSimpleBlockItem(ModBlocks.FLAME_ALTAR);
+    public static final DeferredItem<BlockItem> FLAME_ALTAR_BRACE = ITEMS.registerSimpleBlockItem(ModBlocks.FLAME_ALTAR_BRACE);
+    public static final DeferredItem<BlockItem> FLAME_ALTAR_RUNE = ITEMS.registerSimpleBlockItem(ModBlocks.FLAME_ALTAR_RUNE);
     public static final DeferredItem<LichSkullItem> LICH_SKULL_MANIFESTATION_1 = ITEMS.registerItem(
             "lich_skull_manifestation_1",
             LichSkullItem::new,

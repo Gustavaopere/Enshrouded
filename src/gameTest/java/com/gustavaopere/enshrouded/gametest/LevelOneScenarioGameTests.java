@@ -249,20 +249,28 @@ public final class LevelOneScenarioGameTests {
         helper.assertTrue(before != null && !before.cells().isEmpty(),
                 "second boot must retain persisted logical cells used to rebuild runtime frontier");
 
+        // The two-boot world intentionally contains state left by the complete GameTest suite.
+        // Keep this assertion scoped to the persisted sentinel so TickResult counters cannot be
+        // satisfied by unrelated active cores that happen to consume the global work budget first.
+        ShroudWorldState isolatedReload = new ShroudWorldState(
+                data.state().schemaVersion(),
+                Map.of(core.id(), core),
+                Map.of(before.id(), before)
+        );
         ShroudExpansionScheduler scheduler = new ShroudExpansionScheduler(
                 GEOMETRY,
                 ShroudPropagationPolicy.terrainNeutral(),
                 256
         );
         ShroudExpansionScheduler.TickResult advanced = scheduler.tick(
-                data.state(),
+                isolatedReload,
                 new ShroudWorkBudget(16, 16)
         );
         ShroudRegionState after = advanced.state().regions().get(EXPANSION_RELOAD_REGION_ID);
         helper.assertTrue(advanced.appliedCells() > 0,
-                "fresh runtime scheduler must rebuild frontier from persisted cells after restart");
+                "fresh runtime scheduler must rebuild frontier from persisted sentinel cells after restart");
         helper.assertTrue(after.cells().size() > before.cells().size(),
-                "reloaded active field must resume expansion rather than stall or reset");
+                "reloaded active sentinel field must resume expansion rather than stall or reset");
         System.out.println("ENSHROUDED_EXPANSION_MID_RELOADED");
         helper.succeed();
     }

@@ -22,6 +22,7 @@ import java.util.Objects;
 /** Menu synchronizing the altar slot and authoritative owner progression summary. */
 public final class FlameAltarMenu extends AbstractContainerMenu {
     public static final int ACTIVATE_BUTTON_ID = 0;
+    private static final String UNFORMED_MESSAGE_KEY = "message.enshrouded.flame_altar.unformed";
     private static final int DATA_FLAME_LEVEL = 0;
     private static final int DATA_PASSAGE_LEVEL = 1;
     private static final int DATA_NEXT_LEVEL_READY = 2;
@@ -82,12 +83,16 @@ public final class FlameAltarMenu extends AbstractContainerMenu {
         if (id != ACTIVATE_BUTTON_ID || !(player instanceof ServerPlayer serverPlayer)) {
             return false;
         }
+        if (altar == null || !altar.isFormed()) {
+            serverPlayer.displayClientMessage(Component.translatable(UNFORMED_MESSAGE_KEY), false);
+            return true;
+        }
 
         FlameAltarRuntime.ProgressionSnapshot before = FlameAltarRuntime.snapshot(serverPlayer);
         FlameAltarService.ActivationResult result = FlameAltarRuntime.activate(serverPlayer, altarInventory);
         FlameAltarRuntime.ProgressionSnapshot after = FlameAltarRuntime.snapshot(serverPlayer);
         refreshData(after);
-        if (altar != null && result.status() == FlameAltarService.Status.APPLIED) {
+        if (result.status() == FlameAltarService.Status.APPLIED) {
             altar.triggerAuthoritativePresentation(after.flameLevel() > before.flameLevel());
             AdvancedVfxServerEmitter.emit(serverPlayer.serverLevel(), altar.getBlockPos(), AdvancedVfxCue.FLAME_RITUAL_SUCCESS);
         }

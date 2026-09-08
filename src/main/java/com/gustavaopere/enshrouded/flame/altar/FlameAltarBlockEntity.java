@@ -1,6 +1,7 @@
 package com.gustavaopere.enshrouded.flame.altar;
 
 import com.gustavaopere.enshrouded.flame.ward.FlameWardRuntime;
+import com.gustavaopere.enshrouded.protection.ProtectionRuntimeBindings;
 import com.gustavaopere.enshrouded.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -13,6 +14,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -27,6 +30,9 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 /** One-slot persistent inventory backing the physical, animated Flame Altar. */
 public final class FlameAltarBlockEntity extends BlockEntity implements MenuProvider, GeoBlockEntity {
     private static final String INVENTORY_TAG = "Inventory";
+    private static final String FORMATION_TAG = "Formation";
+    private static final String FORMATION_SCHEMA_TAG = "SchemaVersion";
+    private static final String FORMATION_FORMED_TAG = "Formed";
     private static final RawAnimation IDLE_ANIMATION = RawAnimation.begin().thenLoop("animation.flame_altar.idle");
     private static final RawAnimation RITUAL_AVAILABLE = RawAnimation.begin().thenLoop("animation.flame_altar.ritual_available");
     private static final RawAnimation RITUAL_CHARGE = RawAnimation.begin().thenPlay("animation.flame_altar.ritual_charge");
@@ -43,6 +49,9 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
             setChanged();
         }
     };
+    private FlameAltarFormationState formationState = FlameAltarFormationState.unformed();
+    private FlameAltarFormationState pendingFormationRecovery = FlameAltarFormationState.unformed();
+    private FlameAltarFormationPhase formationPhase = FlameAltarFormationPhase.UNFORMED;
 
     public FlameAltarBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FLAME_ALTAR.get(), pos, state);
@@ -50,6 +59,162 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
 
     public ItemStackHandler inventory() {
         return inventory;
+    }
+
+    public boolean isFormed() {
+        return formationState.formed() && formationPhase == FlameAltarFormationPhase.FORMED;
+    }
+
+    public FlameAltarFormationPhase formationPhase() {
+        return formationPhase;
+    }
+
+    /**
+     * Explicit server-side formation request from the authoritative controller interaction.
+     * Validation is synchronous, bounded to the canonical 3x3 footprint and fail-closed.
+     */
+    FlameAltarStructureValidator.Result requestFormation(ServerLevel level) {
+        if (isFormed()) {
+            return new FlameAltarStructureValidator.Result(
+                    FlameAltarStructureValidator.Status.VALID,
+                    worldPosition
+            );
+        }
+
+        formationPhase = FlameAltarFormationPhase.VALIDATING;
+        FlameAltarStructureValidator.Result result = validateFormation(level);
+
+        if (result.status() != FlameAltarStructureValidator.Status.VALID) {
+            formationPhase = FlameAltarFormationPhase.UNFORMED;
+            return result;
+        }
+
+        commitFormation(level);
+        return result;
+    }
+
+    private FlameAltarStructureValidator.Result validateFormation(ServerLevel level) {
+        return new FlameAltarStructureValidator(
+                ProtectionRuntimeBindings.protectedAreas()
+        ).validate(level, worldPosition);
+    }
+
+    private void commitFormation(ServerLevel level) {
+        FlameAltarChunkRecoveryEvents.clearWaiting(level, worldPosition);
+        formationState = new FlameAltarFormationState(FlameAltarFormationState.CURRENT_SCHEMA_VERSION, true);
+        pendingFormationRecovery = FlameAltarFormationState.unformed();
+        formationPhase = FlameAltarFormationPhase.FORMED;
+        setShellFormedPresentation(level, true);
+        setChanged();
+        FlameWardRuntime.onAltarLoaded(level, worldPosition);
+    }
+
+    /** Revokes only multiblock formation state; ritual inventory/progression remain untouched. */
+    void unform(ServerLevel level) {
+        FlameAltarChunkRecoveryEvents.clearWaiting(level, worldPosition);
+        boolean hadFormation = formationState.formed()
+                || pendingFormationRecovery.formed()
+                || formationPhase != FlameAltarFormationPhase.UNFORMED;
+        formationState = FlameAltarFormationState.unformed();
+        pendingFormationRecovery = FlameAltarFormationState.unformed();
+        formationPhase = FlameAltarFormationPhase.UNFORMED;
+        setShellFormedPresentation(level, false);
+        FlameWardRuntime.onAltarRemoved(level, worldPosition);
+        if (hadFormation) {
+            setChanged();
+        }
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (!(level instanceof ServerLevel serverLevel) || !hasPendingFormationRecovery()) {
+            return;
+        }
+
+        // Persisted block entities are fully deserialized before NeoForge invokes onLoad().
+        // The chunk-load bridge materializes only controllers whose pending NBT contains a valid
+        // FORMED recovery intent, so reaching this point never depends on unrelated BE ticking.
+        FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
+        FlameAltarChunkRecoveryEvents.deferInitialRecovery(serverLevel, worldPosition);
+    }
+
+    boolean hasPendingFormationRecovery() {
+        return pendingFormationRecovery.formed() && !isFormed();
+    }
+
+    /** Read-only check used before lazy disk NBT is promoted into a live BlockEntity. */
+    static boolean hasPersistedFormationIntent(CompoundTag tag) {
+        if (!tag.contains(FORMATION_TAG)) {
+            return false;
+        }
+        CompoundTag formation = tag.getCompound(FORMATION_TAG);
+        return FlameAltarFormationState.fromPersisted(
+                formation.getInt(FORMATION_SCHEMA_TAG),
+                formation.getBoolean(FORMATION_FORMED_TAG)
+        ).formed();
+    }
+
+    /**
+     * Revalidates a persisted formation intent after a deferred server/chunk-load boundary.
+     * This never acquires chunks; an unavailable footprint position is indexed for a targeted retry.
+     */
+    void retryPendingFormationRecovery(ServerLevel serverLevel) {
+        if (!hasPendingFormationRecovery()) {
+            FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
+            return;
+        }
+
+        formationPhase = FlameAltarFormationPhase.VALIDATING;
+        FlameAltarStructureValidator.Result result = validateFormation(serverLevel);
+        switch (result.status()) {
+            case VALID -> commitFormation(serverLevel);
+            case REQUIRED_CHUNK_UNLOADED -> {
+                formationState = FlameAltarFormationState.unformed();
+                formationPhase = FlameAltarFormationPhase.UNFORMED;
+                setShellFormedPresentation(serverLevel, false);
+                FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
+                FlameAltarChunkRecoveryEvents.waitForChunk(
+                        serverLevel,
+                        worldPosition,
+                        new ChunkPos(result.problemPos())
+                );
+            }
+            case PROTECTION_INDETERMINATE -> {
+                // No chunk evidence is missing, so a chunk subscription would be misleading.
+                // Preserve only the persisted recovery intent and remain fail-closed.
+                FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
+                formationState = FlameAltarFormationState.unformed();
+                formationPhase = FlameAltarFormationPhase.UNFORMED;
+                setShellFormedPresentation(serverLevel, false);
+                FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
+            }
+            default -> unform(serverLevel);
+        }
+    }
+
+    private void setShellFormedPresentation(ServerLevel level, boolean formed) {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (dx == 0 && dz == 0) {
+                    continue;
+                }
+
+                BlockPos pos = worldPosition.offset(dx, 0, dz);
+                if (!level.getChunkSource().hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
+                    continue;
+                }
+                BlockState state = level.getBlockState(pos);
+                if (state.getBlock() instanceof FlameAltarBraceBlock) {
+                    if (state.getValue(FlameAltarBraceBlock.FORMED) != formed) {
+                        level.setBlock(pos, state.setValue(FlameAltarBraceBlock.FORMED, formed), Block.UPDATE_CLIENTS);
+                    }
+                } else if (state.getBlock() instanceof FlameAltarRuneBlock
+                        && state.getValue(FlameAltarRuneBlock.FORMED) != formed) {
+                    level.setBlock(pos, state.setValue(FlameAltarRuneBlock.FORMED, formed), Block.UPDATE_CLIENTS);
+                }
+            }
+        }
     }
 
     @Override
@@ -83,16 +248,9 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     }
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level instanceof ServerLevel serverLevel) {
-            FlameWardRuntime.onAltarLoaded(serverLevel, worldPosition);
-        }
-    }
-
-    @Override
     public void setRemoved() {
         if (level instanceof ServerLevel serverLevel) {
+            FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
             FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
         }
         super.setRemoved();
@@ -129,11 +287,32 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         if (tag.contains(INVENTORY_TAG)) {
             inventory.deserializeNBT(registries, tag.getCompound(INVENTORY_TAG));
         }
+
+        // A persisted FORMED bit is only recovery intent. Gameplay remains UNFORMED until the
+        // bounded world validator explicitly re-confirms the physical structure.
+        formationState = FlameAltarFormationState.unformed();
+        pendingFormationRecovery = FlameAltarFormationState.unformed();
+        formationPhase = FlameAltarFormationPhase.UNFORMED;
+        if (tag.contains(FORMATION_TAG)) {
+            CompoundTag formation = tag.getCompound(FORMATION_TAG);
+            pendingFormationRecovery = FlameAltarFormationState.fromPersisted(
+                    formation.getInt(FORMATION_SCHEMA_TAG),
+                    formation.getBoolean(FORMATION_FORMED_TAG)
+            );
+        }
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put(INVENTORY_TAG, inventory.serializeNBT(registries));
+
+        FlameAltarFormationState persistedFormation = formationState.formed()
+                ? formationState
+                : pendingFormationRecovery;
+        CompoundTag formation = new CompoundTag();
+        formation.putInt(FORMATION_SCHEMA_TAG, persistedFormation.schemaVersion());
+        formation.putBoolean(FORMATION_FORMED_TAG, persistedFormation.formed());
+        tag.put(FORMATION_TAG, formation);
     }
 }

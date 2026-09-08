@@ -6,6 +6,8 @@ import com.gustavaopere.enshrouded.content.block.ShroudVeinBlock;
 import com.gustavaopere.enshrouded.content.block.WitheredGrowthBlock;
 import com.gustavaopere.enshrouded.content.fluid.RedSludgeBlock;
 import com.gustavaopere.enshrouded.flame.altar.FlameAltarBlock;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarBraceBlock;
+import com.gustavaopere.enshrouded.flame.altar.FlameAltarRuneBlock;
 import com.gustavaopere.enshrouded.shroud.core.ShroudCoreBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.PushReaction;
@@ -27,6 +29,24 @@ public final class ModBlocks {
     public static final DeferredBlock<FlameAltarBlock> FLAME_ALTAR = BLOCKS.register(
             "flame_altar",
             () -> new FlameAltarBlock(
+                    BlockBehaviour.Properties.of()
+                            .strength(3.5F, 6.0F)
+                            .pushReaction(PushReaction.BLOCK)
+            )
+    );
+
+    public static final DeferredBlock<FlameAltarBraceBlock> FLAME_ALTAR_BRACE = BLOCKS.register(
+            "flame_altar_brace",
+            () -> new FlameAltarBraceBlock(
+                    BlockBehaviour.Properties.of()
+                            .strength(3.5F, 6.0F)
+                            .pushReaction(PushReaction.BLOCK)
+            )
+    );
+
+    public static final DeferredBlock<FlameAltarRuneBlock> FLAME_ALTAR_RUNE = BLOCKS.register(
+            "flame_altar_rune",
+            () -> new FlameAltarRuneBlock(
                     BlockBehaviour.Properties.of()
                             .strength(3.5F, 6.0F)
                             .pushReaction(PushReaction.BLOCK)
