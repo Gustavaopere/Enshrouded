@@ -132,15 +132,27 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
             return;
         }
 
-        // BlockEntity#onLoad can run before neighbouring footprint chunks have finished their load
-        // lifecycle. Register exactly this controller for one post-server-tick recovery attempt;
-        // a still-missing footprint chunk is then transferred to the exact ChunkPos recovery index.
+        // Persisted block entities are fully deserialized before NeoForge invokes onLoad().
+        // The chunk-load bridge materializes only controllers whose pending NBT contains a valid
+        // FORMED recovery intent, so reaching this point never depends on unrelated BE ticking.
         FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
         FlameAltarChunkRecoveryEvents.deferInitialRecovery(serverLevel, worldPosition);
     }
 
     boolean hasPendingFormationRecovery() {
         return pendingFormationRecovery.formed() && !isFormed();
+    }
+
+    /** Read-only check used before lazy disk NBT is promoted into a live BlockEntity. */
+    static boolean hasPersistedFormationIntent(CompoundTag tag) {
+        if (!tag.contains(FORMATION_TAG)) {
+            return false;
+        }
+        CompoundTag formation = tag.getCompound(FORMATION_TAG);
+        return FlameAltarFormationState.fromPersisted(
+                formation.getInt(FORMATION_SCHEMA_TAG),
+                formation.getBoolean(FORMATION_FORMED_TAG)
+        ).formed();
     }
 
     /**
