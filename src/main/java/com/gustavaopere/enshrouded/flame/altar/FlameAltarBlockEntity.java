@@ -18,8 +18,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.fml.LogicalSide;
-import net.neoforged.neoforge.common.util.LogicalSidedProvider;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
@@ -134,10 +132,10 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
 
         // NeoForge may invoke BlockEntity#onLoad before every block entity in the 3x3 footprint is
         // visible to level queries. Schedule exactly one bounded retry for the next server tick.
-        // If a required adjacent chunk is still unavailable, the intent remains fail-closed and the
-        // later ChunkEvent.Load path retries when that evidence actually arrives.
+        // MinecraftServer#schedule honors TickTask timing; pushing a timed task through WORKQUEUE
+        // only enqueues work and does not provide this delayed execution contract.
         var server = serverLevel.getServer();
-        LogicalSidedProvider.WORKQUEUE.get(LogicalSide.SERVER).tell(new TickTask(
+        server.schedule(new TickTask(
                 server.getTickCount() + 1,
                 () -> {
                     if (!isRemoved() && level == serverLevel) {
