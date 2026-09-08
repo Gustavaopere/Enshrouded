@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -99,6 +100,7 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     }
 
     private void commitFormation(ServerLevel level) {
+        FlameAltarChunkRecoveryEvents.clearWaiting(level, worldPosition);
         formationState = new FlameAltarFormationState(FlameAltarFormationState.CURRENT_SCHEMA_VERSION, true);
         pendingFormationRecovery = FlameAltarFormationState.unformed();
         formationPhase = FlameAltarFormationPhase.FORMED;
@@ -109,6 +111,7 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
 
     /** Revokes only multiblock formation state; ritual inventory/progression remain untouched. */
     void unform(ServerLevel level) {
+        FlameAltarChunkRecoveryEvents.clearWaiting(level, worldPosition);
         boolean hadFormation = formationState.formed()
                 || pendingFormationRecovery.formed()
                 || formationPhase != FlameAltarFormationPhase.UNFORMED;
@@ -130,9 +133,9 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         }
 
         // BlockEntity#onLoad can run while its chunk is still finalizing block-entity visibility.
-        // MinecraftServer#executeIfPossible always queues through the server event loop instead of
-        // running inline, giving the loaded controller one bounded post-load recovery attempt.
-        // If neighboring evidence is still unavailable, ChunkEvent.Load supplies the later retry.
+        // executeIfPossible provides one queued, bounded post-load attempt. If a footprint chunk is
+        // still unavailable, retryPendingFormationRecovery indexes exactly that missing chunk.
+        FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
         var server = serverLevel.getServer();
         server.executeIfPossible(() -> {
             if (!isRemoved() && level == serverLevel) {
@@ -146,11 +149,12 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     }
 
     /**
-     * Revalidates a persisted formation intent after the relevant chunk load has reached a safe,
-     * deferred server boundary. This never acquires chunks; the validator remains fail-closed.
+     * Revalidates a persisted formation intent after a deferred server/chunk-load boundary.
+     * This never acquires chunks; an unavailable footprint position is indexed for a targeted retry.
      */
     void retryPendingFormationRecovery(ServerLevel serverLevel) {
         if (!hasPendingFormationRecovery()) {
+            FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
             return;
         }
 
@@ -158,9 +162,21 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
         FlameAltarStructureValidator.Result result = validateFormation(serverLevel);
         switch (result.status()) {
             case VALID -> commitFormation(serverLevel);
-            case REQUIRED_CHUNK_UNLOADED, PROTECTION_INDETERMINATE -> {
-                // Keep only the persisted recovery intent. A later adjacent ChunkEvent.Load may
-                // supply the missing evidence; until then gameplay stays explicitly UNFORMED.
+            case REQUIRED_CHUNK_UNLOADED -> {
+                formationState = FlameAltarFormationState.unformed();
+                formationPhase = FlameAltarFormationPhase.UNFORMED;
+                setShellFormedPresentation(serverLevel, false);
+                FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
+                FlameAltarChunkRecoveryEvents.waitForChunk(
+                        serverLevel,
+                        worldPosition,
+                        new ChunkPos(result.problemPos())
+                );
+            }
+            case PROTECTION_INDETERMINATE -> {
+                // No chunk evidence is missing, so a chunk subscription would be misleading.
+                // Preserve only the persisted recovery intent and remain fail-closed.
+                FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
                 formationState = FlameAltarFormationState.unformed();
                 formationPhase = FlameAltarFormationPhase.UNFORMED;
                 setShellFormedPresentation(serverLevel, false);
@@ -227,6 +243,7 @@ public final class FlameAltarBlockEntity extends BlockEntity implements MenuProv
     @Override
     public void setRemoved() {
         if (level instanceof ServerLevel serverLevel) {
+            FlameAltarChunkRecoveryEvents.clearWaiting(serverLevel, worldPosition);
             FlameWardRuntime.onAltarRemoved(serverLevel, worldPosition);
         }
         super.setRemoved();
