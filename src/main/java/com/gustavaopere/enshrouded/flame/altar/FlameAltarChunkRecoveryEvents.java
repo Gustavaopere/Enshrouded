@@ -1,9 +1,12 @@
 package com.gustavaopere.enshrouded.flame.altar;
 
 import com.gustavaopere.enshrouded.Enshrouded;
+import com.gustavaopere.enshrouded.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.level.ChunkEvent;
@@ -19,11 +22,17 @@ import java.util.WeakHashMap;
 /**
  * Wakes only Flame Altars that explicitly require formation recovery.
  *
- * <p>The recovery queues are ephemeral, per-level and never gameplay authority. Initial persisted
- * recovery is deferred to a real post-server-tick boundary so BlockEntity load ordering cannot make
- * validation observe a half-finalized chunk. If validation reports an unavailable footprint chunk,
- * the altar is moved to the exact chunk index until that chunk loads. No path requests or
- * force-loads a chunk, and unrelated chunk loads perform no world scan.</p>
+ * <p>Disk-loaded block entities are lazy in Minecraft 1.21.1: a chunk may contain persisted block
+ * entity NBT without constructing that BlockEntity until somebody asks for it. On chunk load we
+ * therefore inspect only that chunk's public block-entity position metadata, and materialize only a
+ * Flame Altar whose pending NBT carries a valid persisted FORMED recovery intent. The normal
+ * NeoForge BlockEntity lifecycle then invokes {@code onLoad()} with fully deserialized NBT.</p>
+ *
+ * <p>After materialization the recovery queues are ephemeral, per-level and never gameplay
+ * authority. Initial validation is deferred to a post-server-tick boundary. If validation reports
+ * an unavailable footprint chunk, the altar is moved to the exact chunk index until that chunk
+ * loads. No path requests or force-loads a chunk, and unrelated chunk loads perform no block/world
+ * scan.</p>
  */
 @EventBusSubscriber(modid = Enshrouded.MOD_ID)
 public final class FlameAltarChunkRecoveryEvents {
@@ -53,11 +62,14 @@ public final class FlameAltarChunkRecoveryEvents {
 
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
-        if (!(event.getLevel() instanceof ServerLevel serverLevel)) {
+        if (!(event.getLevel() instanceof ServerLevel serverLevel)
+                || !(event.getChunk() instanceof LevelChunk levelChunk)) {
             return;
         }
 
-        Set<BlockPos> waiting = consumeWaiting(serverLevel, event.getChunk().getPos());
+        materializePersistedFormationControllers(levelChunk);
+
+        Set<BlockPos> waiting = consumeWaiting(serverLevel, levelChunk.getPos());
         if (waiting.isEmpty()) {
             return;
         }
@@ -102,6 +114,29 @@ public final class FlameAltarChunkRecoveryEvents {
     /** Package-private deterministic seam used by GameTests for the indexed load boundary. */
     static void recoverWaitingForLoadedChunk(ServerLevel level, ChunkPos loadedChunk) {
         recoverWaiting(level, consumeWaiting(level, loadedChunk));
+    }
+
+    private static void materializePersistedFormationControllers(LevelChunk chunk) {
+        if (chunk.getBlockEntitiesPos().isEmpty()) {
+            return;
+        }
+
+        // getBlockEntitiesPos() returns a copy containing both live and still-packed positions, so
+        // promoting a matching pending entry below cannot invalidate this iteration.
+        for (BlockPos pos : chunk.getBlockEntitiesPos()) {
+            if (!chunk.getBlockState(pos).is(ModBlocks.FLAME_ALTAR.get())) {
+                continue;
+            }
+
+            CompoundTag pendingTag = chunk.getBlockEntityNbt(pos);
+            if (pendingTag == null || !FlameAltarBlockEntity.hasPersistedFormationIntent(pendingTag)) {
+                continue;
+            }
+
+            // This is the only deliberate lazy-BE promotion. It loads no chunk and creates no new
+            // authority; NeoForge subsequently calls FlameAltarBlockEntity#onLoad normally.
+            chunk.getBlockEntity(pos);
+        }
     }
 
     private static void clearInitialWaiting(ServerLevel level, BlockPos altarPos) {
