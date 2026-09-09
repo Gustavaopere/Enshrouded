@@ -8,9 +8,9 @@ Current physical-pack authority rechecked on 2026-09-09: **595 mods** on NeoForg
 
 This file does not approve a placement algorithm, material palette, encounter trigger, or art package. It only makes the remaining Stage 10.09 handoffs independently trackable so Stage 10.10 cannot silently absorb them.
 
-## Open gate A — Lich landmark placement-only contract
+## Open gate A — Lich landmark placement-only contract + production consumer
 
-Tracking issue: **#108 — `Stage 10.09 — Define Lich landmark placement-only contract`**.
+Tracking issue: **#108 — `Stage 10.09 — Define Lich landmark placement-only contract`** tracks the design decision that must precede implementation. Closing #108 alone does **not** complete gate A.
 
 Already proven by current `main`:
 
@@ -35,6 +35,8 @@ Still requires an explicit decision before implementation:
 - partial placement, restart and chunk unload/reload lifecycle;
 - any recovery/removal contract;
 - fail-closed behavior for protected/incompatible/indeterminate targets.
+
+After those decisions are approved, gate A remains **OPEN** until the resulting bounded production placement/worldgen-only consumer is implemented, regression-tested, merged, and independently post-merge verified on the then-current `main`. The consumer must remain placement-only and must not start the encounter or create Story/boss/reward authority.
 
 Important separation: `FirstManifestationDefinition.levelOne()` defines an **encounter** arena radius of 12 and intensity `0.65`. `LichArenaRule` applies that as an ephemeral, dimension-local Shroud overlay only after a canonical encounter starts. Those values do not implicitly define worldgen clearance or landmark spacing.
 
@@ -87,6 +89,6 @@ Automated CI, generated placeholders, compile success, or inferred acceptance mu
 
 ## Stage boundary
 
-Stage 10.09 remains operationally **OPEN** until gates A–C are satisfied or the user explicitly re-scopes them.
+Stage 10.09 remains operationally **OPEN** until gate A's contract **and production consumer**, gate B's approved trigger/wiring work, and gate C's user-authored art/manual acceptance are complete, or the user explicitly re-scopes them.
 
 Stage 10.10 remains **NOT STARTED / GATED**. It is final visual/compatibility acceptance, not a bucket for unresolved 10.09 architecture or manual art work.
