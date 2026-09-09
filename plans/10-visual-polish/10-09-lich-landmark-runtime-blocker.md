@@ -10,7 +10,7 @@ This is a documentation/audit checkpoint only. It does not add a trigger, encoun
 
 ## Reconciled baseline
 
-Audited on 2026-09-09 against:
+The original audit was performed on 2026-09-09 against:
 
 - repository `main`: `c4b555cb4f0d199bed2ebef80b7cd06b306913c0`;
 - physical `modlist.txt`: **595 mods**;
@@ -19,7 +19,21 @@ Audited on 2026-09-09 against:
 - Stage 10.09 plans and the current production source tree;
 - historical Stage 06 first-manifestation implementation PR #46.
 
-The physical modlist is the pack authority. Any surviving Stage 10 reference to **600 mods** is stale on that point and must not override the physical file; historical checkpoint counts remain historical evidence only. The current canonical Stage 10 status on `main@c4b555cb...` already records the 595-mod baseline.
+That original baseline is retained as audit provenance and is not rewritten as if the later merges already existed at audit time.
+
+The physical modlist is the pack authority. The current attached file remains **595 mods** on NeoForge `21.1.248`; older 602/603/607/612 counts in Stage 10 records are historical checkpoint evidence and do not override the current physical file.
+
+### Post-audit repository reconciliation
+
+After this audit:
+
+- PR #104 final HEAD `3b96578850aa23b5eae3df76aa95e5171398faf2` passed exact-head Level 1 Release Readiness `34369500109` and Enshrouded CI `34369500120`, then merged as `9e1b4a77d1d24e2c00ebaec5160458ffbe1184c3`; independent post-merge Release Readiness `34370682361` and Enshrouded CI `34370682102` passed on that exact `main`.
+- PR #105 reconciled the canonical Stage 10 merged state after #103/#104. Exact PR HEAD `b471165c4d6155908e11998fea36b9c823901a5b` passed Release Readiness `34372629522` and Enshrouded CI `34372629554`, then squash-merged as `005b195fc058234be159e37018f57ebf77731f62`.
+- Independent post-merge Release Readiness `34373476741` and Enshrouded CI `34373476952` both completed `success` on exact `main@005b195fc058234be159e37018f57ebf77731f62`.
+- The physical modlist was rechecked again before this dossier reconciliation and remains **595 mods** on NeoForge `21.1.248`.
+- The pertinent Notion dossier was rechecked. It confirms Stage 06 manifestation/Lich authority is canonical but does not define the missing concrete gameplay trigger or a Lich landmark placement/material/distribution contract.
+
+No later merge in this lineage establishes a gameplay trigger for the first manifestation. Therefore the encounter-wiring blocker below remains active.
 
 ## Canonical authority that already exists
 
@@ -142,10 +156,11 @@ That placement contract is a normal Stage 10.09 architecture handoff, distinct f
 ## Current Stage 10.09 separation
 
 - Flame 3×3 shell art: remains a user-authored/manual art handoff.
-- Shroud Core Nest production consumer: **merged in PR #103 as `c4b555cb4f0d199bed2ebef80b7cd06b306913c0` after exact-head Release Readiness `34355655800` and Enshrouded CI `34355655793` completed GREEN**. The Ordinary consumer remains bounded, canonical-authority-gated and excludes Deadly/fluid materials.
+- Shroud Core Nest production consumer: **merged in PR #103 as `c4b555cb4f0d199bed2ebef80b7cd06b306913c0` after exact-head Release Readiness `34355655800` and Enshrouded CI `34355655793` completed GREEN**; independent post-merge Release Readiness `34368796815` and Enshrouded CI `34368796770` also passed. The Ordinary consumer remains bounded, canonical-authority-gated and excludes Deadly/fluid expansion from its current scope.
 - Lich landmark layout contract: implemented.
 - Lich landmark placement/worldgen-only consumer: **open and permitted**, but still requires an explicit placement/material/distribution contract; it is not blocked by the missing gameplay trigger.
 - Lich landmark encounter-location/wiring consumer: **blocked by the missing canonical gameplay trigger contract described above**.
+- Stage 10 merged-state reconciliation: PR #105 is merged as `005b195fc058234be159e37018f57ebf77731f62` and independently post-merge verified by Release Readiness `34373476741` plus Enshrouded CI `34373476952`.
 - Stage 10.10: remains gated/not started.
 
 This blocker must not be hidden by marking Stage 10.09 complete, and the missing encounter trigger must not be replaced with a generic visual/worldgen event. Conversely, the blocker must not be misread as forbidding a separately approved placement-only landmark consumer.
