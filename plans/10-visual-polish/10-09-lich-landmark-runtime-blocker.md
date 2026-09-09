@@ -10,14 +10,14 @@ It is a documentation/audit checkpoint only. It does not add a trigger, encounte
 
 Audited on 2026-09-09 against:
 
-- repository `main`: `0b0486bf0fe0266e7bf96b7cca3be0157afdc6e1`;
+- repository `main`: `c4b555cb4f0d199bed2ebef80b7cd06b306913c0`;
 - physical `modlist.txt`: **595 mods**;
 - NeoForge: **21.1.248**;
 - pertinent Enshrouded Notion dossier;
 - Stage 10.09 plans and the current production source tree;
 - historical Stage 06 first-manifestation implementation PR #46.
 
-The physical modlist is the pack authority. Current Stage 10 documents that still describe **600 mods** are stale on that point and must not override the physical file. Historical checkpoint counts remain historical evidence only.
+The physical modlist is the pack authority. Any surviving Stage 10 reference to **600 mods** is stale on that point and must not override the physical file; historical checkpoint counts remain historical evidence only.
 
 ## Canonical authority that already exists
 
@@ -119,7 +119,7 @@ Once that contract exists, the Stage 10 consumer must remain downstream of `Mani
 ## Current Stage 10.09 separation
 
 - Flame 3×3 shell art: remains a user-authored/manual art handoff.
-- Shroud Core Nest production consumer: implemented separately in PR #103 and remains unmerged while its required full CI is blocked before Java compilation by external Parchment Maven timeouts.
+- Shroud Core Nest production consumer: **merged in PR #103 as `c4b555cb4f0d199bed2ebef80b7cd06b306913c0` after exact-head Release Readiness `34355655800` and Enshrouded CI `34355655793` completed GREEN**. The Ordinary consumer remains bounded, canonical-authority-gated and excludes Deadly/fluid materials.
 - Lich landmark layout contract: implemented.
 - Lich landmark production consumer: **blocked by the missing canonical gameplay trigger contract described above**.
 - Stage 10.10: remains gated/not started.
