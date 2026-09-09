@@ -22,6 +22,7 @@ import java.util.Objects;
 public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
     private final ShroudCoreCandidateField candidates;
     private final MutationAuthority mutationAuthority;
+    private final ShroudCoreNestWorldgenConsumer nestConsumer;
 
     public ShroudCoreFeature(Codec<NoneFeatureConfiguration> codec, ShroudCoreCandidateField candidates) {
         this(codec, candidates, ShroudCoreFeature::canMutateFromRuntimeConfig);
@@ -34,6 +35,7 @@ public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
         super(codec);
         this.candidates = Objects.requireNonNull(candidates, "candidates");
         this.mutationAuthority = Objects.requireNonNull(mutationAuthority, "mutationAuthority");
+        this.nestConsumer = new ShroudCoreNestWorldgenConsumer(mutationAuthority);
     }
 
     @Override
@@ -74,6 +76,10 @@ public final class ShroudCoreFeature extends Feature<NoneFeatureConfiguration> {
         if (level.getBlockEntity(corePos) instanceof ShroudCoreBlockEntity coreBlockEntity) {
             coreBlockEntity.requestAutomaticActivation();
         }
+
+        // Presentation is strictly downstream of the authoritative core. Individual decorative
+        // failures are skipped by the bounded consumer and never roll back or duplicate lifecycle.
+        nestConsumer.placeOrdinaryNest(level, corePos);
         return true;
     }
 
