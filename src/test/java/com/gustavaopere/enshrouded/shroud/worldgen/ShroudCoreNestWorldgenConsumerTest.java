@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.EnumSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,6 +21,19 @@ final class ShroudCoreNestWorldgenConsumerTest {
         }
         assertThrows(IllegalArgumentException.class,
                 () -> ShroudCoreNestWorldgenConsumer.materialFor(ShroudCoreNestLayout.Role.CORE_ANCHOR));
+    }
+
+    @Test
+    void ordinaryNestNeverMapsRolesToDeadlyOrFlowingMaterials() {
+        for (ShroudCoreNestLayout.Part part : ShroudCoreNestLayout.ordinary().parts()) {
+            if (part.role() == ShroudCoreNestLayout.Role.CORE_ANCHOR) {
+                continue;
+            }
+            ShroudCoreNestWorldgenConsumer.Material material =
+                    ShroudCoreNestWorldgenConsumer.materialFor(part.role());
+            assertNotEquals(ShroudCoreNestWorldgenConsumer.Material.RED_SLUDGE, material, part.role()::name);
+            assertNotEquals(ShroudCoreNestWorldgenConsumer.Material.WITHERED_GROWTH, material, part.role()::name);
+        }
     }
 
     @Test
