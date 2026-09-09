@@ -1,6 +1,6 @@
 # Stage 10.09 — Multiblock and set-piece pass
 
-Status: LOGIC/AUTHORITY CHECKPOINT IMPLEMENTED / FLAME SHELL SURVIVAL ACQUISITION MERGED + VERIFIED / RENDER ASSETS + IN-WORLD SET-PIECE CONSUMERS OPEN / STAGE 10.09 NOT CLOSED
+Status: LOGIC/AUTHORITY CHECKPOINT IMPLEMENTED / FLAME SHELL SURVIVAL ACQUISITION + SHROUD CORE NEST CONSUMER MERGED + VERIFIED / LICH ENCOUNTER-WIRING BLOCKER RECORDED / SHELL ART + LICH PLACEMENT CONTRACT/CONSUMER OPEN / STAGE 10.09 NOT CLOSED
 
 ## Scope and current truth
 
@@ -13,19 +13,21 @@ Implemented and verified:
 - Sanctuary activation gated by successful physical formation;
 - survival recipes for the complete four-brace + four-rune shell and self-drop loot tables for both shell blocks;
 - a bounded data-only Shroud Core Nest layout/authority contract;
+- the bounded Ordinary Shroud Core Nest production worldgen consumer merged in PR #103 downstream of the existing canonical `ShroudCoreFeature` placement path;
 - a bounded data-only Level-1 Lich manifestation landmark layout/authority contract;
+- the Lich landmark runtime audit merged in PR #104, which separates presentation-only placement from still-blocked encounter wiring;
 - regression coverage for authority, claims/protection, lifecycle, chunk availability, persistence and dedicated-server behavior.
 
 Still open and therefore **not** silently counted as complete:
 
 - `flame_altar_brace` / `flame_altar_rune` blockstates, block models, item models, textures and visibly distinct `FORMED=false|true` presentation;
-- production placement/worldgen consumption for `ShroudCoreNestLayout`;
-- production placement/worldgen or approved encounter-location consumption for `LichManifestationLandmarkLayout`;
-- final in-game screenshots and full 603-mod client visual smoke.
+- an explicit placement/material/distribution contract plus production placement/worldgen-only consumer for `LichManifestationLandmarkLayout`;
+- a separate explicit gameplay-trigger contract before any encounter-location/wiring path may invoke canonical `ManifestationEncounterService.start(...)`;
+- final in-game screenshots and full **595-mod** client visual smoke.
 
 The shell render assets are a user-owned art handoff. This repository checkpoint must not invent substitute placeholder art to make automated review green.
 
-No automatic Core Nest or Lich landmark worldgen/placement path is introduced here because no such production consumer has been explicitly approved. Leaving that work open is preferable to silently creating a new terrain/worldgen contract during closeout.
+Automatic Core Nest placement is now present only through the bounded Ordinary consumer merged in PR #103. No automatic Lich landmark placement or encounter-start path is introduced because its placement contract and gameplay-trigger contract remain separately undefined. Leaving those Lich handoffs open is preferable to silently creating new worldgen or Story/gameplay semantics during visual-polish closeout.
 
 A separate Purification Shrine/controller remains intentionally deferred. Purification/Sanctuary presentation stays integrated with the existing Flame complex and canonical Flame Ward/purification runtime.
 
@@ -36,8 +38,8 @@ A separate Purification Shrine/controller remains intentionally deferred. Purifi
 | Flame Altar 3×3 lifecycle | implemented | `FlameAltarBlockEntity` + existing Flame/Sanctuary runtime remain canonical | **IMPLEMENTED / VERIFIED** |
 | Brace/rune survival acquisition | recipes + self-drop loot merged in PR #100 | no new gameplay authority | **IMPLEMENTED / VERIFIED** |
 | Brace/rune formed/unformed rendering | Java `FORMED` property exists; required client resources are not yet supplied | presentation only | **OPEN — USER ART HANDOFF** |
-| Shroud Core Nest layout | immutable bounded Ordinary/Deadly composition exists | exactly one existing canonical Core anchor | **LAYOUT CONTRACT IMPLEMENTED / IN-WORLD CONSUMER OPEN** |
-| Lich manifestation landmark layout | immutable bounded Level-1 composition exists | Stage 06 Story/manifestation lifecycle remains canonical | **LAYOUT CONTRACT IMPLEMENTED / IN-WORLD CONSUMER OPEN** |
+| Shroud Core Nest layout + Ordinary consumer | immutable bounded Ordinary/Deadly composition exists; bounded Ordinary production consumer merged in PR #103 | exactly one existing canonical Core anchor; consumer remains downstream of `ShroudCoreFeature` and canonical mutation authority | **IMPLEMENTED / VERIFIED FOR CURRENT CONSUMER SCOPE** |
+| Lich manifestation landmark layout | immutable bounded Level-1 composition exists; no production placement consumer yet | Stage 06 Story/manifestation lifecycle remains canonical | **LAYOUT CONTRACT IMPLEMENTED / PLACEMENT CONTRACT + CONSUMER OPEN / ENCOUNTER WIRING BLOCKED** |
 | Separate Purification Shrine | not implemented | existing Flame Ward/purification authority retained | **INTENTIONALLY DEFERRED** |
 
 ## Canonical Flame Altar formation contract
@@ -117,7 +119,7 @@ Persisted `FORMED` is recovery intent rather than immediate gameplay authority:
 
 ## Shroud Core Nest contract
 
-`ShroudCoreNestLayout` is an immutable, bounded composition contract. It does not access a world, place blocks, load chunks, register worldgen or own Shroud state.
+`ShroudCoreNestLayout` remains an immutable, bounded composition contract. The layout itself does not access a world, place blocks, load chunks, register worldgen or own Shroud state.
 
 Both Ordinary and Deadly variants contain exactly one `CORE_ANCHOR` at the layout origin. Other roles are presentation/environmental composition hints:
 
@@ -129,7 +131,18 @@ Both Ordinary and Deadly variants contain exactly one `CORE_ANCHOR` at the layou
 
 The footprint is bounded to a maximum horizontal offset of four blocks. The Deadly variant is denser/distinct while retaining the same single authoritative Core anchor.
 
-This is an implemented **layout/authority contract**, not an implemented in-world set piece. A production consumer remains open. Any future consumer must use the existing Shroud Core authority, remain loaded-chunk/bounded, respect protection/wards through the canonical mutation boundary and must not create additional cores.
+PR #103 adds the current production consumer without changing that layout authority. `ShroudCoreNestWorldgenConsumer` is constructed from the existing `MutationAuthority` and runs only after canonical `ShroudCoreFeature` successfully places/registers the real Core. It:
+
+- consumes only the bounded Ordinary layout in the current production path;
+- skips `CORE_ANCHOR`, because `ShroudCoreFeature` remains the sole Core placement/lifecycle owner;
+- resolves decorative targets against local `WORLD_SURFACE_WG` and never performs a world scan;
+- requires `WorldGenLevel.ensureCanWrite(target)` before mutation;
+- requires canonical `MutationAuthority.canMutate(..., MutationKind.GROWTH_PLACEMENT)` for each decorative target;
+- never force-loads chunks and fails closed on protected/warded/non-replaceable targets;
+- maps the current roles only to existing first-party Enshrouded blocks rather than inventing external/provider materials;
+- does not create a second Core, SavedData path, activation queue or Shroud lifecycle.
+
+The current PR #103 scope does not silently promote the Deadly layout or fluid placement into a second unreviewed worldgen path. Any future expansion of that scope requires its own explicit contract and validation.
 
 ## Lich manifestation landmark contract
 
@@ -143,7 +156,12 @@ This is an implemented **layout/authority contract**, not an implemented in-worl
 
 The Level-1 layout remains within a five-block horizontal composition radius and owns no encounter ID, Story state, provider selection, boss spawn/defeat lifecycle or reward.
 
-This is likewise an implemented **layout/authority contract**, not an in-world landmark. Any future placement/encounter-location consumer must feed the existing Stage 06 manifestation/Story service and preserve its exactly-once reward semantics; the layout itself must never spawn a second boss or create separate Story state.
+PR #104 establishes that two different downstream concerns must remain separate:
+
+1. **Placement/worldgen-only consumption** is permitted but still requires an explicit contract for origin/distribution/frequency, role-to-material mapping, loaded-chunk/no-force-load behavior, canonical protection/mutation handling, deterministic/idempotent placement and restart/chunk lifecycle. Placement alone must not start an encounter.
+2. **Encounter-location/wiring** remains blocked until an explicit server-side gameplay trigger is defined/proven. `ManifestationEncounterService.start(...)` is the canonical Stage 06 encounter-start boundary; the landmark must not create a second Story/boss/reward authority or invent proximity, Shroud/Core, interaction, item, ritual, login/tick, command or worldgen-time trigger semantics.
+
+The layout itself remains presentation/spatial composition only.
 
 ## TDD and regression evidence
 
@@ -181,15 +199,31 @@ Independent post-merge verification on that exact `main` also passed:
 - Level 1 Release Readiness `34226166892` — `completed/success`;
 - Enshrouded CI `34226166913 / job 102060710827` — `completed/success` across the complete matrix.
 
-The latest physical modlist consulted for this checkpoint contains **603 mods** on NeoForge `21.1.248`. Earlier 607/612 pack counts in prior Stage 10 dossiers are historical checkpoint evidence, not the current physical baseline.
+The PR #98 reconciliation checkpoint consulted a **603-mod** physical snapshot on NeoForge `21.1.248`; that count remains historical checkpoint evidence. The current physical modlist was rechecked on 2026-09-09 and is the authority now: **595 mods** on NeoForge `21.1.248`.
+
+### Shroud Core Nest production consumer
+
+PR #103 final HEAD `7b7d01e94e6fe8037a579a812a2c8a723e834fc6` passed:
+
+- exact-head Level 1 Release Readiness `34355655800` — `completed/success`;
+- exact-head Enshrouded CI `34355655793` — `completed/success` across the full matrix.
+
+PR #103 merged as `c4b555cb4f0d199bed2ebef80b7cd06b306913c0`. Independent post-merge Release Readiness `34368796815` and Enshrouded CI `34368796770` passed on exact `main@c4b555cb4f0d199bed2ebef80b7cd06b306913c0`.
+
+### Lich blocker audit and merged-state reconciliation
+
+PR #104 final HEAD `3b96578850aa23b5eae3df76aa95e5171398faf2` passed exact-head Release Readiness `34369500109` and Enshrouded CI `34369500120`, then merged as `9e1b4a77d1d24e2c00ebaec5160458ffbe1184c3`. Independent post-merge Release Readiness `34370682361` and Enshrouded CI `34370682102` passed on that exact main.
+
+PR #105 reconciled the canonical Stage 10 status after #103/#104. Its exact PR HEAD `b471165c4d6155908e11998fea36b9c823901a5b` passed Release Readiness `34372629522` and Enshrouded CI `34372629554`, then squash-merged as `005b195fc058234be159e37018f57ebf77731f62`. Independent post-merge Release Readiness `34373476741` and Enshrouded CI `34373476952` both completed `success` on exact `main@005b195fc058234be159e37018f57ebf77731f62`.
 
 ## Open handoffs / next work
 
-Stage 10.09 remains operationally open for two distinct reasons; neither is hidden inside 10.10:
+Stage 10.09 remains operationally open; none of these handoffs is hidden inside 10.10:
 
 1. **User art handoff — Flame shell render resources.** Supply the approved brace/rune blockstates, block/item models and textures, including a visibly distinct formed/unformed presentation. Automated CI cannot substitute for this art decision.
-2. **Placement architecture — Core Nest and Lich landmark.** Select/approve a production consumer before implementation. The current layout classes deliberately do not mutate the world. Any later implementation must be bounded, fail-closed and authority-preserving.
+2. **Lich placement architecture.** Define/approve the bounded landmark placement-only contract before implementation: origin/distribution/frequency, role-to-material mapping, protection/mutation boundary, loaded-chunk/no-force-load behavior and deterministic lifecycle/idempotence.
+3. **Lich encounter trigger/wiring.** Remains blocked until the explicit gameplay trigger feeding canonical `ManifestationEncounterService.start(...)` is defined/proven. Placement must not be used as a generic substitute for this missing gameplay contract.
 
-After those handoffs are satisfied or explicitly re-scoped by the user, Stage 10.10 can perform the final visual/compatibility acceptance matrix: screenshots, renderer/shader/Sodium coexistence, reconnect/resource reload, accessibility variants and full 603-mod client smoke.
+After those handoffs are satisfied or explicitly re-scoped by the user, Stage 10.10 can perform the final visual/compatibility acceptance matrix: screenshots, renderer/shader/Sodium coexistence, reconnect/resource reload, accessibility variants and full **595-mod** client smoke.
 
-`ART APPROVED` remains open. No document may infer automatic worldgen or rendered formed-state assets from the Stage 10.09 layout/Java contracts alone.
+`ART APPROVED` remains open. No document may infer rendered formed-state assets, Lich landmark placement or encounter-start behavior from the Stage 10.09 layout/Java contracts alone.
