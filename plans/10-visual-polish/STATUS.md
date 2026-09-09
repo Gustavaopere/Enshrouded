@@ -1,6 +1,6 @@
 # Stage 10 — Visual Polish Status
 
-**State:** 10.09 LOGIC/AUTHORITY IMPLEMENTED / ACQUISITION FIX + RECONCILIATION MERGED + VERIFIED / CORE NEST CONSUMER IMPLEMENTED + PRE-DOC CI GREEN / SHELL ART + LICH LANDMARK TRIGGER/CONSUMER OPEN — 10.10 NOT STARTED
+**State:** 10.09 LOGIC/AUTHORITY IMPLEMENTED / ACQUISITION + RECONCILIATION + CORE NEST CONSUMER MERGED + VERIFIED / LICH ENCOUNTER-WIRING BLOCKER RECORDED / SHELL ART + LICH PLACEMENT CONTRACT/CONSUMER OPEN — 10.10 NOT STARTED
 
 **Current physical-pack authority:** 595 mods on NeoForge `21.1.248` from the currently attached physical modlist, rechecked on 2026-09-09. References to 602/603/607/612 below are retained as checkpoint-time evidence for earlier Stage 10 tasks, not as the current pack count.
 
@@ -25,7 +25,8 @@
 **10.09 restart-harness correction PR:** #99 — MERGED into the current lineage as `650c5c99308415a94ed51c9abd9abea1b5b26c10`.
 **10.09 survival-acquisition correction PR:** #100 — MERGED as `ed122c42f0eee0e706219361e30c9e1f05416a6d`; independent post-merge Release Readiness `34226166892` and Enshrouded CI `34226166913 / 102060710827` GREEN.
 **10.09 reconciliation PR:** #98 — final HEAD `43bf73df5d4c3c93a731ee5d88397b5633badd1c`; MERGED as `fa9552daa0372bf5061708a93ce5c263257df5d2`; independent post-merge Release Readiness `34234079530` and Enshrouded CI `34234079616 / 102087197147` GREEN. It records the actual implemented checkpoint and the still-open art/production-consumer handoffs without changing runtime authority.
-**10.09 Shroud Core Nest consumer PR:** #103 — implementation HEAD `42ce777c8c1d0726cc678156298d75aacb1d1b58` passed Level 1 Release Readiness `34311880546` and the full Enshrouded CI matrix `34311880549` after the external Parchment Maven outage recovered. This status commit creates a new PR HEAD, so exact-head CI must be rerun before merge.
+**10.09 Shroud Core Nest consumer PR:** #103 — final HEAD `7b7d01e94e6fe8037a579a812a2c8a723e834fc6` passed exact-head Level 1 Release Readiness `34355655800` and Enshrouded CI `34355655793`; MERGED as `c4b555cb4f0d199bed2ebef80b7cd06b306913c0`; independent post-merge Release Readiness `34368796815` and Enshrouded CI `34368796770` GREEN on that exact main.
+**10.09 Lich encounter-wiring audit PR:** #104 — final HEAD `3b96578850aa23b5eae3df76aa95e5171398faf2` passed exact-head Level 1 Release Readiness `34369500109` and Enshrouded CI `34369500120`; MERGED as `9e1b4a77d1d24e2c00ebaec5160458ffbe1184c3`; independent post-merge Release Readiness `34370682361` and Enshrouded CI `34370682102` GREEN. It narrows the blocker to encounter wiring; placement/worldgen-only consumption remains allowed but requires its own explicit placement/material/distribution contract.
 
 ## Planning checkpoint
 
@@ -363,8 +364,9 @@
 - [x] Both layout classes are immutable/data-only and add no `ServerLevel`, SavedData, chunk loading, automatic worldgen, boss spawning or reward authority.
 - [x] Existing Shroud Core and Stage 06 manifestation/Story services remain canonical.
 - [x] PR #103 implements the production `ShroudCoreNestLayout` consumer downstream of canonical `ShroudCoreFeature` placement. It skips `CORE_ANCHOR`, remains bounded to the immutable ordinary layout, uses `ensureCanWrite` plus canonical `MutationAuthority` with `GROWTH_PLACEMENT`, never force-loads chunks and does not create a second Shroud Core lifecycle or SavedData path.
-- [ ] A production placement/encounter-location consumer for `LichManifestationLandmarkLayout` remains open. Stage 06 proves `ManifestationEncounterService.start(...)` is the canonical explicit server-side start authority, but current production bootstrap, Story state/runtime, commands and Flame ritual/altar paths do not define the gameplay trigger that should invoke it. Do not invent that trigger or create a second boss/Story/reward authority.
-- [ ] The remaining Lich trigger/consumer handoff plus Flame shell art are Stage 10.09 implementation/design handoffs. **Stage 10.10 does not own them and must not silently absorb them as manual QA.**
+- [ ] A production placement/worldgen-only consumer for `LichManifestationLandmarkLayout` remains open and permitted. Before implementation, an explicit placement contract must define origin/distribution/frequency, role-to-material mapping, loaded-chunk/no-force-load behavior, canonical protection/mutation handling, idempotence and restart/chunk lifecycle. Placement alone must not call `ManifestationEncounterService.start(...)` or mutate Story/boss/reward authority.
+- [ ] Lich encounter-location/wiring remains separately blocked. Stage 06 proves `ManifestationEncounterService.start(...)` is the canonical explicit server-side start authority, but current production bootstrap, Story state/runtime, commands and Flame ritual/altar paths do not define the gameplay trigger that should invoke it. Do not invent that trigger or create a second boss/Story/reward authority.
+- [ ] The remaining Lich placement contract/consumer, blocked encounter-trigger/wiring contract and Flame shell art are Stage 10.09 implementation/design handoffs. **Stage 10.10 does not own them and must not silently absorb them as manual QA.**
 
 ### TDD and validation evidence
 
@@ -382,13 +384,15 @@
 - [x] Independent post-merge verification on exact `main@fa9552daa0372bf5061708a93ce5c263257df5d2` passed Release Readiness `34234079530` and Enshrouded CI `34234079616 / 102087197147`, including GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution and dedicated-server save/reload.
 - [x] A later same-day 602-mod physical snapshot was reconciled during PR #102 preparation and was superseded by the current 595-mod physical authority before this checkpoint.
 - [x] PR #103 implementation HEAD `42ce777c8c1d0726cc678156298d75aacb1d1b58` passed Release Readiness `34311880546` and full Enshrouded CI `34311880549`; the latter includes Stage 10 contracts, provenance, unit tests, performance, diff sanity, NeoForge build, GameTests, SavedData two-boot reload, Ars Zero 2.0.2 real-distribution and dedicated-server save/reload smoke. Earlier attempts were blocked before Java compilation by an external timeout resolving Parchment from `maven.parchmentmc.org`; no gate or dependency was weakened.
-- [ ] Exact-head Release Readiness + Enshrouded CI rerun is required after this documentation-only status update before PR #103 may merge.
+- [x] PR #103 final reconciled HEAD `7b7d01e94e6fe8037a579a812a2c8a723e834fc6` passed exact-head Release Readiness `34355655800` and Enshrouded CI `34355655793`, then merged as `c4b555cb4f0d199bed2ebef80b7cd06b306913c0`. Independent post-merge Release Readiness `34368796815` and Enshrouded CI `34368796770` passed on exact `main@c4b555cb4f0d199bed2ebef80b7cd06b306913c0`.
+- [x] PR #104 final HEAD `3b96578850aa23b5eae3df76aa95e5171398faf2` passed exact-head Release Readiness `34369500109` and Enshrouded CI `34369500120`, then merged as `9e1b4a77d1d24e2c00ebaec5160458ffbe1184c3`. Independent post-merge Release Readiness `34370682361` and Enshrouded CI `34370682102` passed on exact `main@9e1b4a77d1d24e2c00ebaec5160458ffbe1184c3`.
 
 ### Implementation/art handoffs still open before 10.10
 
 - [ ] User-authored Flame shell render package: brace/rune blockstates, block/item models, textures and formed/unformed distinction.
-- [x] Shroud Core Nest production consumer implemented in PR #103; merge remains gated on latest-head revalidation.
-- [ ] Lich manifestation landmark production trigger/consumer: blocked until the explicit gameplay trigger feeding canonical `ManifestationEncounterService.start(...)` is defined/proven.
+- [x] Shroud Core Nest production consumer merged and independently post-merge verified in PR #103.
+- [ ] Lich manifestation landmark placement/worldgen-only contract and production consumer remain open; placement must remain bounded/presentation-only and must not start the encounter.
+- [ ] Lich manifestation encounter wiring remains blocked until the explicit gameplay trigger feeding canonical `ManifestationEncounterService.start(...)` is defined/proven.
 
 ### Manual final-acceptance work after those handoffs
 
@@ -406,7 +410,7 @@
 - Lodestone was not needed by 10.08 and remains task-gated for future concrete effects; OctoLib and Player Animator likewise remain task-gated rather than automatic dependencies.
 - The Flame complex has one authoritative controller and one Sanctuary provider; shell components cannot become parallel authorities.
 - Player-built hero multiblocks are rejected if their FORMED presentation still reads as a normal Minecraft block grid.
-- `ShroudCoreNestLayout` remains data-only, while PR #103 supplies its bounded canonical-worldgen consumer; `LichManifestationLandmarkLayout` remains data-only until an explicit production trigger/consumer is defined and validated.
+- `ShroudCoreNestLayout` remains data-only with its bounded canonical worldgen consumer merged in PR #103. `LichManifestationLandmarkLayout` remains data-only until an approved bounded placement/worldgen-only consumer is defined and validated; any encounter-location/wiring path is additionally blocked until the explicit gameplay trigger feeding the existing manifestation service is defined/proven.
 - Stage 10.10 is a final visual/compatibility acceptance gate; it must not be started while 10.09 implementation/art handoffs above remain open unless the user explicitly re-scopes them.
 - Manual full **595-mod** pack smoke is the current external release gate before distribution; older 602/603/607/612 references above are historical checkpoint evidence.
 - Do not mark the Flame Altar/Sanctuary focus, Shroud Core, Lich Skull, 10.06 world-art family, 10.07 HUD/UI, 10.08 advanced VFX or 10.09 multiblock/set-piece presentation **ART APPROVED** until the required in-game evidence exists.
