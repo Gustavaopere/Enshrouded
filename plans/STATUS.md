@@ -17,7 +17,7 @@ The detailed merged-task record through Stage 08.02 is preserved in [`STATUS-HIS
 - [x] 07 Client Experience — 4/4 verified and merged.
 - [x] 08 Integrations — 5/5 reviewed, verified and merged.
 - [x] 09 Hardening — 5/5 verified and merged; Level 1 remains a completed historical milestone.
-- [~] 10 Visual Polish — explicit post-Level-1 work is active by user instruction. 10.01–10.08 technical implementation is merged. Stage 10.09 logic/authority, restart-harness correction, survival acquisition, reconciliation and the Flame shell art-handoff contract are merged. The Shroud Core Nest production consumer is implemented on PR #103 and passed the full pre-documentation CI matrix, but the latest documentation-updated PR HEAD still requires exact-head revalidation before merge. Stage 10.09 remains operationally **OPEN** for the user-owned Flame shell render package and for definition/proof of the explicit gameplay trigger plus production consumer for the Lich landmark. Stage 10.10 has not started.
+- [~] 10 Visual Polish — explicit post-Level-1 work is active by user instruction. 10.01–10.08 technical implementation is merged. Stage 10.09 logic/authority, restart-harness correction, survival acquisition, reconciliation, the Flame shell art-handoff contract and the Shroud Core Nest production consumer are merged and verified. PR #104 also merged the Lich landmark runtime audit: bounded placement/worldgen-only consumption remains an allowed separate path, while encounter wiring is blocked until an explicit gameplay trigger feeding canonical `ManifestationEncounterService.start(...)` is defined/proven. Stage 10.09 remains operationally **OPEN** for the user-owned Flame shell render package, the Lich placement/material/distribution contract/consumer, and the blocked encounter-trigger/wiring contract. Stage 10.10 has not started.
 
 ## 08 Integrations — complete
 
@@ -183,7 +183,7 @@ Stage 09.04 establishes Enshrouded `1.0.0` release metadata, an independent fail
 
 Stage 10 began only after explicit user instruction and therefore does not contradict the historical rule against automatically starting future work. It is post-Level-1 visual/presentation work and does not reopen completed Level-1 gameplay authorities.
 
-Current verified `main` baseline before PR #103 merge is `main@0b0486bf0fe0266e7bf96b7cca3be0157afdc6e1`, after PR #102 (`Stage 10.09 — Define Flame shell art handoff contract`).
+Current verified repository baseline is `main@9e1b4a77d1d24e2c00ebaec5160458ffbe1184c3`, after PR #104 (`Stage 10.09 — Record Lich landmark encounter-wiring blocker`).
 
 - [x] Stage 10.01–10.08 technical implementation is merged; detailed provenance remains in `plans/10-visual-polish/STATUS.md` and the individual dossiers.
 - [x] Stage 10.09 original logic/authority implementation PR #97 merged as `452766e29c9de00fc0cb441c6bc397cb990a6d9f`.
@@ -194,8 +194,10 @@ Current verified `main` baseline before PR #103 merge is `main@0b0486bf0fe0266e7
 - [x] PR #98 merged as `fa9552daa0372bf5061708a93ce5c263257df5d2`. Independent post-merge Release Readiness `34234079530` and Enshrouded CI `34234079616 / 102087197147` passed the complete matrix on exact `main@fa9552daa0372bf5061708a93ce5c263257df5d2`.
 - [x] PR #102 merged as `0b0486bf0fe0266e7bf96b7cca3be0157afdc6e1`, defining the manual/user-authored Flame shell art handoff without fabricating placeholder art or `ART APPROVED`.
 - [ ] User-owned Flame shell render handoff remains open: brace/rune blockstates, block/item models, textures and visibly distinct formed/unformed presentation.
-- [x] Shroud Core Nest production consumer is implemented on PR #103. Implementation HEAD `42ce777c8c1d0726cc678156298d75aacb1d1b58` passed Release Readiness `34311880546` and the full Enshrouded CI matrix `34311880549` after the external Parchment Maven timeout recovered. The subsequent documentation-only updates changed the PR HEAD, so exact-head CI must be green again before merge.
-- [ ] Lich manifestation landmark production trigger/consumer remains open. Stage 06 owns explicit server-side start through canonical `ManifestationEncounterService.start(...)`, but the current production bootstrap, Story runtime/state, command surface and Flame ritual/altar path do not define the gameplay trigger that should call it. Do not invent a trigger or second Story/boss/reward authority.
+- [x] Shroud Core Nest production consumer PR #103 final HEAD `7b7d01e94e6fe8037a579a812a2c8a723e834fc6` passed exact-head Release Readiness `34355655800` and Enshrouded CI `34355655793`, then merged as `c4b555cb4f0d199bed2ebef80b7cd06b306913c0`. Independent post-merge Release Readiness `34368796815` and Enshrouded CI `34368796770` both passed on exact `main@c4b555cb4f0d199bed2ebef80b7cd06b306913c0`.
+- [x] Lich landmark encounter-wiring audit PR #104 final HEAD `3b96578850aa23b5eae3df76aa95e5171398faf2` passed exact-head Release Readiness `34369500109` and Enshrouded CI `34369500120`, then merged as `9e1b4a77d1d24e2c00ebaec5160458ffbe1184c3`. Independent post-merge Release Readiness `34370682361` and Enshrouded CI `34370682102` both passed on exact `main@9e1b4a77d1d24e2c00ebaec5160458ffbe1184c3`.
+- [ ] Lich manifestation landmark placement/worldgen-only consumer remains open and permitted, but its origin/distribution, role-to-material mapping, protection/mutation boundary, idempotence and lifecycle contract must be explicit before implementation; placement alone must not start an encounter.
+- [ ] Lich manifestation encounter-location/wiring remains blocked. `ManifestationEncounterService.start(...)` is the canonical Stage 06 start boundary, but the audited production runtime still does not define the gameplay trigger that decides when normal play invokes it. Do not invent proximity, Shroud/Core, interaction, item, ritual, login/tick, command or worldgen-time trigger semantics.
 - [x] A separate Purification Shrine/controller remains intentionally deferred; Sanctuary/purification retains the existing canonical Flame complex/ward/purification authority.
 - [ ] Stage 10.10 has **not** started. It is the final visual/compatibility QA gate and must not silently absorb missing 10.09 implementation/design or user-art work.
 
@@ -208,7 +210,7 @@ The currently attached physical modlist was rechecked on 2026-09-09 and is the c
 
 ## Immediate next step
 
-Finish PR #103 correctly: re-fetch `main`, verify the documentation-updated branch is still reconciled, rerun Release Readiness and the complete Enshrouded CI matrix on the exact latest HEAD, then merge only if all required gates are GREEN. After #103 merges, Stage 10.09 remains **OPEN** for the user-authored Flame shell art and for an explicit design/runtime decision defining the Lich manifestation gameplay trigger and landmark consumer. Do **not** start Stage 10.10 automatically.
+Keep Stage 10.09 open. The next safe implementation work is to define/approve the bounded Lich landmark placement-only contract (origin/distribution, role-to-material mapping, protection/mutation boundary, idempotence/lifecycle) before writing a production consumer. Encounter wiring remains separately blocked until the explicit gameplay trigger contract feeding canonical `ManifestationEncounterService.start(...)` exists. The user-authored Flame shell render package and `ART APPROVED` also remain open. Do **not** start Stage 10.10 automatically.
 
 ## Level 1 release gate — historical completed milestone
 
