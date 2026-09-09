@@ -81,9 +81,11 @@ final class ShroudCoreNestWorldgenConsumer {
             case CORE_ANCHOR -> throw new IllegalArgumentException("core anchor is owned by ShroudCoreFeature");
             case RIB -> Material.ACTIVE_GROWTH;
             case ROOT_VEIN -> Material.VEIN;
-            case SLUDGE_BASIN -> Material.RED_SLUDGE;
+            // This is the Ordinary consumer. Deadly/fluid materials stay excluded until a caller
+            // can prove canonical DEADLY severity without creating a second worldgen authority.
+            case SLUDGE_BASIN -> Material.VEIN;
             case HANGING_GROWTH -> Material.ACTIVE_GROWTH;
-            case RUIN -> Material.WITHERED_GROWTH;
+            case RUIN -> Material.ACTIVE_GROWTH;
         };
     }
 
